@@ -1,0 +1,1276 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API documentation for .",
+        "title": "Rebellion Banking APII",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/banks": {
+            "get": {
+                "description": "Returns available banks.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "banks"
+                ],
+                "summary": "List banks",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/http.BankResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.BankErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/banks/rocketbank/config": {
+            "get": {
+                "description": "Returns Rocketbank config.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rocketbank config"
+                ],
+                "summary": "Get Rocketbank config",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.ConfigResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/banks/rocketbank/config/balance": {
+            "patch": {
+                "description": "Updates only Rocketbank balance. Full config updates are not allowed.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rocketbank config"
+                ],
+                "summary": "Update Rocketbank balance",
+                "parameters": [
+                    {
+                        "description": "Balance update payload",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.UpdateBalanceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.ConfigResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/banks/rocketbank/config/client-info": {
+            "patch": {
+                "description": "Updates only Rocketbank client info. Full config updates are not allowed.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rocketbank client info"
+                ],
+                "summary": "Update Rocketbank client info",
+                "parameters": [
+                    {
+                        "description": "Client info update payload",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.UpdateClientInfoRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.ConfigResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/banks/rocketbank/config/history": {
+            "get": {
+                "description": "Returns Rocketbank configured history items.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rocketbank history"
+                ],
+                "summary": "List Rocketbank history",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/http.HistoryResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes all configured Rocketbank history items.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rocketbank history"
+                ],
+                "summary": "Clear Rocketbank history",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/banks/rocketbank/config/history/card-transfer": {
+            "post": {
+                "description": "Creates a Rocketbank card transfer history item.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rocketbank card transfer"
+                ],
+                "summary": "Create Rocketbank card transfer history item",
+                "parameters": [
+                    {
+                        "description": "Card transfer payload",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.CardTransferRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/http.HistoryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/banks/rocketbank/config/history/cash-transfer": {
+            "post": {
+                "description": "Creates a Rocketbank cash transfer history item.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rocketbank cash transfer"
+                ],
+                "summary": "Create Rocketbank cash transfer history item",
+                "parameters": [
+                    {
+                        "description": "Cash transfer payload",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.CashTransferRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/http.HistoryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/banks/rocketbank/config/history/items/{id}": {
+            "get": {
+                "description": "Returns Rocketbank configured history item by transaction id.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rocketbank history"
+                ],
+                "summary": "Get Rocketbank history item",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "History transaction id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.HistoryResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes Rocketbank configured history item by transaction id.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rocketbank history"
+                ],
+                "summary": "Delete Rocketbank history item",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "History transaction id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/banks/rocketbank/config/history/items/{id}/card-transfer": {
+            "patch": {
+                "description": "Updates a Rocketbank card transfer history item.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rocketbank card transfer"
+                ],
+                "summary": "Update Rocketbank card transfer history item",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "History transaction id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Card transfer patch payload",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.UpdateCardTransferRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.HistoryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/banks/rocketbank/config/history/items/{id}/cash-transfer": {
+            "patch": {
+                "description": "Updates a Rocketbank cash transfer history item.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rocketbank cash transfer"
+                ],
+                "summary": "Update Rocketbank cash transfer history item",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "History transaction id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Cash transfer patch payload",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.UpdateCashTransferRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.HistoryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/banks/rocketbank/config/history/items/{id}/sbp-transfer": {
+            "patch": {
+                "description": "Updates a Rocketbank SBP transfer history item.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rocketbank sbp transfer"
+                ],
+                "summary": "Update Rocketbank SBP transfer history item",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "History transaction id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "SBP transfer patch payload",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.UpdateSBPTransferRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.HistoryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/banks/rocketbank/config/history/sbp-transfer": {
+            "post": {
+                "description": "Creates a Rocketbank SBP transfer history item.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rocketbank sbp transfer"
+                ],
+                "summary": "Create Rocketbank SBP transfer history item",
+                "parameters": [
+                    {
+                        "description": "SBP transfer payload",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.SBPTransferRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/http.HistoryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "http.AccessErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.AccessResponse": {
+            "type": "object",
+            "properties": {
+                "bankCode": {
+                    "type": "string"
+                },
+                "bankId": {
+                    "type": "integer"
+                },
+                "bankName": {
+                    "type": "string"
+                },
+                "expiresAt": {
+                    "type": "string"
+                },
+                "grantReason": {
+                    "type": "string"
+                },
+                "grantedAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "revokeReason": {
+                    "type": "string"
+                },
+                "revokedAt": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "http.AuthErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.AuthResponse": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string"
+                },
+                "refreshToken": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/http.AuthUserResponse"
+                }
+            }
+        },
+        "http.AuthUserResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "login": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.BankErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.BankResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.CardTransferRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "balanceBefore",
+                "bankId",
+                "direction",
+                "recipientCardNumber",
+                "time"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 5000
+                },
+                "balanceBefore": {
+                    "type": "number",
+                    "example": 22096.74
+                },
+                "bankId": {
+                    "type": "string",
+                    "example": "tbank"
+                },
+                "direction": {
+                    "type": "string",
+                    "enum": [
+                        "OUTGOING",
+                        "INCOMING"
+                    ],
+                    "example": "OUTGOING"
+                },
+                "recipientCardNumber": {
+                    "type": "string",
+                    "example": "1234 5678 9100 0000"
+                },
+                "time": {
+                    "type": "string",
+                    "example": "2026-05-16T22:14:12+0700"
+                }
+            }
+        },
+        "http.CashTransferRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "balanceBefore",
+                "direction",
+                "time"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 8000
+                },
+                "balanceBefore": {
+                    "type": "number",
+                    "example": 22096.74
+                },
+                "direction": {
+                    "type": "string",
+                    "enum": [
+                        "OUTGOING",
+                        "INCOMING"
+                    ],
+                    "example": "OUTGOING"
+                },
+                "time": {
+                    "type": "string",
+                    "example": "2026-05-02T11:08:52+0700"
+                }
+            }
+        },
+        "http.ClientInfoResponse": {
+            "type": "object",
+            "properties": {
+                "cardNumber": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "middleName": {
+                    "type": "string"
+                },
+                "phoneNumber": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.ConfigResponse": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "type": "number"
+                },
+                "clientInfo": {
+                    "$ref": "#/definitions/http.ClientInfoResponse"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "history": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.HistoryResponse"
+                    }
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.CreateUserRequest": {
+            "type": "object",
+            "required": [
+                "login",
+                "role"
+            ],
+            "properties": {
+                "isActive": {
+                    "type": "boolean"
+                },
+                "login": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.GrantAccessRequest": {
+            "type": "object",
+            "required": [
+                "bankId",
+                "expiresAt",
+                "grantReason",
+                "userId"
+            ],
+            "properties": {
+                "bankId": {
+                    "type": "integer"
+                },
+                "expiresAt": {
+                    "type": "string"
+                },
+                "grantReason": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "http.HistoryResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "balanceBefore": {
+                    "type": "number"
+                },
+                "bankId": {
+                    "type": "string"
+                },
+                "direction": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "operationFirstName": {
+                    "type": "string"
+                },
+                "operationLastName": {
+                    "type": "string"
+                },
+                "operationMiddleName": {
+                    "type": "string"
+                },
+                "phoneNumber": {
+                    "type": "string"
+                },
+                "recipientCardNumber": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.LoginRequest": {
+            "type": "object",
+            "required": [
+                "login",
+                "password"
+            ],
+            "properties": {
+                "login": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.LogoutRequest": {
+            "type": "object",
+            "required": [
+                "refreshToken"
+            ],
+            "properties": {
+                "refreshToken": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.RefreshRequest": {
+            "type": "object",
+            "required": [
+                "refreshToken"
+            ],
+            "properties": {
+                "refreshToken": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.RevokeAccessRequest": {
+            "type": "object",
+            "required": [
+                "bankId",
+                "revokeReason",
+                "userId"
+            ],
+            "properties": {
+                "bankId": {
+                    "type": "integer"
+                },
+                "revokeReason": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "http.RocketbankErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.SBPTransferRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "balanceBefore",
+                "bankId",
+                "direction",
+                "operationFirstName",
+                "operationLastName",
+                "operationMiddleName",
+                "time"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 50
+                },
+                "balanceBefore": {
+                    "type": "number",
+                    "example": 190
+                },
+                "bankId": {
+                    "type": "string",
+                    "example": "tbank"
+                },
+                "direction": {
+                    "type": "string",
+                    "enum": [
+                        "OUTGOING",
+                        "INCOMING"
+                    ],
+                    "example": "OUTGOING"
+                },
+                "operationFirstName": {
+                    "type": "string",
+                    "example": "Азат"
+                },
+                "operationLastName": {
+                    "type": "string",
+                    "example": "Гайнутдинов"
+                },
+                "operationMiddleName": {
+                    "type": "string",
+                    "example": "Аликович"
+                },
+                "phoneNumber": {
+                    "type": "string",
+                    "example": "+79099334005"
+                },
+                "time": {
+                    "type": "string",
+                    "example": "2026-05-16T22:14:12+0700"
+                }
+            }
+        },
+        "http.UpdateBalanceRequest": {
+            "type": "object",
+            "required": [
+                "balance"
+            ],
+            "properties": {
+                "balance": {
+                    "type": "number",
+                    "example": 99999
+                }
+            }
+        },
+        "http.UpdateCardTransferRequest": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 5000
+                },
+                "balanceBefore": {
+                    "type": "number",
+                    "example": 22096.74
+                },
+                "bankId": {
+                    "type": "string",
+                    "example": "tbank"
+                },
+                "direction": {
+                    "type": "string",
+                    "enum": [
+                        "OUTGOING",
+                        "INCOMING"
+                    ],
+                    "example": "OUTGOING"
+                },
+                "recipientCardNumber": {
+                    "type": "string",
+                    "example": "1234 5678 9100 0000"
+                },
+                "time": {
+                    "type": "string",
+                    "example": "2026-05-16T22:14:12+0700"
+                }
+            }
+        },
+        "http.UpdateCashTransferRequest": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 8000
+                },
+                "balanceBefore": {
+                    "type": "number",
+                    "example": 22096.74
+                },
+                "direction": {
+                    "type": "string",
+                    "enum": [
+                        "OUTGOING",
+                        "INCOMING"
+                    ],
+                    "example": "OUTGOING"
+                },
+                "time": {
+                    "type": "string",
+                    "example": "2026-05-02T11:08:52+0700"
+                }
+            }
+        },
+        "http.UpdateClientInfoRequest": {
+            "type": "object",
+            "required": [
+                "cardNumber",
+                "firstName",
+                "lastName",
+                "middleName",
+                "phoneNumber"
+            ],
+            "properties": {
+                "cardNumber": {
+                    "type": "string",
+                    "example": "40817810000000000000"
+                },
+                "firstName": {
+                    "type": "string",
+                    "example": "Иван"
+                },
+                "lastName": {
+                    "type": "string",
+                    "example": "Иванов"
+                },
+                "middleName": {
+                    "type": "string",
+                    "example": "Иванович"
+                },
+                "phoneNumber": {
+                    "type": "string",
+                    "example": "+79001234567"
+                }
+            }
+        },
+        "http.UpdateSBPTransferRequest": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 50
+                },
+                "balanceBefore": {
+                    "type": "number",
+                    "example": 190
+                },
+                "bankId": {
+                    "type": "string",
+                    "example": "tbank"
+                },
+                "direction": {
+                    "type": "string",
+                    "enum": [
+                        "OUTGOING",
+                        "INCOMING"
+                    ],
+                    "example": "OUTGOING"
+                },
+                "operationFirstName": {
+                    "type": "string",
+                    "example": "Азат"
+                },
+                "operationLastName": {
+                    "type": "string",
+                    "example": "Гайнутдинов"
+                },
+                "operationMiddleName": {
+                    "type": "string",
+                    "example": "Аликович"
+                },
+                "phoneNumber": {
+                    "type": "string",
+                    "example": "+79099334005"
+                },
+                "time": {
+                    "type": "string",
+                    "example": "2026-05-16T22:14:12+0700"
+                }
+            }
+        },
+        "http.UpdateUserRequest": {
+            "type": "object",
+            "properties": {
+                "isActive": {
+                    "type": "boolean"
+                },
+                "login": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.UserResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "login": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

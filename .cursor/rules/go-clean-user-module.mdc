@@ -1,0 +1,58 @@
+---
+description: Strict Go clean architecture module structure
+alwaysApply: true
+---
+
+# Strict Go Module Architecture
+
+Follow this structure for every application module:
+
+```text
+internal/modules/<module>/
+  domain/
+    entity.go
+    errors.go
+    repository.go
+  usecase/
+    dto.go
+    <action>.go
+  infrastructure/
+    <adapter>/
+      repository.go
+  transport/
+    http/
+      handler.go
+      responses.go
+      routes.go
+  module.go
+```
+
+## Layer Rules
+
+- `domain` contains only business entities, domain errors, and interfaces/contracts.
+- `domain` must not import `gin`, database drivers, infrastructure packages, transport packages, or usecase packages.
+- `usecase` contains application scenarios and DTOs for those scenarios.
+- `usecase` may depend on `domain`, but must not depend on `transport/http`, `gin`, or concrete infrastructure implementations.
+- `infrastructure` contains concrete implementations of domain interfaces, such as memory, postgres, redis, external APIs.
+- `transport/http` contains only HTTP concerns: parsing params/body, calling usecases, mapping errors to status codes, and formatting JSON responses.
+- Handlers must call usecases, not repositories directly.
+- `module.go` wires the module dependencies internally: repository -> usecase -> handler -> routes.
+- `internal/app/bootstrap` creates the app/server and registers modules; it must not know module internals.
+- `cmd/api/main.go` only starts the application.
+
+## User Module Reference
+
+For the current `user` module:
+
+- Domain entity is `internal/modules/user/domain.User`.
+- Repository contract is `domain.Repository`.
+- Get-user scenario is `usecase.GetUser`.
+- HTTP route is registered in `transport/http/routes.go` as `GET /users/:id`.
+- Memory storage lives in `infrastructure/memory`.
+
+When adding new behavior, preserve this direction of dependencies:
+
+```text
+cmd -> bootstrap -> module -> transport -> usecase -> domain
+                              infrastructure -> domain
+```

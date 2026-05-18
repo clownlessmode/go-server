@@ -1,0 +1,862 @@
+basePath: /
+definitions:
+  http.AccessErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  http.AccessResponse:
+    properties:
+      bankCode:
+        type: string
+      bankId:
+        type: integer
+      bankName:
+        type: string
+      expiresAt:
+        type: string
+      grantReason:
+        type: string
+      grantedAt:
+        type: string
+      id:
+        type: integer
+      isActive:
+        type: boolean
+      revokeReason:
+        type: string
+      revokedAt:
+        type: string
+      userId:
+        type: integer
+    type: object
+  http.AuthErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  http.AuthResponse:
+    properties:
+      accessToken:
+        type: string
+      refreshToken:
+        type: string
+      user:
+        $ref: '#/definitions/http.AuthUserResponse'
+    type: object
+  http.AuthUserResponse:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: integer
+      isActive:
+        type: boolean
+      login:
+        type: string
+      password:
+        type: string
+      role:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  http.BankErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  http.BankResponse:
+    properties:
+      code:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  http.CardTransferRequest:
+    properties:
+      amount:
+        example: 5000
+        type: number
+      balanceBefore:
+        example: 22096.74
+        type: number
+      bankId:
+        example: tbank
+        type: string
+      direction:
+        enum:
+        - OUTGOING
+        - INCOMING
+        example: OUTGOING
+        type: string
+      recipientCardNumber:
+        example: 1234 5678 9100 0000
+        type: string
+      time:
+        example: 2026-05-16T22:14:12+0700
+        type: string
+    required:
+    - amount
+    - balanceBefore
+    - bankId
+    - direction
+    - recipientCardNumber
+    - time
+    type: object
+  http.CashTransferRequest:
+    properties:
+      amount:
+        example: 8000
+        type: number
+      balanceBefore:
+        example: 22096.74
+        type: number
+      direction:
+        enum:
+        - OUTGOING
+        - INCOMING
+        example: OUTGOING
+        type: string
+      time:
+        example: 2026-05-02T11:08:52+0700
+        type: string
+    required:
+    - amount
+    - balanceBefore
+    - direction
+    - time
+    type: object
+  http.ClientInfoResponse:
+    properties:
+      cardNumber:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      middleName:
+        type: string
+      phoneNumber:
+        type: string
+    type: object
+  http.ConfigResponse:
+    properties:
+      balance:
+        type: number
+      clientInfo:
+        $ref: '#/definitions/http.ClientInfoResponse'
+      createdAt:
+        type: string
+      history:
+        items:
+          $ref: '#/definitions/http.HistoryResponse'
+        type: array
+      updatedAt:
+        type: string
+    type: object
+  http.CreateUserRequest:
+    properties:
+      isActive:
+        type: boolean
+      login:
+        type: string
+      role:
+        type: string
+    required:
+    - login
+    - role
+    type: object
+  http.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  http.GrantAccessRequest:
+    properties:
+      bankId:
+        type: integer
+      expiresAt:
+        type: string
+      grantReason:
+        type: string
+      userId:
+        type: integer
+    required:
+    - bankId
+    - expiresAt
+    - grantReason
+    - userId
+    type: object
+  http.HistoryResponse:
+    properties:
+      amount:
+        type: number
+      balanceBefore:
+        type: number
+      bankId:
+        type: string
+      direction:
+        type: string
+      id:
+        type: string
+      operationFirstName:
+        type: string
+      operationLastName:
+        type: string
+      operationMiddleName:
+        type: string
+      phoneNumber:
+        type: string
+      recipientCardNumber:
+        type: string
+      time:
+        type: string
+      type:
+        type: string
+    type: object
+  http.LoginRequest:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+    required:
+    - login
+    - password
+    type: object
+  http.LogoutRequest:
+    properties:
+      refreshToken:
+        type: string
+    required:
+    - refreshToken
+    type: object
+  http.RefreshRequest:
+    properties:
+      refreshToken:
+        type: string
+    required:
+    - refreshToken
+    type: object
+  http.RevokeAccessRequest:
+    properties:
+      bankId:
+        type: integer
+      revokeReason:
+        type: string
+      userId:
+        type: integer
+    required:
+    - bankId
+    - revokeReason
+    - userId
+    type: object
+  http.RocketbankErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  http.SBPTransferRequest:
+    properties:
+      amount:
+        example: 50
+        type: number
+      balanceBefore:
+        example: 190
+        type: number
+      bankId:
+        example: tbank
+        type: string
+      direction:
+        enum:
+        - OUTGOING
+        - INCOMING
+        example: OUTGOING
+        type: string
+      operationFirstName:
+        example: Азат
+        type: string
+      operationLastName:
+        example: Гайнутдинов
+        type: string
+      operationMiddleName:
+        example: Аликович
+        type: string
+      phoneNumber:
+        example: "+79099334005"
+        type: string
+      time:
+        example: 2026-05-16T22:14:12+0700
+        type: string
+    required:
+    - amount
+    - balanceBefore
+    - bankId
+    - direction
+    - operationFirstName
+    - operationLastName
+    - operationMiddleName
+    - time
+    type: object
+  http.UpdateBalanceRequest:
+    properties:
+      balance:
+        example: 99999
+        type: number
+    required:
+    - balance
+    type: object
+  http.UpdateCardTransferRequest:
+    properties:
+      amount:
+        example: 5000
+        type: number
+      balanceBefore:
+        example: 22096.74
+        type: number
+      bankId:
+        example: tbank
+        type: string
+      direction:
+        enum:
+        - OUTGOING
+        - INCOMING
+        example: OUTGOING
+        type: string
+      recipientCardNumber:
+        example: 1234 5678 9100 0000
+        type: string
+      time:
+        example: 2026-05-16T22:14:12+0700
+        type: string
+    type: object
+  http.UpdateCashTransferRequest:
+    properties:
+      amount:
+        example: 8000
+        type: number
+      balanceBefore:
+        example: 22096.74
+        type: number
+      direction:
+        enum:
+        - OUTGOING
+        - INCOMING
+        example: OUTGOING
+        type: string
+      time:
+        example: 2026-05-02T11:08:52+0700
+        type: string
+    type: object
+  http.UpdateClientInfoRequest:
+    properties:
+      cardNumber:
+        example: "40817810000000000000"
+        type: string
+      firstName:
+        example: Иван
+        type: string
+      lastName:
+        example: Иванов
+        type: string
+      middleName:
+        example: Иванович
+        type: string
+      phoneNumber:
+        example: "+79001234567"
+        type: string
+    required:
+    - cardNumber
+    - firstName
+    - lastName
+    - middleName
+    - phoneNumber
+    type: object
+  http.UpdateSBPTransferRequest:
+    properties:
+      amount:
+        example: 50
+        type: number
+      balanceBefore:
+        example: 190
+        type: number
+      bankId:
+        example: tbank
+        type: string
+      direction:
+        enum:
+        - OUTGOING
+        - INCOMING
+        example: OUTGOING
+        type: string
+      operationFirstName:
+        example: Азат
+        type: string
+      operationLastName:
+        example: Гайнутдинов
+        type: string
+      operationMiddleName:
+        example: Аликович
+        type: string
+      phoneNumber:
+        example: "+79099334005"
+        type: string
+      time:
+        example: 2026-05-16T22:14:12+0700
+        type: string
+    type: object
+  http.UpdateUserRequest:
+    properties:
+      isActive:
+        type: boolean
+      login:
+        type: string
+      password:
+        type: string
+      role:
+        type: string
+    type: object
+  http.UserResponse:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: integer
+      isActive:
+        type: boolean
+      login:
+        type: string
+      password:
+        type: string
+      role:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API documentation for .
+  title: Rebellion Banking APII
+  version: "1.0"
+paths:
+  /banks:
+    get:
+      description: Returns available banks.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/http.BankResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.BankErrorResponse'
+      summary: List banks
+      tags:
+      - banks
+  /banks/rocketbank/config:
+    get:
+      description: Returns Rocketbank config.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.ConfigResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+      summary: Get Rocketbank config
+      tags:
+      - rocketbank config
+  /banks/rocketbank/config/balance:
+    patch:
+      consumes:
+      - application/json
+      description: Updates only Rocketbank balance. Full config updates are not allowed.
+      parameters:
+      - description: Balance update payload
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateBalanceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.ConfigResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+      summary: Update Rocketbank balance
+      tags:
+      - rocketbank config
+  /banks/rocketbank/config/client-info:
+    patch:
+      consumes:
+      - application/json
+      description: Updates only Rocketbank client info. Full config updates are not
+        allowed.
+      parameters:
+      - description: Client info update payload
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateClientInfoRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.ConfigResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+      summary: Update Rocketbank client info
+      tags:
+      - rocketbank client info
+  /banks/rocketbank/config/history:
+    delete:
+      description: Deletes all configured Rocketbank history items.
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+      summary: Clear Rocketbank history
+      tags:
+      - rocketbank history
+    get:
+      description: Returns Rocketbank configured history items.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/http.HistoryResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+      summary: List Rocketbank history
+      tags:
+      - rocketbank history
+  /banks/rocketbank/config/history/card-transfer:
+    post:
+      consumes:
+      - application/json
+      description: Creates a Rocketbank card transfer history item.
+      parameters:
+      - description: Card transfer payload
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/http.CardTransferRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http.HistoryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+      summary: Create Rocketbank card transfer history item
+      tags:
+      - rocketbank card transfer
+  /banks/rocketbank/config/history/cash-transfer:
+    post:
+      consumes:
+      - application/json
+      description: Creates a Rocketbank cash transfer history item.
+      parameters:
+      - description: Cash transfer payload
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/http.CashTransferRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http.HistoryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+      summary: Create Rocketbank cash transfer history item
+      tags:
+      - rocketbank cash transfer
+  /banks/rocketbank/config/history/items/{id}:
+    delete:
+      description: Deletes Rocketbank configured history item by transaction id.
+      parameters:
+      - description: History transaction id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+      summary: Delete Rocketbank history item
+      tags:
+      - rocketbank history
+    get:
+      description: Returns Rocketbank configured history item by transaction id.
+      parameters:
+      - description: History transaction id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.HistoryResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+      summary: Get Rocketbank history item
+      tags:
+      - rocketbank history
+  /banks/rocketbank/config/history/items/{id}/card-transfer:
+    patch:
+      consumes:
+      - application/json
+      description: Updates a Rocketbank card transfer history item.
+      parameters:
+      - description: History transaction id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Card transfer patch payload
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateCardTransferRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.HistoryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+      summary: Update Rocketbank card transfer history item
+      tags:
+      - rocketbank card transfer
+  /banks/rocketbank/config/history/items/{id}/cash-transfer:
+    patch:
+      consumes:
+      - application/json
+      description: Updates a Rocketbank cash transfer history item.
+      parameters:
+      - description: History transaction id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Cash transfer patch payload
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateCashTransferRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.HistoryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+      summary: Update Rocketbank cash transfer history item
+      tags:
+      - rocketbank cash transfer
+  /banks/rocketbank/config/history/items/{id}/sbp-transfer:
+    patch:
+      consumes:
+      - application/json
+      description: Updates a Rocketbank SBP transfer history item.
+      parameters:
+      - description: History transaction id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: SBP transfer patch payload
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateSBPTransferRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.HistoryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+      summary: Update Rocketbank SBP transfer history item
+      tags:
+      - rocketbank sbp transfer
+  /banks/rocketbank/config/history/sbp-transfer:
+    post:
+      consumes:
+      - application/json
+      description: Creates a Rocketbank SBP transfer history item.
+      parameters:
+      - description: SBP transfer payload
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/http.SBPTransferRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http.HistoryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.RocketbankErrorResponse'
+      summary: Create Rocketbank SBP transfer history item
+      tags:
+      - rocketbank sbp transfer
+swagger: "2.0"
