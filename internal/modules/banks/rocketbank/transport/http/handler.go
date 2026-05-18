@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"project/internal/app/logger"
 	"project/internal/modules/banks/rocketbank/domain"
 	"project/internal/modules/banks/rocketbank/usecase/clearhistory"
 	"project/internal/modules/banks/rocketbank/usecase/createcardtransfer"
@@ -23,6 +24,8 @@ import (
 	"project/internal/modules/banks/rocketbank/usecase/updateclientinfo"
 	"project/internal/modules/banks/rocketbank/usecase/updatesbptransfer"
 )
+
+var handlerLog = logger.New("rocketbank-http")
 
 type Handler struct {
 	getConfig          *getconfig.UseCase
@@ -619,10 +622,13 @@ func (h *Handler) generateSBPTransferCheque(c *gin.Context, item domain.HistoryI
 
 	config, err := h.getConfig.Execute(c.Request.Context(), getconfig.Input{})
 	if err != nil {
+		handlerLog.Warnf("generate sbp cheque skipped: read config failed: transactionId=%s err=%v", domain.HistoryItemID(item), err)
 		return
 	}
 
-	_ = h.chequeGenerator.GenerateSBPTransferCheque(item, config.ClientInfo)
+	if err := h.chequeGenerator.GenerateSBPTransferCheque(item, config.ClientInfo); err != nil {
+		handlerLog.Warnf("generate sbp cheque failed: transactionId=%s err=%v", domain.HistoryItemID(item), err)
+	}
 }
 
 func (h *Handler) generateCardTransferCheque(c *gin.Context, item domain.HistoryItem) {
@@ -632,10 +638,13 @@ func (h *Handler) generateCardTransferCheque(c *gin.Context, item domain.History
 
 	config, err := h.getConfig.Execute(c.Request.Context(), getconfig.Input{})
 	if err != nil {
+		handlerLog.Warnf("generate card cheque skipped: read config failed: transactionId=%s err=%v", domain.HistoryItemID(item), err)
 		return
 	}
 
-	_ = h.chequeGenerator.GenerateCardTransferCheque(item, config.ClientInfo)
+	if err := h.chequeGenerator.GenerateCardTransferCheque(item, config.ClientInfo); err != nil {
+		handlerLog.Warnf("generate card cheque failed: transactionId=%s err=%v", domain.HistoryItemID(item), err)
+	}
 }
 
 func historyResponse(history []domain.HistoryItem) []HistoryResponse {
