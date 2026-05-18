@@ -74,6 +74,13 @@ func (s *Service) GenerateMissingSBPTransferCheques(config *domain.Config) error
 		return nil
 	}
 
+	if err := os.RemoveAll(outputDir); err != nil {
+		return err
+	}
+	if err := os.MkdirAll(outputDir, 0o755); err != nil {
+		return err
+	}
+
 	for _, item := range config.History {
 		switch item.Type {
 		case domain.HistoryTypeSBPTransfer:
