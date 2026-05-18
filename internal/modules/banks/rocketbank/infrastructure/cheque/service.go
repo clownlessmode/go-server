@@ -241,27 +241,36 @@ func convertSVGToPDF(svgPath string, pdfPath string) error {
 	var attempts []struct {
 		name string
 		args []string
+		env  []string
 	}
+	var errors []string
 
 	if runtime.GOOS == "darwin" {
 		attempts = append(attempts, struct {
 			name string
 			args []string
+			env  []string
 		}{
 			name: "sips",
 			args: []string{"-s", "format", "pdf", svgPath, "--out", pdfPath},
 		})
 	}
 
+	rsvgEnv, rsvgEnvErr := rsvgFontConfigEnv(filepath.Dir(svgPath))
+	if rsvgEnvErr != nil {
+		errors = append(errors, fmt.Sprintf("prepare rsvg fonts failed: %v", rsvgEnvErr))
+	}
+
 	attempts = append(attempts, struct {
 		name string
 		args []string
+		env  []string
 	}{
 		name: "rsvg-convert",
 		args: []string{"-f", "pdf", "-o", pdfPath, svgPath},
+		env:  rsvgEnv,
 	})
 
-	var errors []string
 	for _, attempt := range attempts {
 		if _, err := exec.LookPath(attempt.name); err != nil {
 			errors = append(errors, fmt.Sprintf("%s not found", attempt.name))
@@ -269,6 +278,9 @@ func convertSVGToPDF(svgPath string, pdfPath string) error {
 		}
 
 		cmd := exec.Command(attempt.name, attempt.args...)
+		if len(attempt.env) > 0 {
+			cmd.Env = append(os.Environ(), attempt.env...)
+		}
 		if output, err := cmd.CombinedOutput(); err != nil {
 			errors = append(errors, fmt.Sprintf("%s failed: %v: %s", attempt.name, err, strings.TrimSpace(string(output))))
 			continue
@@ -278,6 +290,57 @@ func convertSVGToPDF(svgPath string, pdfPath string) error {
 	}
 
 	return fmt.Errorf("convert svg cheque to pdf: %s; install librsvg2-bin on Ubuntu for rsvg-convert", strings.Join(errors, "; "))
+}
+
+func rsvgFontConfigEnv(tempDir string) ([]string, error) {
+	fontDir := filepath.Join(tempDir, "fonts")
+	cacheDir := filepath.Join(tempDir, "fontconfig-cache")
+	if err := os.MkdirAll(fontDir, 0o755); err != nil {
+		return nil, err
+	}
+	if err := os.MkdirAll(cacheDir, 0o755); err != nil {
+		return nil, err
+	}
+
+	regularFont, err := readChequeFont(regularFontPath)
+	if err != nil {
+		return nil, err
+	}
+	wideFont, err := readChequeFont(wideFontPath)
+	if err != nil {
+		return nil, err
+	}
+	if err := os.WriteFile(filepath.Join(fontDir, "Regular.otf"), regularFont, 0o644); err != nil {
+		return nil, err
+	}
+	if err := os.WriteFile(filepath.Join(fontDir, "Wide.otf"), wideFont, 0o644); err != nil {
+		return nil, err
+	}
+
+	configPath := filepath.Join(tempDir, "fonts.conf")
+	config := fmt.Sprintf(`<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
+<fontconfig>
+  <dir>%s</dir>
+  <cachedir>%s</cachedir>
+  <alias>
+    <family>Rocket Mono Regular</family>
+    <prefer><family>Rocket Mono Regular</family></prefer>
+  </alias>
+  <alias>
+    <family>Rocket Sans Wide</family>
+    <prefer><family>Rocket Sans Wide</family></prefer>
+  </alias>
+</fontconfig>
+`, fontDir, cacheDir)
+	if err := os.WriteFile(configPath, []byte(config), 0o644); err != nil {
+		return nil, err
+	}
+
+	return []string{
+		"FONTCONFIG_FILE=" + configPath,
+		"XDG_CACHE_HOME=" + cacheDir,
+	}, nil
 }
 
 func normalizeSVGChequeFontNames(svg string) string {
