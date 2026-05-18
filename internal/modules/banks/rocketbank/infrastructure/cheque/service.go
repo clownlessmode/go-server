@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -225,9 +226,8 @@ func renderSVGTemplatePDF(templateBody []byte, replacements map[string]string) (
 		return nil, err
 	}
 
-	cmd := exec.Command("sips", "-s", "format", "pdf", svgPath, "--out", pdfPath)
-	if output, err := cmd.CombinedOutput(); err != nil {
-		return nil, fmt.Errorf("convert svg cheque to pdf: %w: %s", err, strings.TrimSpace(string(output)))
+	if err := convertSVGToPDF(svgPath, pdfPath); err != nil {
+		return nil, err
 	}
 
 	body, err := os.ReadFile(pdfPath)
@@ -235,6 +235,49 @@ func renderSVGTemplatePDF(templateBody []byte, replacements map[string]string) (
 		return nil, err
 	}
 	return body, nil
+}
+
+func convertSVGToPDF(svgPath string, pdfPath string) error {
+	var attempts []struct {
+		name string
+		args []string
+	}
+
+	if runtime.GOOS == "darwin" {
+		attempts = append(attempts, struct {
+			name string
+			args []string
+		}{
+			name: "sips",
+			args: []string{"-s", "format", "pdf", svgPath, "--out", pdfPath},
+		})
+	}
+
+	attempts = append(attempts, struct {
+		name string
+		args []string
+	}{
+		name: "rsvg-convert",
+		args: []string{"-f", "pdf", "-o", pdfPath, svgPath},
+	})
+
+	var errors []string
+	for _, attempt := range attempts {
+		if _, err := exec.LookPath(attempt.name); err != nil {
+			errors = append(errors, fmt.Sprintf("%s not found", attempt.name))
+			continue
+		}
+
+		cmd := exec.Command(attempt.name, attempt.args...)
+		if output, err := cmd.CombinedOutput(); err != nil {
+			errors = append(errors, fmt.Sprintf("%s failed: %v: %s", attempt.name, err, strings.TrimSpace(string(output))))
+			continue
+		}
+
+		return nil
+	}
+
+	return fmt.Errorf("convert svg cheque to pdf: %s; install librsvg2-bin on Ubuntu for rsvg-convert", strings.Join(errors, "; "))
 }
 
 func normalizeSVGChequeFontNames(svg string) string {
