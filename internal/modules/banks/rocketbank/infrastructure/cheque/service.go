@@ -5,6 +5,7 @@ import (
 	"compress/zlib"
 	"crypto/sha256"
 	"embed"
+	"encoding/base64"
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
@@ -24,8 +25,8 @@ import (
 
 const (
 	outputDir         = "data/reports/rocketbank/cheques"
-	regularFontPath   = "internal/shared/fonts/Regular.otf"
-	wideFontPath      = "internal/shared/fonts/Wide.otf"
+	regularFontPath   = "internal/shared/fonts/MONO.ttf"
+	wideFontPath      = "internal/shared/fonts/WIDE.ttf"
 	svgPDFRasterScale = 4
 )
 
@@ -317,10 +318,10 @@ func rsvgFontConfigEnv(tempDir string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := os.WriteFile(filepath.Join(fontDir, "Regular.otf"), regularFont, 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(fontDir, "MONO.ttf"), regularFont, 0o644); err != nil {
 		return nil, err
 	}
-	if err := os.WriteFile(filepath.Join(fontDir, "Wide.otf"), wideFont, 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(fontDir, "WIDE.ttf"), wideFont, 0o644); err != nil {
 		return nil, err
 	}
 
@@ -371,7 +372,7 @@ func embedSVGChequeFonts(svg string) (string, error) {
 		return svg, nil
 	}
 
-	style, err := sbpChequeFontFaceStyle()
+	style, err := chequeFontFaceStyle()
 	if err != nil {
 		return "", err
 	}
@@ -384,19 +385,26 @@ func embedSVGChequeFonts(svg string) (string, error) {
 	return strings.Replace(svg, "><metadata", ">"+style+"<metadata", 1), nil
 }
 
-func sbpChequeFontFaceStyle() (string, error) {
-	templateBody, err := templateFS.ReadFile(outgoingTemplate().Path)
+func chequeFontFaceStyle() (string, error) {
+	regularFont, err := readChequeFont(regularFontPath)
 	if err != nil {
-		return "", fmt.Errorf("read sbp cheque fonts: %w", err)
+		return "", fmt.Errorf("read svg regular cheque font: %w", err)
+	}
+	wideFont, err := readChequeFont(wideFontPath)
+	if err != nil {
+		return "", fmt.Errorf("read svg wide cheque font: %w", err)
 	}
 
-	pattern := regexp.MustCompile(`(?s)<style[^>]*><!\[CDATA\[(.*?)\]\]></style>`)
-	match := pattern.FindStringSubmatch(string(templateBody))
-	if len(match) != 2 {
-		return "", fmt.Errorf("sbp cheque fonts not found")
-	}
-
-	return `<style data-cheque-fonts="true" type="text/css"><![CDATA[` + match[1] + `]]></style>`, nil
+	return fmt.Sprintf(`<style data-cheque-fonts="true" type="text/css"><![CDATA[
+@font-face {
+  font-family: 'Rocket Mono Regular';
+  src: url(data:font/ttf;base64,%s) format('truetype');
+}
+@font-face {
+  font-family: 'Rocket Sans Wide';
+  src: url(data:font/ttf;base64,%s) format('truetype');
+}
+]]></style>`, base64.StdEncoding.EncodeToString(regularFont), base64.StdEncoding.EncodeToString(wideFont)), nil
 }
 
 func normalizeSVGChequeHeadingColor(svg string) string {
