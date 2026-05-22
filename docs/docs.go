@@ -44,6 +44,32 @@ const docTemplate = `{
                 }
             }
         },
+        "/banks/beeline/config": {
+            "get": {
+                "description": "Returns Beeline config.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "beeline config"
+                ],
+                "summary": "Get Beeline config",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.ConfigResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.BeelineErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/banks/rocketbank/config": {
             "get": {
                 "description": "Returns Rocketbank config.",
@@ -58,7 +84,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/http.ConfigResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.ConfigResponse"
                         }
                     },
                     "500": {
@@ -98,7 +124,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/http.ConfigResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.ConfigResponse"
                         }
                     },
                     "400": {
@@ -144,7 +170,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/http.ConfigResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.ConfigResponse"
                         }
                     },
                     "400": {
@@ -764,6 +790,14 @@ const docTemplate = `{
                 }
             }
         },
+        "http.BeelineErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
         "http.CardTransferRequest": {
             "type": "object",
             "required": [
@@ -852,29 +886,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "phoneNumber": {
-                    "type": "string"
-                }
-            }
-        },
-        "http.ConfigResponse": {
-            "type": "object",
-            "properties": {
-                "balance": {
-                    "type": "number"
-                },
-                "clientInfo": {
-                    "$ref": "#/definitions/http.ClientInfoResponse"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "history": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.HistoryResponse"
-                    }
-                },
-                "updatedAt": {
                     "type": "string"
                 }
             }
@@ -1272,6 +1283,40 @@ const docTemplate = `{
                 },
                 "role": {
                     "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_banks_beeline_transport_http.ConfigResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_banks_rocketbank_transport_http.ConfigResponse": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "type": "number"
+                },
+                "clientInfo": {
+                    "$ref": "#/definitions/http.ClientInfoResponse"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "history": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.HistoryResponse"
+                    }
                 },
                 "updatedAt": {
                     "type": "string"

@@ -79,6 +79,11 @@ definitions:
       updatedAt:
         type: string
     type: object
+  http.BeelineErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
   http.CardTransferRequest:
     properties:
       amount:
@@ -144,21 +149,6 @@ definitions:
       middleName:
         type: string
       phoneNumber:
-        type: string
-    type: object
-  http.ConfigResponse:
-    properties:
-      balance:
-        type: number
-      clientInfo:
-        $ref: '#/definitions/http.ClientInfoResponse'
-      createdAt:
-        type: string
-      history:
-        items:
-          $ref: '#/definitions/http.HistoryResponse'
-        type: array
-      updatedAt:
         type: string
     type: object
   http.CreateUserRequest:
@@ -440,6 +430,28 @@ definitions:
       updatedAt:
         type: string
     type: object
+  internal_modules_banks_beeline_transport_http.ConfigResponse:
+    properties:
+      createdAt:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  internal_modules_banks_rocketbank_transport_http.ConfigResponse:
+    properties:
+      balance:
+        type: number
+      clientInfo:
+        $ref: '#/definitions/http.ClientInfoResponse'
+      createdAt:
+        type: string
+      history:
+        items:
+          $ref: '#/definitions/http.HistoryResponse'
+        type: array
+      updatedAt:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -466,6 +478,23 @@ paths:
       summary: List banks
       tags:
       - banks
+  /banks/beeline/config:
+    get:
+      description: Returns Beeline config.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.ConfigResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.BeelineErrorResponse'
+      summary: Get Beeline config
+      tags:
+      - beeline config
   /banks/rocketbank/config:
     get:
       description: Returns Rocketbank config.
@@ -475,7 +504,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/http.ConfigResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.ConfigResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -501,7 +530,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/http.ConfigResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.ConfigResponse'
         "400":
           description: Bad Request
           schema:
@@ -532,7 +561,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/http.ConfigResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.ConfigResponse'
         "400":
           description: Bad Request
           schema:

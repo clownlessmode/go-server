@@ -1,0 +1,88 @@
+package proxy
+
+import (
+	"bytes"
+	"encoding/json"
+	"io"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
+)
+
+const beelineLogFile = "data/logs/beeline.json"
+
+type beelineResponseLog struct {
+	CapturedAt string `json:"capturedAt"`
+	Method     string `json:"method"`
+	Host       string `json:"host"`
+	Route      string `json:"route"`
+	Query      string `json:"query,omitempty"`
+	Status     int    `json:"status"`
+	Response   any    `json:"response"`
+}
+
+func (s *Service) writeBeelineResponseLog(req *http.Request, res *http.Response) {
+	rawBody, err := io.ReadAll(res.Body)
+	if err != nil {
+		proxyLog.Warnf("beeline response log read failed: route=%s err=%v", pathForLog(req), err)
+		return
+	}
+	if err := res.Body.Close(); err != nil {
+		proxyLog.Warnf("beeline response body close failed: route=%s err=%v", pathForLog(req), err)
+	}
+	res.Body = io.NopCloser(bytes.NewReader(rawBody))
+
+	responseBody := responseBodyForLog(rawBody, res.Header.Get("Content-Encoding"))
+	entry := beelineResponseLog{
+		CapturedAt: time.Now().UTC().Format(time.RFC3339),
+		Method:     req.Method,
+		Host:       hostForLog(req.Host),
+		Route:      pathForLog(req),
+		Query:      req.URL.RawQuery,
+		Status:     res.StatusCode,
+		Response:   responseForLog(responseBody),
+	}
+
+	s.beelineLogMu.Lock()
+	defer s.beelineLogMu.Unlock()
+
+	if err := appendBeelineJSONEntry(beelineLogFile, entry); err != nil {
+		proxyLog.Warnf("beeline response log write failed: host=%s route=%s err=%v", entry.Host, entry.Route, err)
+		return
+	}
+
+	proxyLog.Infof("proxy response saved: host=%s route=%s status=%d", entry.Host, entry.Route, entry.Status)
+}
+
+func appendBeelineJSONEntry(path string, entry beelineResponseLog) error {
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return err
+	}
+
+	entries := make([]beelineResponseLog, 0)
+	body, err := os.ReadFile(path)
+	if err == nil && strings.TrimSpace(string(body)) != "" {
+		if err := json.Unmarshal(body, &entries); err != nil {
+			return err
+		}
+	} else if err != nil && !os.IsNotExist(err) {
+		return err
+	}
+
+	entries = append(entries, entry)
+
+	body, err = json.MarshalIndent(entries, "", "  ")
+	if err != nil {
+		return err
+	}
+	body = append(body, '\n')
+
+	tmpPath := path + ".tmp"
+	if err := os.WriteFile(tmpPath, body, 0o644); err != nil {
+		return err
+	}
+
+	return os.Rename(tmpPath, path)
+}

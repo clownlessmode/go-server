@@ -11,6 +11,7 @@ type Config struct {
 	Auth       AuthConfig
 	Proxy      ProxyConfig
 	Rocketbank RocketbankConfig
+	Beeline    BeelineConfig
 }
 
 type PostgresConfig struct {
@@ -31,11 +32,14 @@ type ProxyConfig struct {
 	Address        string
 	CertDir        string
 	RocketbankLogs bool
+	BeelineLogs    bool
 }
 
 type RocketbankConfig struct {
 	Timezone string
 }
+
+type BeelineConfig struct{}
 
 func Load() Config {
 	loadDotEnv(".env")
@@ -57,10 +61,12 @@ func Load() Config {
 			Address:        env("MITM_PROXY_ADDRESS", ":8888"),
 			CertDir:        env("MITM_PROXY_CERT_DIR", "data/proxy"),
 			RocketbankLogs: envBool("ROCKETBANK_LOGS", false),
+			BeelineLogs:    envBool("BEELINE_LOGS", false),
 		},
 		Rocketbank: RocketbankConfig{
 			Timezone: env("ROCKETBANK_TIMEZONE", "+0700"),
 		},
+		Beeline: BeelineConfig{},
 	}
 }
 

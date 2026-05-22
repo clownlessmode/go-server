@@ -17,6 +17,8 @@ import (
 	"project/internal/app/server"
 	"project/internal/modules/banks/catalog"
 	catalogpostgres "project/internal/modules/banks/catalog/infrastructure/postgres"
+	"project/internal/modules/banks/beeline"
+	beelinepostgres "project/internal/modules/banks/beeline/infrastructure/postgres"
 	"project/internal/modules/banks/rocketbank"
 	rocketbankcheque "project/internal/modules/banks/rocketbank/infrastructure/cheque"
 	rocketbankpostgres "project/internal/modules/banks/rocketbank/infrastructure/postgres"
@@ -47,11 +49,15 @@ func NewApp() *App {
 	router := server.NewHTTPServer()
 
 	bankRepo := catalogpostgres.NewRepository(db)
+	beelineRepo := beelinepostgres.NewRepository(db)
 	rocketbankRepo := rocketbankpostgres.NewRepository(db)
 	rocketbankChequeGenerator := rocketbankcheque.NewService()
 
 	bankCatalogModule := catalog.NewModule(bankRepo)
 	bankCatalogModule.RegisterRoutes(router)
+
+	beelineModule := beeline.NewModule(beelineRepo)
+	beelineModule.RegisterRoutes(router)
 
 	rocketbankModule := rocketbank.NewModule(rocketbankRepo, rocketbankChequeGenerator)
 	rocketbankModule.RegisterRoutes(router)

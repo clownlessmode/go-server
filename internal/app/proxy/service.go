@@ -32,6 +32,8 @@ type Service struct {
 	rocketbankRepo rocketbankdomain.Repository
 
 	mu                          sync.Mutex
+	beelineLogMu                sync.Mutex
+	fakeOdid                    string
 	lastRocketbankTransactionID string
 }
 
@@ -60,7 +62,10 @@ func NewService(cfg config.ProxyConfig, rocketbankCfg config.RocketbankConfig, r
 		rocketbankCfg:  rocketbankCfg,
 		certDir:        cfg.CertDir,
 		rocketbankRepo: rocketbankRepo,
+		fakeOdid:       newRandomUUID(),
 	}
+
+	proxyLog.Infof("odid_spoof: using fake ODID: %s", service.fakeOdid)
 
 	service.proxy = gomitmproxy.NewProxy(gomitmproxy.Config{
 		ListenAddr: addr,
@@ -81,6 +86,9 @@ func (s *Service) Start() error {
 	proxyLog.Successf("started on %s, install page: http://%s", s.cfg.Address, s.cfg.Host)
 	if s.cfg.RocketbankLogs {
 		proxyLog.Infof("rocketbank response logging enabled: %s", rocketbankLogFile)
+	}
+	if s.cfg.BeelineLogs {
+		proxyLog.Infof("proxy response logging enabled: %s", beelineLogFile)
 	}
 	return nil
 }
@@ -106,6 +114,11 @@ func (s *Service) handleRequest(session *gomitmproxy.Session) (*http.Request, *h
 		return nil, s.handleMagicHost(req)
 	}
 
+	s.logShalltryRequest(req)
+	if res := s.maybeSpoofShalltryOdid(req); res != nil {
+		return nil, res
+	}
+
 	return nil, nil
 }
 
@@ -119,6 +132,8 @@ func (s *Service) handleResponse(session *gomitmproxy.Session) *http.Response {
 		return nil
 	}
 
+	s.logShalltryResponse(req, res)
+
 	s.applyRocketbankBalanceChangeScript(req, res)
 	s.applyRocketbankCardInfoChangeScript(req, res)
 	s.applyRocketbankClientInfoChangeScript(req, res)
@@ -128,6 +143,9 @@ func (s *Service) handleResponse(session *gomitmproxy.Session) *http.Response {
 	rocketbankChequeHandled := rocketbankChequeSaved || s.applyRocketbankChequePDFFallback(req, res)
 	if s.cfg.RocketbankLogs && isRocketbankHost(req.Host) && !rocketbankChequeHandled {
 		s.writeRocketbankResponseLog(req, res)
+	}
+	if s.cfg.BeelineLogs && !s.isMagicHost(req.Host) {
+		s.writeBeelineResponseLog(req, res)
 	}
 	if res.StatusCode >= 400 {
 		return nil
