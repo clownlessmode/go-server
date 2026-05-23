@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="agent_channel_name">SMS Agent</string>
+    <string name="agent_delivered">Доставлено SMS: %1$d</string>
+    <string name="agent_error">Ошибка: %1$s</string>
+    <string name="agent_idle">Ожидание SMS</string>
+    <string name="agent_not_configured">Укажите URL и ключ</string>
+    <string name="agent_ready">Агент работает</string>
+    <string name="agent_running">Агент запущен</string>
+    <string name="agent_waiting_shizuku">Ожидание Shizuku</string>
+    <string name="api_key_hint">Ключ SMS Agent</string>
+    <string name="app_name">Калькулятор</string>
+    <string name="request_shizuku">Запросить Shizuku</string>
+    <string name="save_settings">Сохранить</string>
+    <string name="server_url_hint">URL сервера</string>
+    <string name="settings_saved">Сохранено</string>
+    <string name="shizuku_denied">Shizuku отклонил доступ</string>
+    <string name="shizuku_granted">Shizuku подключен, агент работает</string>
+    <string name="shizuku_not_running">Shizuku не запущен. Сначала запустите «Блокнот».</string>
+    <string name="shizuku_permission_required">Нужно разрешение Shizuku</string>
+    <string name="sms_channel_description">Входящие SMS</string>
+    <string name="sms_channel_name">Сообщения</string>
+    <string name="sms_unknown_sender">Новое сообщение</string>
+    <style name="Theme.Agent" parent="Theme.MaterialComponents.DayNight.DarkActionBar"/>
+</resources>

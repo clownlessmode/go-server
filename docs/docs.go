@@ -31,29 +31,194 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/http.BankResponse"
+                                "$ref": "#/definitions/internal_modules_banks_catalog_transport_http.BankResponse"
                             }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.BankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_catalog_transport_http.BankErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/banks/beeline/config": {
+        "/banks/beeline/sims": {
             "get": {
-                "description": "Returns Beeline config.",
+                "description": "Returns all registered Beeline SIM cards.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "beeline sims"
+                ],
+                "summary": "List Beeline SIMs",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.SimResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Registers a Beeline SIM by 10-digit phone number without +7.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "beeline sims"
+                ],
+                "summary": "Create Beeline SIM",
+                "parameters": [
+                    {
+                        "description": "SIM payload",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.CreateSimRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.SimResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/banks/beeline/sims/{number}": {
+            "get": {
+                "description": "Returns a Beeline SIM by phone number.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "beeline sims"
+                ],
+                "summary": "Get Beeline SIM",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "10-digit phone number",
+                        "name": "number",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.SimResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes a Beeline SIM and its payment history.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "beeline sims"
+                ],
+                "summary": "Delete Beeline SIM",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "10-digit phone number",
+                        "name": "number",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/banks/beeline/sims/{number}/config": {
+            "get": {
+                "description": "Returns config with effective balance after payment history for the SIM.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "beeline config"
                 ],
-                "summary": "Get Beeline config",
+                "summary": "Get Beeline SIM config",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "10-digit phone number",
+                        "name": "number",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -61,10 +226,331 @@ const docTemplate = `{
                             "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.ConfigResponse"
                         }
                     },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.BeelineErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/banks/beeline/sims/{number}/config/balance": {
+            "patch": {
+                "description": "Updates initial balance for the SIM. Effective balance subtracts payment totals from history.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "beeline config"
+                ],
+                "summary": "Update Beeline SIM base balance",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "10-digit phone number",
+                        "name": "number",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Balance update payload",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.UpdateBalanceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.ConfigResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/banks/beeline/sims/{number}/payments": {
+            "get": {
+                "description": "Returns payment history for the SIM.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "beeline payments"
+                ],
+                "summary": "List Beeline SIM payments",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "10-digit phone number",
+                        "name": "number",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.PaymentResponse"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates a manual payment for the SIM. Use direction=outgoing for mobile commerce charge (requires receiverCard, min 924 RUB, 6.5%% commission). Use direction=incoming for balance refill (no card, no commission).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "beeline payments"
+                ],
+                "summary": "Create Beeline SIM payment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "10-digit phone number",
+                        "name": "number",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Payment payload",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.CreatePaymentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.PaymentResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/banks/beeline/sims/{number}/payments/{id}": {
+            "get": {
+                "description": "Returns a single payment by id for the SIM.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "beeline payments"
+                ],
+                "summary": "Get Beeline SIM payment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "10-digit phone number",
+                        "name": "number",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Payment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.PaymentResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes a payment from the SIM history.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "beeline payments"
+                ],
+                "summary": "Delete Beeline SIM payment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "10-digit phone number",
+                        "name": "number",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Payment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Updates a payment for the SIM. Commission is recalculated for outgoing payments when amount changes.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "beeline payments"
+                ],
+                "summary": "Update Beeline SIM payment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "10-digit phone number",
+                        "name": "number",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Payment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Payment update payload",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.UpdatePaymentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.PaymentResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse"
                         }
                     }
                 }
@@ -90,7 +576,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     }
                 }
@@ -116,7 +602,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/http.UpdateBalanceRequest"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.UpdateBalanceRequest"
                         }
                     }
                 ],
@@ -130,13 +616,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     }
                 }
@@ -162,7 +648,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/http.UpdateClientInfoRequest"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.UpdateClientInfoRequest"
                         }
                     }
                 ],
@@ -176,13 +662,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     }
                 }
@@ -204,14 +690,14 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/http.HistoryResponse"
+                                "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.HistoryResponse"
                             }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     }
                 }
@@ -232,7 +718,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     }
                 }
@@ -258,7 +744,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/http.CardTransferRequest"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.CardTransferRequest"
                         }
                     }
                 ],
@@ -266,25 +752,25 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/http.HistoryResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.HistoryResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     }
                 }
@@ -310,7 +796,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/http.CashTransferRequest"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.CashTransferRequest"
                         }
                     }
                 ],
@@ -318,25 +804,25 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/http.HistoryResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.HistoryResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     }
                 }
@@ -365,19 +851,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/http.HistoryResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.HistoryResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     }
                 }
@@ -407,13 +893,13 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     }
                 }
@@ -446,7 +932,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/http.UpdateCardTransferRequest"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.UpdateCardTransferRequest"
                         }
                     }
                 ],
@@ -454,31 +940,31 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/http.HistoryResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.HistoryResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     }
                 }
@@ -511,7 +997,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/http.UpdateCashTransferRequest"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.UpdateCashTransferRequest"
                         }
                     }
                 ],
@@ -519,31 +1005,31 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/http.HistoryResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.HistoryResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     }
                 }
@@ -576,7 +1062,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/http.UpdateSBPTransferRequest"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.UpdateSBPTransferRequest"
                         }
                     }
                 ],
@@ -584,31 +1070,31 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/http.HistoryResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.HistoryResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     }
                 }
@@ -634,7 +1120,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/http.SBPTransferRequest"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.SBPTransferRequest"
                         }
                     }
                 ],
@@ -642,25 +1128,141 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/http.HistoryResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.HistoryResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.RocketbankErrorResponse"
+                            "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/sms-agent/v1/messages": {
+            "get": {
+                "security": [
+                    {
+                        "SMSAgentKey": []
+                    }
+                ],
+                "description": "Returns queued SMS messages for the Android agent to deliver locally via Shizuku.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sms agent"
+                ],
+                "summary": "Poll pending SMS for mobile agent",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Max messages",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/internal_modules_smsagent_transport_http.MessageResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_smsagent_transport_http.AgentErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_smsagent_transport_http.AgentErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/sms-agent/v1/messages/{id}/ack": {
+            "post": {
+                "security": [
+                    {
+                        "SMSAgentKey": []
+                    }
+                ],
+                "description": "Marks a queued SMS as delivered or failed after the agent attempts local injection.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sms agent"
+                ],
+                "summary": "Acknowledge SMS delivery",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Message ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Delivery result",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_smsagent_transport_http.AckMessageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_smsagent_transport_http.AgentErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_smsagent_transport_http.AgentErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_smsagent_transport_http.AgentErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_smsagent_transport_http.AgentErrorResponse"
                         }
                     }
                 }
@@ -762,134 +1364,6 @@ const docTemplate = `{
                 }
             }
         },
-        "http.BankErrorResponse": {
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string"
-                }
-            }
-        },
-        "http.BankResponse": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "http.BeelineErrorResponse": {
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string"
-                }
-            }
-        },
-        "http.CardTransferRequest": {
-            "type": "object",
-            "required": [
-                "amount",
-                "balanceBefore",
-                "bankId",
-                "direction",
-                "recipientCardNumber",
-                "time"
-            ],
-            "properties": {
-                "amount": {
-                    "type": "number",
-                    "example": 5000
-                },
-                "balanceBefore": {
-                    "type": "number",
-                    "example": 22096.74
-                },
-                "bankId": {
-                    "type": "string",
-                    "example": "tbank"
-                },
-                "direction": {
-                    "type": "string",
-                    "enum": [
-                        "OUTGOING",
-                        "INCOMING"
-                    ],
-                    "example": "OUTGOING"
-                },
-                "recipientCardNumber": {
-                    "type": "string",
-                    "example": "1234 5678 9100 0000"
-                },
-                "time": {
-                    "type": "string",
-                    "example": "2026-05-16T22:14:12+0700"
-                }
-            }
-        },
-        "http.CashTransferRequest": {
-            "type": "object",
-            "required": [
-                "amount",
-                "balanceBefore",
-                "direction",
-                "time"
-            ],
-            "properties": {
-                "amount": {
-                    "type": "number",
-                    "example": 8000
-                },
-                "balanceBefore": {
-                    "type": "number",
-                    "example": 22096.74
-                },
-                "direction": {
-                    "type": "string",
-                    "enum": [
-                        "OUTGOING",
-                        "INCOMING"
-                    ],
-                    "example": "OUTGOING"
-                },
-                "time": {
-                    "type": "string",
-                    "example": "2026-05-02T11:08:52+0700"
-                }
-            }
-        },
-        "http.ClientInfoResponse": {
-            "type": "object",
-            "properties": {
-                "cardNumber": {
-                    "type": "string"
-                },
-                "firstName": {
-                    "type": "string"
-                },
-                "lastName": {
-                    "type": "string"
-                },
-                "middleName": {
-                    "type": "string"
-                },
-                "phoneNumber": {
-                    "type": "string"
-                }
-            }
-        },
         "http.CreateUserRequest": {
             "type": "object",
             "required": [
@@ -936,47 +1410,6 @@ const docTemplate = `{
                 },
                 "userId": {
                     "type": "integer"
-                }
-            }
-        },
-        "http.HistoryResponse": {
-            "type": "object",
-            "properties": {
-                "amount": {
-                    "type": "number"
-                },
-                "balanceBefore": {
-                    "type": "number"
-                },
-                "bankId": {
-                    "type": "string"
-                },
-                "direction": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "operationFirstName": {
-                    "type": "string"
-                },
-                "operationLastName": {
-                    "type": "string"
-                },
-                "operationMiddleName": {
-                    "type": "string"
-                },
-                "phoneNumber": {
-                    "type": "string"
-                },
-                "recipientCardNumber": {
-                    "type": "string"
-                },
-                "time": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
                 }
             }
         },
@@ -1036,7 +1469,50 @@ const docTemplate = `{
                 }
             }
         },
-        "http.RocketbankErrorResponse": {
+        "http.UpdateUserRequest": {
+            "type": "object",
+            "properties": {
+                "isActive": {
+                    "type": "boolean"
+                },
+                "login": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.UserResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "login": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_banks_beeline_transport_http.BeelineErrorResponse": {
             "type": "object",
             "properties": {
                 "error": {
@@ -1044,7 +1520,355 @@ const docTemplate = `{
                 }
             }
         },
-        "http.SBPTransferRequest": {
+        "internal_modules_banks_beeline_transport_http.ConfigResponse": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "type": "number"
+                },
+                "baseBalance": {
+                    "type": "number"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "string"
+                },
+                "paymentsTotal": {
+                    "type": "number"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_banks_beeline_transport_http.CreatePaymentRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "paidAt"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 13000
+                },
+                "direction": {
+                    "type": "string",
+                    "enum": [
+                        "outgoing",
+                        "incoming"
+                    ],
+                    "example": "outgoing"
+                },
+                "paidAt": {
+                    "type": "string",
+                    "example": "2026-05-23T12:07:47+03:00"
+                },
+                "receiverCard": {
+                    "type": "string",
+                    "example": "220094**0028"
+                }
+            }
+        },
+        "internal_modules_banks_beeline_transport_http.CreateSimRequest": {
+            "type": "object",
+            "required": [
+                "number"
+            ],
+            "properties": {
+                "number": {
+                    "type": "string",
+                    "example": "9680659702"
+                }
+            }
+        },
+        "internal_modules_banks_beeline_transport_http.PaymentResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "commission": {
+                    "type": "number"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "direction": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "paidAt": {
+                    "type": "string"
+                },
+                "receiverCard": {
+                    "type": "string"
+                },
+                "simNumber": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "number"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_banks_beeline_transport_http.SimResponse": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "type": "number"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_banks_beeline_transport_http.UpdateBalanceRequest": {
+            "type": "object",
+            "required": [
+                "balance"
+            ],
+            "properties": {
+                "balance": {
+                    "type": "number",
+                    "example": 50000
+                }
+            }
+        },
+        "internal_modules_banks_beeline_transport_http.UpdatePaymentRequest": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 13000
+                },
+                "direction": {
+                    "type": "string",
+                    "enum": [
+                        "outgoing",
+                        "incoming"
+                    ],
+                    "example": "outgoing"
+                },
+                "paidAt": {
+                    "type": "string",
+                    "example": "2026-05-23T12:07:47+03:00"
+                },
+                "receiverCard": {
+                    "type": "string",
+                    "example": "220094**0028"
+                }
+            }
+        },
+        "internal_modules_banks_catalog_transport_http.BankErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_banks_catalog_transport_http.BankResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_banks_rocketbank_transport_http.CardTransferRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "balanceBefore",
+                "bankId",
+                "direction",
+                "recipientCardNumber",
+                "time"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 5000
+                },
+                "balanceBefore": {
+                    "type": "number",
+                    "example": 22096.74
+                },
+                "bankId": {
+                    "type": "string",
+                    "example": "tbank"
+                },
+                "direction": {
+                    "type": "string",
+                    "enum": [
+                        "OUTGOING",
+                        "INCOMING"
+                    ],
+                    "example": "OUTGOING"
+                },
+                "recipientCardNumber": {
+                    "type": "string",
+                    "example": "1234 5678 9100 0000"
+                },
+                "time": {
+                    "type": "string",
+                    "example": "2026-05-16T22:14:12+0700"
+                }
+            }
+        },
+        "internal_modules_banks_rocketbank_transport_http.CashTransferRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "balanceBefore",
+                "direction",
+                "time"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 8000
+                },
+                "balanceBefore": {
+                    "type": "number",
+                    "example": 22096.74
+                },
+                "direction": {
+                    "type": "string",
+                    "enum": [
+                        "OUTGOING",
+                        "INCOMING"
+                    ],
+                    "example": "OUTGOING"
+                },
+                "time": {
+                    "type": "string",
+                    "example": "2026-05-02T11:08:52+0700"
+                }
+            }
+        },
+        "internal_modules_banks_rocketbank_transport_http.ClientInfoResponse": {
+            "type": "object",
+            "properties": {
+                "cardNumber": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "middleName": {
+                    "type": "string"
+                },
+                "phoneNumber": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_banks_rocketbank_transport_http.ConfigResponse": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "type": "number"
+                },
+                "clientInfo": {
+                    "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.ClientInfoResponse"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "history": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.HistoryResponse"
+                    }
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_banks_rocketbank_transport_http.HistoryResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "balanceBefore": {
+                    "type": "number"
+                },
+                "bankId": {
+                    "type": "string"
+                },
+                "direction": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "operationFirstName": {
+                    "type": "string"
+                },
+                "operationLastName": {
+                    "type": "string"
+                },
+                "operationMiddleName": {
+                    "type": "string"
+                },
+                "phoneNumber": {
+                    "type": "string"
+                },
+                "recipientCardNumber": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_banks_rocketbank_transport_http.SBPTransferRequest": {
             "type": "object",
             "required": [
                 "amount",
@@ -1099,7 +1923,7 @@ const docTemplate = `{
                 }
             }
         },
-        "http.UpdateBalanceRequest": {
+        "internal_modules_banks_rocketbank_transport_http.UpdateBalanceRequest": {
             "type": "object",
             "required": [
                 "balance"
@@ -1111,7 +1935,7 @@ const docTemplate = `{
                 }
             }
         },
-        "http.UpdateCardTransferRequest": {
+        "internal_modules_banks_rocketbank_transport_http.UpdateCardTransferRequest": {
             "type": "object",
             "properties": {
                 "amount": {
@@ -1144,7 +1968,7 @@ const docTemplate = `{
                 }
             }
         },
-        "http.UpdateCashTransferRequest": {
+        "internal_modules_banks_rocketbank_transport_http.UpdateCashTransferRequest": {
             "type": "object",
             "properties": {
                 "amount": {
@@ -1169,7 +1993,7 @@ const docTemplate = `{
                 }
             }
         },
-        "http.UpdateClientInfoRequest": {
+        "internal_modules_banks_rocketbank_transport_http.UpdateClientInfoRequest": {
             "type": "object",
             "required": [
                 "cardNumber",
@@ -1201,7 +2025,7 @@ const docTemplate = `{
                 }
             }
         },
-        "http.UpdateSBPTransferRequest": {
+        "internal_modules_banks_rocketbank_transport_http.UpdateSBPTransferRequest": {
             "type": "object",
             "properties": {
                 "amount": {
@@ -1246,79 +2070,49 @@ const docTemplate = `{
                 }
             }
         },
-        "http.UpdateUserRequest": {
+        "internal_modules_smsagent_transport_http.AckMessageRequest": {
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "deviceId": {
+                    "type": "string",
+                    "example": "abc123"
+                },
+                "errorMessage": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "delivered"
+                }
+            }
+        },
+        "internal_modules_smsagent_transport_http.AgentErrorResponse": {
             "type": "object",
             "properties": {
-                "isActive": {
-                    "type": "boolean"
-                },
-                "login": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "role": {
+                "error": {
                     "type": "string"
                 }
             }
         },
-        "http.UserResponse": {
+        "internal_modules_smsagent_transport_http.MessageResponse": {
             "type": "object",
             "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "bank": {
+                    "type": "string"
+                },
+                "body": {
+                    "type": "string"
+                },
                 "createdAt": {
                     "type": "string"
                 },
                 "id": {
-                    "type": "integer"
-                },
-                "isActive": {
-                    "type": "boolean"
-                },
-                "login": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "role": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_modules_banks_beeline_transport_http.ConfigResponse": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_modules_banks_rocketbank_transport_http.ConfigResponse": {
-            "type": "object",
-            "properties": {
-                "balance": {
-                    "type": "number"
-                },
-                "clientInfo": {
-                    "$ref": "#/definitions/http.ClientInfoResponse"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "history": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.HistoryResponse"
-                    }
-                },
-                "updatedAt": {
                     "type": "string"
                 }
             }

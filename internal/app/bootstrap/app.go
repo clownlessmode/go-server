@@ -15,10 +15,16 @@ import (
 	"project/internal/app/logger"
 	"project/internal/app/proxy"
 	"project/internal/app/server"
+	smsagent "project/internal/modules/smsagent"
+	smsagentpostgres "project/internal/modules/smsagent/infrastructure/postgres"
+	smsagentqueue "project/internal/modules/smsagent/infrastructure/queue"
+	smstemplates "project/internal/modules/sms/templates"
+	smssend "project/internal/modules/sms/usecase/send"
 	"project/internal/modules/banks/catalog"
 	catalogpostgres "project/internal/modules/banks/catalog/infrastructure/postgres"
 	"project/internal/modules/banks/beeline"
 	beelinepostgres "project/internal/modules/banks/beeline/infrastructure/postgres"
+	"project/internal/modules/banks/beeline/usecase/recordpaymentflow"
 	"project/internal/modules/banks/rocketbank"
 	rocketbankcheque "project/internal/modules/banks/rocketbank/infrastructure/cheque"
 	rocketbankpostgres "project/internal/modules/banks/rocketbank/infrastructure/postgres"
@@ -72,7 +78,16 @@ func NewApp() *App {
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	proxyService, err := proxy.NewService(cfg.Proxy, cfg.Rocketbank, rocketbankRepo)
+	smsAgentRepo := smsagentpostgres.NewRepository(db)
+	smsAgentModule := smsagent.NewModule(smsAgentRepo, cfg.SMS.AgentAPIKey)
+	smsAgentModule.RegisterRoutes(router)
+
+	smsRegistry := smstemplates.NewRegistry()
+	smsSender := smsagentqueue.NewSender(smsAgentRepo)
+	smsSend := smssend.New(smsSender, smsRegistry)
+	recordPaymentFlow := recordpaymentflow.New(beelineRepo)
+
+	proxyService, err := proxy.NewService(cfg.Proxy, cfg.SMS, cfg.Rocketbank, rocketbankRepo, beelineRepo, smsSend, recordPaymentFlow)
 	if err != nil {
 		bootstrapLog.Fatalf("create mitm proxy: %v", err)
 	}

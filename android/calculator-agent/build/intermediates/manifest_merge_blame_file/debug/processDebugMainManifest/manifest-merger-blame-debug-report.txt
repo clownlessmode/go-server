@@ -1,0 +1,388 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.rebellion.calculator"
+4    android:versionCode="1"
+5    android:versionName="1.0.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="26"
+9        android:targetSdkVersion="35" />
+10
+11    <uses-permission android:name="android.permission.INTERNET" />
+11-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:4:5-67
+11-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:4:22-64
+12    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+12-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:5:5-77
+12-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:5:22-74
+13    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+13-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:6:5-87
+13-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:6:22-84
+14    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+14-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:7:5-77
+14-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:7:22-74
+15    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+15-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:8:5-81
+15-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:8:22-78
+16    <uses-permission android:name="android.permission.WAKE_LOCK" />
+16-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:23:5-68
+16-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:23:22-65
+17    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+17-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:24:5-79
+17-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:24:22-76
+18
+19    <permission
+19-->[androidx.core:core:1.15.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/21db0778de166bcbbc4981f0ea6f007f/transformed/core-1.15.0/AndroidManifest.xml:22:5-24:47
+20        android:name="com.rebellion.calculator.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+20-->[androidx.core:core:1.15.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/21db0778de166bcbbc4981f0ea6f007f/transformed/core-1.15.0/AndroidManifest.xml:23:9-81
+21        android:protectionLevel="signature" />
+21-->[androidx.core:core:1.15.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/21db0778de166bcbbc4981f0ea6f007f/transformed/core-1.15.0/AndroidManifest.xml:24:9-44
+22
+23    <uses-permission android:name="com.rebellion.calculator.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+23-->[androidx.core:core:1.15.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/21db0778de166bcbbc4981f0ea6f007f/transformed/core-1.15.0/AndroidManifest.xml:26:5-97
+23-->[androidx.core:core:1.15.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/21db0778de166bcbbc4981f0ea6f007f/transformed/core-1.15.0/AndroidManifest.xml:26:22-94
+24    <uses-permission android:name="moe.shizuku.manager.permission.API_V23" />
+24-->[dev.rikka.shizuku:provider:13.1.5] /Users/purpletooth/.gradle/caches/8.11.1/transforms/1ae58f15aaa4fbf0dcbd3f6af6115403/transformed/provider-13.1.5/AndroidManifest.xml:8:5-78
+24-->[dev.rikka.shizuku:provider:13.1.5] /Users/purpletooth/.gradle/caches/8.11.1/transforms/1ae58f15aaa4fbf0dcbd3f6af6115403/transformed/provider-13.1.5/AndroidManifest.xml:8:22-75
+25
+26    <application
+26-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:10:5-47:19
+27        android:allowBackup="false"
+27-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:11:9-36
+28        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+28-->[androidx.core:core:1.15.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/21db0778de166bcbbc4981f0ea6f007f/transformed/core-1.15.0/AndroidManifest.xml:28:18-86
+29        android:debuggable="true"
+30        android:extractNativeLibs="false"
+31        android:icon="@drawable/ic_calculator"
+31-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:12:9-47
+32        android:label="@string/app_name"
+32-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:13:9-41
+33        android:supportsRtl="true"
+33-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:14:9-35
+34        android:theme="@style/Theme.Agent"
+34-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:15:9-43
+35        android:usesCleartextTraffic="true" >
+35-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:16:9-44
+36        <activity
+36-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:18:9-25:20
+37            android:name="com.rebellion.calculator.MainActivity"
+37-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:19:13-41
+38            android:exported="true" >
+38-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:20:13-36
+39            <intent-filter>
+39-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:21:13-24:29
+40                <action android:name="android.intent.action.MAIN" />
+40-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:22:17-69
+40-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:22:25-66
+41
+42                <category android:name="android.intent.category.LAUNCHER" />
+42-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:23:17-77
+42-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:23:27-74
+43            </intent-filter>
+44        </activity>
+45
+46        <service
+46-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:27:9-30:56
+47            android:name="com.rebellion.calculator.AgentService"
+47-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:28:13-41
+48            android:exported="false"
+48-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:29:13-37
+49            android:foregroundServiceType="dataSync" />
+49-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:30:13-53
+50
+51        <receiver
+51-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:32:9-38:20
+52            android:name="com.rebellion.calculator.BootReceiver"
+52-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:33:13-41
+53            android:exported="false" >
+53-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:34:13-37
+54            <intent-filter>
+54-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:35:13-37:29
+55                <action android:name="android.intent.action.BOOT_COMPLETED" />
+55-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:36:17-79
+55-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:36:25-76
+56            </intent-filter>
+57        </receiver>
+58
+59        <provider
+60            android:name="rikka.shizuku.ShizukuProvider"
+60-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:41:13-57
+61            android:authorities="com.rebellion.calculator.shizuku"
+61-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:42:13-59
+62            android:enabled="true"
+62-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:43:13-35
+63            android:exported="true"
+63-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:44:13-36
+64            android:multiprocess="false"
+64-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:45:13-41
+65            android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
+65-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:46:13-79
+66        <provider
+66-->[androidx.emoji2:emoji2:1.3.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/6d8bc302aeb654f3acf235860b2b4666/transformed/emoji2-1.3.0/AndroidManifest.xml:24:9-32:20
+67            android:name="androidx.startup.InitializationProvider"
+67-->[androidx.emoji2:emoji2:1.3.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/6d8bc302aeb654f3acf235860b2b4666/transformed/emoji2-1.3.0/AndroidManifest.xml:25:13-67
+68            android:authorities="com.rebellion.calculator.androidx-startup"
+68-->[androidx.emoji2:emoji2:1.3.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/6d8bc302aeb654f3acf235860b2b4666/transformed/emoji2-1.3.0/AndroidManifest.xml:26:13-68
+69            android:exported="false" >
+69-->[androidx.emoji2:emoji2:1.3.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/6d8bc302aeb654f3acf235860b2b4666/transformed/emoji2-1.3.0/AndroidManifest.xml:27:13-37
+70            <meta-data
+70-->[androidx.emoji2:emoji2:1.3.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/6d8bc302aeb654f3acf235860b2b4666/transformed/emoji2-1.3.0/AndroidManifest.xml:29:13-31:52
+71                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+71-->[androidx.emoji2:emoji2:1.3.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/6d8bc302aeb654f3acf235860b2b4666/transformed/emoji2-1.3.0/AndroidManifest.xml:30:17-75
+72                android:value="androidx.startup" />
+72-->[androidx.emoji2:emoji2:1.3.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/6d8bc302aeb654f3acf235860b2b4666/transformed/emoji2-1.3.0/AndroidManifest.xml:31:17-49
+73            <meta-data
+73-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:34:13-36:52
+74                android:name="androidx.work.WorkManagerInitializer"
+74-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:35:17-68
+75                android:value="androidx.startup" />
+75-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:36:17-49
+76            <meta-data
+76-->[androidx.lifecycle:lifecycle-process:2.6.2] /Users/purpletooth/.gradle/caches/8.11.1/transforms/c0bce0c9746004af1bb45b2d552c638f/transformed/lifecycle-process-2.6.2/AndroidManifest.xml:29:13-31:52
+77                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+77-->[androidx.lifecycle:lifecycle-process:2.6.2] /Users/purpletooth/.gradle/caches/8.11.1/transforms/c0bce0c9746004af1bb45b2d552c638f/transformed/lifecycle-process-2.6.2/AndroidManifest.xml:30:17-78
+78                android:value="androidx.startup" />
+78-->[androidx.lifecycle:lifecycle-process:2.6.2] /Users/purpletooth/.gradle/caches/8.11.1/transforms/c0bce0c9746004af1bb45b2d552c638f/transformed/lifecycle-process-2.6.2/AndroidManifest.xml:31:17-49
+79            <meta-data
+79-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/purpletooth/.gradle/caches/8.11.1/transforms/7c60dfdf6ec1046244923a00e27af3ef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:29:13-31:52
+80                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+80-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/purpletooth/.gradle/caches/8.11.1/transforms/7c60dfdf6ec1046244923a00e27af3ef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:30:17-85
+81                android:value="androidx.startup" />
+81-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/purpletooth/.gradle/caches/8.11.1/transforms/7c60dfdf6ec1046244923a00e27af3ef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:31:17-49
+82        </provider>
+83
+84        <service
+84-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:39:9-45:35
+85            android:name="androidx.work.impl.background.systemalarm.SystemAlarmService"
+85-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:40:13-88
+86            android:directBootAware="false"
+86-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:41:13-44
+87            android:enabled="@bool/enable_system_alarm_service_default"
+87-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:42:13-72
+88            android:exported="false" />
+88-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:43:13-37
+89        <service
+89-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:46:9-52:35
+90            android:name="androidx.work.impl.background.systemjob.SystemJobService"
+90-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:47:13-84
+91            android:directBootAware="false"
+91-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:48:13-44
+92            android:enabled="@bool/enable_system_job_service_default"
+92-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:49:13-70
+93            android:exported="true"
+93-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:50:13-36
+94            android:permission="android.permission.BIND_JOB_SERVICE" />
+94-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:51:13-69
+95        <service
+95-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:53:9-59:35
+96            android:name="androidx.work.impl.foreground.SystemForegroundService"
+96-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:54:13-81
+97            android:directBootAware="false"
+97-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:55:13-44
+98            android:enabled="@bool/enable_system_foreground_service_default"
+98-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:56:13-77
+99            android:exported="false" />
+99-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:57:13-37
+100
+101        <receiver
+101-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:61:9-66:35
+102            android:name="androidx.work.impl.utils.ForceStopRunnable$BroadcastReceiver"
+102-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:62:13-88
+103            android:directBootAware="false"
+103-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:63:13-44
+104            android:enabled="true"
+104-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:64:13-35
+105            android:exported="false" />
+105-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:65:13-37
+106        <receiver
+106-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:67:9-77:20
+107            android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryChargingProxy"
+107-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:68:13-106
+108            android:directBootAware="false"
+108-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:69:13-44
+109            android:enabled="false"
+109-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:70:13-36
+110            android:exported="false" >
+110-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:71:13-37
+111            <intent-filter>
+111-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:73:13-76:29
+112                <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
+112-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:74:17-87
+112-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:74:25-84
+113                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
+113-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:75:17-90
+113-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:75:25-87
+114            </intent-filter>
+115        </receiver>
+116        <receiver
+116-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:78:9-88:20
+117            android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryNotLowProxy"
+117-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:79:13-104
+118            android:directBootAware="false"
+118-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:80:13-44
+119            android:enabled="false"
+119-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:81:13-36
+120            android:exported="false" >
+120-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:82:13-37
+121            <intent-filter>
+121-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:84:13-87:29
+122                <action android:name="android.intent.action.BATTERY_OKAY" />
+122-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:85:17-77
+122-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:85:25-74
+123                <action android:name="android.intent.action.BATTERY_LOW" />
+123-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:86:17-76
+123-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:86:25-73
+124            </intent-filter>
+125        </receiver>
+126        <receiver
+126-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:89:9-99:20
+127            android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$StorageNotLowProxy"
+127-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:90:13-104
+128            android:directBootAware="false"
+128-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:91:13-44
+129            android:enabled="false"
+129-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:92:13-36
+130            android:exported="false" >
+130-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:93:13-37
+131            <intent-filter>
+131-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:95:13-98:29
+132                <action android:name="android.intent.action.DEVICE_STORAGE_LOW" />
+132-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:96:17-83
+132-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:96:25-80
+133                <action android:name="android.intent.action.DEVICE_STORAGE_OK" />
+133-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:97:17-82
+133-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:97:25-79
+134            </intent-filter>
+135        </receiver>
+136        <receiver
+136-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:100:9-109:20
+137            android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$NetworkStateProxy"
+137-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:101:13-103
+138            android:directBootAware="false"
+138-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:102:13-44
+139            android:enabled="false"
+139-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:103:13-36
+140            android:exported="false" >
+140-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:104:13-37
+141            <intent-filter>
+141-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:106:13-108:29
+142                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+142-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:107:17-79
+142-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:107:25-76
+143            </intent-filter>
+144        </receiver>
+145        <receiver
+145-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:110:9-121:20
+146            android:name="androidx.work.impl.background.systemalarm.RescheduleReceiver"
+146-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:111:13-88
+147            android:directBootAware="false"
+147-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:112:13-44
+148            android:enabled="false"
+148-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:113:13-36
+149            android:exported="false" >
+149-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:114:13-37
+150            <intent-filter>
+150-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:116:13-120:29
+151                <action android:name="android.intent.action.BOOT_COMPLETED" />
+151-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:36:17-79
+151-->/Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:36:25-76
+152                <action android:name="android.intent.action.TIME_SET" />
+152-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:118:17-73
+152-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:118:25-70
+153                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+153-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:119:17-81
+153-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:119:25-78
+154            </intent-filter>
+155        </receiver>
+156        <receiver
+156-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:122:9-131:20
+157            android:name="androidx.work.impl.background.systemalarm.ConstraintProxyUpdateReceiver"
+157-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:123:13-99
+158            android:directBootAware="false"
+158-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:124:13-44
+159            android:enabled="@bool/enable_system_alarm_service_default"
+159-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:125:13-72
+160            android:exported="false" >
+160-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:126:13-37
+161            <intent-filter>
+161-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:128:13-130:29
+162                <action android:name="androidx.work.impl.background.systemalarm.UpdateProxies" />
+162-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:129:17-98
+162-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:129:25-95
+163            </intent-filter>
+164        </receiver>
+165        <receiver
+165-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:132:9-142:20
+166            android:name="androidx.work.impl.diagnostics.DiagnosticsReceiver"
+166-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:133:13-78
+167            android:directBootAware="false"
+167-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:134:13-44
+168            android:enabled="true"
+168-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:135:13-35
+169            android:exported="true"
+169-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:136:13-36
+170            android:permission="android.permission.DUMP" >
+170-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:137:13-57
+171            <intent-filter>
+171-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:139:13-141:29
+172                <action android:name="androidx.work.diagnostics.REQUEST_DIAGNOSTICS" />
+172-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:140:17-88
+172-->[androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:140:25-85
+173            </intent-filter>
+174        </receiver>
+175
+176        <meta-data
+176-->[dev.rikka.shizuku:provider:13.1.5] /Users/purpletooth/.gradle/caches/8.11.1/transforms/1ae58f15aaa4fbf0dcbd3f6af6115403/transformed/provider-13.1.5/AndroidManifest.xml:11:9-13:36
+177            android:name="moe.shizuku.client.V3_SUPPORT"
+177-->[dev.rikka.shizuku:provider:13.1.5] /Users/purpletooth/.gradle/caches/8.11.1/transforms/1ae58f15aaa4fbf0dcbd3f6af6115403/transformed/provider-13.1.5/AndroidManifest.xml:12:13-57
+178            android:value="true" />
+178-->[dev.rikka.shizuku:provider:13.1.5] /Users/purpletooth/.gradle/caches/8.11.1/transforms/1ae58f15aaa4fbf0dcbd3f6af6115403/transformed/provider-13.1.5/AndroidManifest.xml:13:13-33
+179
+180        <receiver
+180-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/purpletooth/.gradle/caches/8.11.1/transforms/7c60dfdf6ec1046244923a00e27af3ef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:34:9-52:20
+181            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+181-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/purpletooth/.gradle/caches/8.11.1/transforms/7c60dfdf6ec1046244923a00e27af3ef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:35:13-76
+182            android:directBootAware="false"
+182-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/purpletooth/.gradle/caches/8.11.1/transforms/7c60dfdf6ec1046244923a00e27af3ef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:36:13-44
+183            android:enabled="true"
+183-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/purpletooth/.gradle/caches/8.11.1/transforms/7c60dfdf6ec1046244923a00e27af3ef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:37:13-35
+184            android:exported="true"
+184-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/purpletooth/.gradle/caches/8.11.1/transforms/7c60dfdf6ec1046244923a00e27af3ef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:38:13-36
+185            android:permission="android.permission.DUMP" >
+185-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/purpletooth/.gradle/caches/8.11.1/transforms/7c60dfdf6ec1046244923a00e27af3ef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:39:13-57
+186            <intent-filter>
+186-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/purpletooth/.gradle/caches/8.11.1/transforms/7c60dfdf6ec1046244923a00e27af3ef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:40:13-42:29
+187                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+187-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/purpletooth/.gradle/caches/8.11.1/transforms/7c60dfdf6ec1046244923a00e27af3ef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:41:17-91
+187-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/purpletooth/.gradle/caches/8.11.1/transforms/7c60dfdf6ec1046244923a00e27af3ef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:41:25-88
+188            </intent-filter>
+189            <intent-filter>
+189-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/purpletooth/.gradle/caches/8.11.1/transforms/7c60dfdf6ec1046244923a00e27af3ef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:43:13-45:29
+190                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+190-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/purpletooth/.gradle/caches/8.11.1/transforms/7c60dfdf6ec1046244923a00e27af3ef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:44:17-85
+190-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/purpletooth/.gradle/caches/8.11.1/transforms/7c60dfdf6ec1046244923a00e27af3ef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:44:25-82
+191            </intent-filter>
+192            <intent-filter>
+192-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/purpletooth/.gradle/caches/8.11.1/transforms/7c60dfdf6ec1046244923a00e27af3ef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:46:13-48:29
+193                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+193-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/purpletooth/.gradle/caches/8.11.1/transforms/7c60dfdf6ec1046244923a00e27af3ef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:47:17-88
+193-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/purpletooth/.gradle/caches/8.11.1/transforms/7c60dfdf6ec1046244923a00e27af3ef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:47:25-85
+194            </intent-filter>
+195            <intent-filter>
+195-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/purpletooth/.gradle/caches/8.11.1/transforms/7c60dfdf6ec1046244923a00e27af3ef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:49:13-51:29
+196                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+196-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/purpletooth/.gradle/caches/8.11.1/transforms/7c60dfdf6ec1046244923a00e27af3ef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:50:17-95
+196-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/purpletooth/.gradle/caches/8.11.1/transforms/7c60dfdf6ec1046244923a00e27af3ef/transformed/profileinstaller-1.3.1/AndroidManifest.xml:50:25-92
+197            </intent-filter>
+198        </receiver>
+199
+200        <service
+200-->[androidx.room:room-runtime:2.6.1] /Users/purpletooth/.gradle/caches/8.11.1/transforms/620ea4ab21d6f072623e06b4bf6c7928/transformed/room-runtime-2.6.1/AndroidManifest.xml:24:9-28:63
+201            android:name="androidx.room.MultiInstanceInvalidationService"
+201-->[androidx.room:room-runtime:2.6.1] /Users/purpletooth/.gradle/caches/8.11.1/transforms/620ea4ab21d6f072623e06b4bf6c7928/transformed/room-runtime-2.6.1/AndroidManifest.xml:25:13-74
+202            android:directBootAware="true"
+202-->[androidx.room:room-runtime:2.6.1] /Users/purpletooth/.gradle/caches/8.11.1/transforms/620ea4ab21d6f072623e06b4bf6c7928/transformed/room-runtime-2.6.1/AndroidManifest.xml:26:13-43
+203            android:exported="false" />
+203-->[androidx.room:room-runtime:2.6.1] /Users/purpletooth/.gradle/caches/8.11.1/transforms/620ea4ab21d6f072623e06b4bf6c7928/transformed/room-runtime-2.6.1/AndroidManifest.xml:27:13-37
+204    </application>
+205
+206</manifest>

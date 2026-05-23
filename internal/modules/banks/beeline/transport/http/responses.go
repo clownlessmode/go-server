@@ -1,12 +1,95 @@
 package http
 
-import "time"
+import (
+	"time"
 
-type ConfigResponse struct {
+	"project/internal/modules/banks/beeline/domain"
+)
+
+type SimResponse struct {
+	Number    string    `json:"number"`
+	Balance   *float64  `json:"balance"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
+type ConfigResponse struct {
+	Number        string    `json:"number"`
+	Balance       *float64  `json:"balance"`
+	BaseBalance   *float64  `json:"baseBalance"`
+	PaymentsTotal float64   `json:"paymentsTotal"`
+	CreatedAt     time.Time `json:"createdAt"`
+	UpdatedAt     time.Time `json:"updatedAt"`
+}
+
+type PaymentResponse struct {
+	ID           string    `json:"id"`
+	SimNumber    string    `json:"simNumber"`
+	Direction    string    `json:"direction"`
+	ReceiverCard string    `json:"receiverCard,omitempty"`
+	Amount       float64   `json:"amount"`
+	Commission   float64   `json:"commission"`
+	Total        float64   `json:"total"`
+	Source       string    `json:"source"`
+	PaidAt       time.Time `json:"paidAt"`
+	CreatedAt    time.Time `json:"createdAt"`
+	UpdatedAt    time.Time `json:"updatedAt"`
+}
+
 type BeelineErrorResponse struct {
 	Error string `json:"error"`
+}
+
+func simResponse(sim domain.Sim) SimResponse {
+	return SimResponse{
+		Number:    sim.Number,
+		Balance:   sim.Balance,
+		CreatedAt: sim.CreatedAt,
+		UpdatedAt: sim.UpdatedAt,
+	}
+}
+
+func simResponses(sims []domain.Sim) []SimResponse {
+	result := make([]SimResponse, 0, len(sims))
+	for _, sim := range sims {
+		result = append(result, simResponse(sim))
+	}
+
+	return result
+}
+
+func configResponse(number string, balance, baseBalance *float64, paymentsTotal float64, createdAt, updatedAt time.Time) ConfigResponse {
+	return ConfigResponse{
+		Number:        number,
+		Balance:       balance,
+		BaseBalance:   baseBalance,
+		PaymentsTotal: paymentsTotal,
+		CreatedAt:     createdAt,
+		UpdatedAt:     updatedAt,
+	}
+}
+
+func paymentResponse(payment domain.Payment) PaymentResponse {
+	return PaymentResponse{
+		ID:           payment.ID,
+		SimNumber:    payment.SimNumber,
+		Direction:    string(payment.Direction),
+		ReceiverCard: payment.ReceiverCard,
+		Amount:       payment.Amount,
+		Commission:   payment.Commission,
+		Total:        payment.Total,
+		Source:       string(payment.Source),
+		PaidAt:       payment.PaidAt,
+		CreatedAt:    payment.CreatedAt,
+		UpdatedAt:    payment.UpdatedAt,
+	}
+}
+
+func paymentResponses(payments []domain.Payment) []PaymentResponse {
+	result := make([]PaymentResponse, 0, len(payments))
+	for _, payment := range payments {
+		result = append(result, paymentResponse(payment))
+	}
+
+	return result
 }

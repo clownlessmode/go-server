@@ -1,0 +1,57 @@
+---
+description: Regenerate Swagger docs when HTTP API handlers or response types change
+alwaysApply: true
+---
+
+# Swagger Documentation
+
+This project uses [swaggo/swag](https://github.com/swaggo/swag). Generated files live in `docs/`:
+
+- `docs/docs.go`
+- `docs/swagger.json`
+- `docs/swagger.yaml`
+
+## When to Regenerate
+
+After any change that affects the public HTTP API, regenerate Swagger in the same task:
+
+- new/changed routes in `transport/http/routes.go`
+- new/changed handlers in `transport/http/handler.go`
+- new/changed request/response types in `transport/http/responses.go` or handler request structs
+- new/changed `@Summary`, `@Router`, `@Param`, `@Success`, `@Failure` godoc annotations
+
+## How to Annotate
+
+Add swag godoc comments above handler methods:
+
+```go
+// UpdateBalance godoc
+// @Summary Update Beeline balance
+// @Tags beeline config
+// @Accept json
+// @Produce json
+// @Param input body UpdateBalanceRequest true "Balance update payload"
+// @Success 200 {object} ConfigResponse
+// @Failure 400 {object} BeelineErrorResponse
+// @Router /banks/beeline/config/balance [patch]
+func (h *Handler) UpdateBalance(c *gin.Context) {
+```
+
+Put reusable DTOs in `transport/http/responses.go` when possible so swag can reference them in `{object}` tags.
+
+## Regenerate Command
+
+Run from repo root after API changes:
+
+```bash
+go run github.com/swaggo/swag/cmd/swag@v1.16.6 init -g cmd/api/main.go -o docs --parseDependency --parseInternal
+```
+
+Do not hand-edit generated files in `docs/docs.go`, `docs/swagger.json`, or `docs/swagger.yaml`.
+
+## Checklist
+
+1. Add or update godoc annotations on handlers
+2. Add or update response/request structs with `json` tags
+3. Run the swag command above
+4. Verify `/swagger/index.html` shows the new or updated endpoint

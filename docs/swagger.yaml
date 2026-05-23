@@ -61,96 +61,6 @@ definitions:
       updatedAt:
         type: string
     type: object
-  http.BankErrorResponse:
-    properties:
-      error:
-        type: string
-    type: object
-  http.BankResponse:
-    properties:
-      code:
-        type: string
-      createdAt:
-        type: string
-      id:
-        type: integer
-      name:
-        type: string
-      updatedAt:
-        type: string
-    type: object
-  http.BeelineErrorResponse:
-    properties:
-      error:
-        type: string
-    type: object
-  http.CardTransferRequest:
-    properties:
-      amount:
-        example: 5000
-        type: number
-      balanceBefore:
-        example: 22096.74
-        type: number
-      bankId:
-        example: tbank
-        type: string
-      direction:
-        enum:
-        - OUTGOING
-        - INCOMING
-        example: OUTGOING
-        type: string
-      recipientCardNumber:
-        example: 1234 5678 9100 0000
-        type: string
-      time:
-        example: 2026-05-16T22:14:12+0700
-        type: string
-    required:
-    - amount
-    - balanceBefore
-    - bankId
-    - direction
-    - recipientCardNumber
-    - time
-    type: object
-  http.CashTransferRequest:
-    properties:
-      amount:
-        example: 8000
-        type: number
-      balanceBefore:
-        example: 22096.74
-        type: number
-      direction:
-        enum:
-        - OUTGOING
-        - INCOMING
-        example: OUTGOING
-        type: string
-      time:
-        example: 2026-05-02T11:08:52+0700
-        type: string
-    required:
-    - amount
-    - balanceBefore
-    - direction
-    - time
-    type: object
-  http.ClientInfoResponse:
-    properties:
-      cardNumber:
-        type: string
-      firstName:
-        type: string
-      lastName:
-        type: string
-      middleName:
-        type: string
-      phoneNumber:
-        type: string
-    type: object
   http.CreateUserRequest:
     properties:
       isActive:
@@ -183,33 +93,6 @@ definitions:
     - expiresAt
     - grantReason
     - userId
-    type: object
-  http.HistoryResponse:
-    properties:
-      amount:
-        type: number
-      balanceBefore:
-        type: number
-      bankId:
-        type: string
-      direction:
-        type: string
-      id:
-        type: string
-      operationFirstName:
-        type: string
-      operationLastName:
-        type: string
-      operationMiddleName:
-        type: string
-      phoneNumber:
-        type: string
-      recipientCardNumber:
-        type: string
-      time:
-        type: string
-      type:
-        type: string
     type: object
   http.LoginRequest:
     properties:
@@ -248,12 +131,278 @@ definitions:
     - revokeReason
     - userId
     type: object
-  http.RocketbankErrorResponse:
+  http.UpdateUserRequest:
+    properties:
+      isActive:
+        type: boolean
+      login:
+        type: string
+      password:
+        type: string
+      role:
+        type: string
+    type: object
+  http.UserResponse:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: integer
+      isActive:
+        type: boolean
+      login:
+        type: string
+      password:
+        type: string
+      role:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  internal_modules_banks_beeline_transport_http.BeelineErrorResponse:
     properties:
       error:
         type: string
     type: object
-  http.SBPTransferRequest:
+  internal_modules_banks_beeline_transport_http.ConfigResponse:
+    properties:
+      balance:
+        type: number
+      baseBalance:
+        type: number
+      createdAt:
+        type: string
+      number:
+        type: string
+      paymentsTotal:
+        type: number
+      updatedAt:
+        type: string
+    type: object
+  internal_modules_banks_beeline_transport_http.CreatePaymentRequest:
+    properties:
+      amount:
+        example: 13000
+        type: number
+      direction:
+        enum:
+        - outgoing
+        - incoming
+        example: outgoing
+        type: string
+      paidAt:
+        example: "2026-05-23T12:07:47+03:00"
+        type: string
+      receiverCard:
+        example: 220094**0028
+        type: string
+    required:
+    - amount
+    - paidAt
+    type: object
+  internal_modules_banks_beeline_transport_http.CreateSimRequest:
+    properties:
+      number:
+        example: "9680659702"
+        type: string
+    required:
+    - number
+    type: object
+  internal_modules_banks_beeline_transport_http.PaymentResponse:
+    properties:
+      amount:
+        type: number
+      commission:
+        type: number
+      createdAt:
+        type: string
+      direction:
+        type: string
+      id:
+        type: string
+      paidAt:
+        type: string
+      receiverCard:
+        type: string
+      simNumber:
+        type: string
+      source:
+        type: string
+      total:
+        type: number
+      updatedAt:
+        type: string
+    type: object
+  internal_modules_banks_beeline_transport_http.SimResponse:
+    properties:
+      balance:
+        type: number
+      createdAt:
+        type: string
+      number:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  internal_modules_banks_beeline_transport_http.UpdateBalanceRequest:
+    properties:
+      balance:
+        example: 50000
+        type: number
+    required:
+    - balance
+    type: object
+  internal_modules_banks_beeline_transport_http.UpdatePaymentRequest:
+    properties:
+      amount:
+        example: 13000
+        type: number
+      direction:
+        enum:
+        - outgoing
+        - incoming
+        example: outgoing
+        type: string
+      paidAt:
+        example: "2026-05-23T12:07:47+03:00"
+        type: string
+      receiverCard:
+        example: 220094**0028
+        type: string
+    type: object
+  internal_modules_banks_catalog_transport_http.BankErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  internal_modules_banks_catalog_transport_http.BankResponse:
+    properties:
+      code:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  internal_modules_banks_rocketbank_transport_http.CardTransferRequest:
+    properties:
+      amount:
+        example: 5000
+        type: number
+      balanceBefore:
+        example: 22096.74
+        type: number
+      bankId:
+        example: tbank
+        type: string
+      direction:
+        enum:
+        - OUTGOING
+        - INCOMING
+        example: OUTGOING
+        type: string
+      recipientCardNumber:
+        example: 1234 5678 9100 0000
+        type: string
+      time:
+        example: 2026-05-16T22:14:12+0700
+        type: string
+    required:
+    - amount
+    - balanceBefore
+    - bankId
+    - direction
+    - recipientCardNumber
+    - time
+    type: object
+  internal_modules_banks_rocketbank_transport_http.CashTransferRequest:
+    properties:
+      amount:
+        example: 8000
+        type: number
+      balanceBefore:
+        example: 22096.74
+        type: number
+      direction:
+        enum:
+        - OUTGOING
+        - INCOMING
+        example: OUTGOING
+        type: string
+      time:
+        example: 2026-05-02T11:08:52+0700
+        type: string
+    required:
+    - amount
+    - balanceBefore
+    - direction
+    - time
+    type: object
+  internal_modules_banks_rocketbank_transport_http.ClientInfoResponse:
+    properties:
+      cardNumber:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      middleName:
+        type: string
+      phoneNumber:
+        type: string
+    type: object
+  internal_modules_banks_rocketbank_transport_http.ConfigResponse:
+    properties:
+      balance:
+        type: number
+      clientInfo:
+        $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.ClientInfoResponse'
+      createdAt:
+        type: string
+      history:
+        items:
+          $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.HistoryResponse'
+        type: array
+      updatedAt:
+        type: string
+    type: object
+  internal_modules_banks_rocketbank_transport_http.HistoryResponse:
+    properties:
+      amount:
+        type: number
+      balanceBefore:
+        type: number
+      bankId:
+        type: string
+      direction:
+        type: string
+      id:
+        type: string
+      operationFirstName:
+        type: string
+      operationLastName:
+        type: string
+      operationMiddleName:
+        type: string
+      phoneNumber:
+        type: string
+      recipientCardNumber:
+        type: string
+      time:
+        type: string
+      type:
+        type: string
+    type: object
+  internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  internal_modules_banks_rocketbank_transport_http.SBPTransferRequest:
     properties:
       amount:
         example: 50
@@ -295,7 +444,7 @@ definitions:
     - operationMiddleName
     - time
     type: object
-  http.UpdateBalanceRequest:
+  internal_modules_banks_rocketbank_transport_http.UpdateBalanceRequest:
     properties:
       balance:
         example: 99999
@@ -303,7 +452,7 @@ definitions:
     required:
     - balance
     type: object
-  http.UpdateCardTransferRequest:
+  internal_modules_banks_rocketbank_transport_http.UpdateCardTransferRequest:
     properties:
       amount:
         example: 5000
@@ -327,7 +476,7 @@ definitions:
         example: 2026-05-16T22:14:12+0700
         type: string
     type: object
-  http.UpdateCashTransferRequest:
+  internal_modules_banks_rocketbank_transport_http.UpdateCashTransferRequest:
     properties:
       amount:
         example: 8000
@@ -345,7 +494,7 @@ definitions:
         example: 2026-05-02T11:08:52+0700
         type: string
     type: object
-  http.UpdateClientInfoRequest:
+  internal_modules_banks_rocketbank_transport_http.UpdateClientInfoRequest:
     properties:
       cardNumber:
         example: "40817810000000000000"
@@ -369,7 +518,7 @@ definitions:
     - middleName
     - phoneNumber
     type: object
-  http.UpdateSBPTransferRequest:
+  internal_modules_banks_rocketbank_transport_http.UpdateSBPTransferRequest:
     properties:
       amount:
         example: 50
@@ -402,54 +551,35 @@ definitions:
         example: 2026-05-16T22:14:12+0700
         type: string
     type: object
-  http.UpdateUserRequest:
+  internal_modules_smsagent_transport_http.AckMessageRequest:
     properties:
-      isActive:
-        type: boolean
-      login:
+      deviceId:
+        example: abc123
         type: string
-      password:
+      errorMessage:
         type: string
-      role:
+      status:
+        example: delivered
+        type: string
+    required:
+    - status
+    type: object
+  internal_modules_smsagent_transport_http.AgentErrorResponse:
+    properties:
+      error:
         type: string
     type: object
-  http.UserResponse:
+  internal_modules_smsagent_transport_http.MessageResponse:
     properties:
+      address:
+        type: string
+      bank:
+        type: string
+      body:
+        type: string
       createdAt:
         type: string
       id:
-        type: integer
-      isActive:
-        type: boolean
-      login:
-        type: string
-      password:
-        type: string
-      role:
-        type: string
-      updatedAt:
-        type: string
-    type: object
-  internal_modules_banks_beeline_transport_http.ConfigResponse:
-    properties:
-      createdAt:
-        type: string
-      updatedAt:
-        type: string
-    type: object
-  internal_modules_banks_rocketbank_transport_http.ConfigResponse:
-    properties:
-      balance:
-        type: number
-      clientInfo:
-        $ref: '#/definitions/http.ClientInfoResponse'
-      createdAt:
-        type: string
-      history:
-        items:
-          $ref: '#/definitions/http.HistoryResponse'
-        type: array
-      updatedAt:
         type: string
     type: object
 host: localhost:8080
@@ -469,18 +599,128 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/http.BankResponse'
+              $ref: '#/definitions/internal_modules_banks_catalog_transport_http.BankResponse'
             type: array
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.BankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_catalog_transport_http.BankErrorResponse'
       summary: List banks
       tags:
       - banks
-  /banks/beeline/config:
+  /banks/beeline/sims:
     get:
-      description: Returns Beeline config.
+      description: Returns all registered Beeline SIM cards.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/internal_modules_banks_beeline_transport_http.SimResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse'
+      summary: List Beeline SIMs
+      tags:
+      - beeline sims
+    post:
+      consumes:
+      - application/json
+      description: Registers a Beeline SIM by 10-digit phone number without +7.
+      parameters:
+      - description: SIM payload
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_banks_beeline_transport_http.CreateSimRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.SimResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse'
+      summary: Create Beeline SIM
+      tags:
+      - beeline sims
+  /banks/beeline/sims/{number}:
+    delete:
+      description: Deletes a Beeline SIM and its payment history.
+      parameters:
+      - description: 10-digit phone number
+        in: path
+        name: number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse'
+      summary: Delete Beeline SIM
+      tags:
+      - beeline sims
+    get:
+      description: Returns a Beeline SIM by phone number.
+      parameters:
+      - description: 10-digit phone number
+        in: path
+        name: number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.SimResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse'
+      summary: Get Beeline SIM
+      tags:
+      - beeline sims
+  /banks/beeline/sims/{number}/config:
+    get:
+      description: Returns config with effective balance after payment history for
+        the SIM.
+      parameters:
+      - description: 10-digit phone number
+        in: path
+        name: number
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -488,13 +728,231 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/internal_modules_banks_beeline_transport_http.ConfigResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.BeelineErrorResponse'
-      summary: Get Beeline config
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse'
+      summary: Get Beeline SIM config
       tags:
       - beeline config
+  /banks/beeline/sims/{number}/config/balance:
+    patch:
+      consumes:
+      - application/json
+      description: Updates initial balance for the SIM. Effective balance subtracts
+        payment totals from history.
+      parameters:
+      - description: 10-digit phone number
+        in: path
+        name: number
+        required: true
+        type: string
+      - description: Balance update payload
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_banks_beeline_transport_http.UpdateBalanceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.ConfigResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse'
+      summary: Update Beeline SIM base balance
+      tags:
+      - beeline config
+  /banks/beeline/sims/{number}/payments:
+    get:
+      description: Returns payment history for the SIM.
+      parameters:
+      - description: 10-digit phone number
+        in: path
+        name: number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/internal_modules_banks_beeline_transport_http.PaymentResponse'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse'
+      summary: List Beeline SIM payments
+      tags:
+      - beeline payments
+    post:
+      consumes:
+      - application/json
+      description: Creates a manual payment for the SIM. Use direction=outgoing for
+        mobile commerce charge (requires receiverCard, min 924 RUB, 6.5%% commission).
+        Use direction=incoming for balance refill (no card, no commission).
+      parameters:
+      - description: 10-digit phone number
+        in: path
+        name: number
+        required: true
+        type: string
+      - description: Payment payload
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_banks_beeline_transport_http.CreatePaymentRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.PaymentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse'
+      summary: Create Beeline SIM payment
+      tags:
+      - beeline payments
+  /banks/beeline/sims/{number}/payments/{id}:
+    delete:
+      description: Deletes a payment from the SIM history.
+      parameters:
+      - description: 10-digit phone number
+        in: path
+        name: number
+        required: true
+        type: string
+      - description: Payment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse'
+      summary: Delete Beeline SIM payment
+      tags:
+      - beeline payments
+    get:
+      description: Returns a single payment by id for the SIM.
+      parameters:
+      - description: 10-digit phone number
+        in: path
+        name: number
+        required: true
+        type: string
+      - description: Payment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.PaymentResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse'
+      summary: Get Beeline SIM payment
+      tags:
+      - beeline payments
+    patch:
+      consumes:
+      - application/json
+      description: Updates a payment for the SIM. Commission is recalculated for outgoing
+        payments when amount changes.
+      parameters:
+      - description: 10-digit phone number
+        in: path
+        name: number
+        required: true
+        type: string
+      - description: Payment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Payment update payload
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_banks_beeline_transport_http.UpdatePaymentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.PaymentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse'
+      summary: Update Beeline SIM payment
+      tags:
+      - beeline payments
   /banks/rocketbank/config:
     get:
       description: Returns Rocketbank config.
@@ -508,7 +966,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
       summary: Get Rocketbank config
       tags:
       - rocketbank config
@@ -523,7 +981,7 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/http.UpdateBalanceRequest'
+          $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.UpdateBalanceRequest'
       produces:
       - application/json
       responses:
@@ -534,11 +992,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
       summary: Update Rocketbank balance
       tags:
       - rocketbank config
@@ -554,7 +1012,7 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/http.UpdateClientInfoRequest'
+          $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.UpdateClientInfoRequest'
       produces:
       - application/json
       responses:
@@ -565,11 +1023,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
       summary: Update Rocketbank client info
       tags:
       - rocketbank client info
@@ -584,7 +1042,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
       summary: Clear Rocketbank history
       tags:
       - rocketbank history
@@ -597,12 +1055,12 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/http.HistoryResponse'
+              $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.HistoryResponse'
             type: array
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
       summary: List Rocketbank history
       tags:
       - rocketbank history
@@ -617,26 +1075,26 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/http.CardTransferRequest'
+          $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.CardTransferRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/http.HistoryResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.HistoryResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
       summary: Create Rocketbank card transfer history item
       tags:
       - rocketbank card transfer
@@ -651,26 +1109,26 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/http.CashTransferRequest'
+          $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.CashTransferRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/http.HistoryResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.HistoryResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
       summary: Create Rocketbank cash transfer history item
       tags:
       - rocketbank cash transfer
@@ -691,11 +1149,11 @@ paths:
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
       summary: Delete Rocketbank history item
       tags:
       - rocketbank history
@@ -713,15 +1171,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/http.HistoryResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.HistoryResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
       summary: Get Rocketbank history item
       tags:
       - rocketbank history
@@ -741,30 +1199,30 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/http.UpdateCardTransferRequest'
+          $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.UpdateCardTransferRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/http.HistoryResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.HistoryResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
       summary: Update Rocketbank card transfer history item
       tags:
       - rocketbank card transfer
@@ -784,30 +1242,30 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/http.UpdateCashTransferRequest'
+          $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.UpdateCashTransferRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/http.HistoryResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.HistoryResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
       summary: Update Rocketbank cash transfer history item
       tags:
       - rocketbank cash transfer
@@ -827,30 +1285,30 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/http.UpdateSBPTransferRequest'
+          $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.UpdateSBPTransferRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/http.HistoryResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.HistoryResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
       summary: Update Rocketbank SBP transfer history item
       tags:
       - rocketbank sbp transfer
@@ -865,27 +1323,103 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/http.SBPTransferRequest'
+          $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.SBPTransferRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/http.HistoryResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.HistoryResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.RocketbankErrorResponse'
+            $ref: '#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse'
       summary: Create Rocketbank SBP transfer history item
       tags:
       - rocketbank sbp transfer
+  /sms-agent/v1/messages:
+    get:
+      description: Returns queued SMS messages for the Android agent to deliver locally
+        via Shizuku.
+      parameters:
+      - default: 10
+        description: Max messages
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/internal_modules_smsagent_transport_http.MessageResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_modules_smsagent_transport_http.AgentErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_modules_smsagent_transport_http.AgentErrorResponse'
+      security:
+      - SMSAgentKey: []
+      summary: Poll pending SMS for mobile agent
+      tags:
+      - sms agent
+  /sms-agent/v1/messages/{id}/ack:
+    post:
+      consumes:
+      - application/json
+      description: Marks a queued SMS as delivered or failed after the agent attempts
+        local injection.
+      parameters:
+      - description: Message ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Delivery result
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_smsagent_transport_http.AckMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_modules_smsagent_transport_http.AgentErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_modules_smsagent_transport_http.AgentErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_modules_smsagent_transport_http.AgentErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_modules_smsagent_transport_http.AgentErrorResponse'
+      security:
+      - SMSAgentKey: []
+      summary: Acknowledge SMS delivery
+      tags:
+      - sms agent
 swagger: "2.0"

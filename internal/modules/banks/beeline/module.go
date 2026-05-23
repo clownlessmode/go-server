@@ -5,7 +5,17 @@ import (
 
 	"project/internal/modules/banks/beeline/domain"
 	beelinehttp "project/internal/modules/banks/beeline/transport/http"
+	"project/internal/modules/banks/beeline/usecase/createpayment"
+	"project/internal/modules/banks/beeline/usecase/createsim"
+	"project/internal/modules/banks/beeline/usecase/deletepayment"
+	"project/internal/modules/banks/beeline/usecase/deletesim"
 	"project/internal/modules/banks/beeline/usecase/getconfig"
+	"project/internal/modules/banks/beeline/usecase/getpayment"
+	"project/internal/modules/banks/beeline/usecase/getsim"
+	"project/internal/modules/banks/beeline/usecase/listpayments"
+	"project/internal/modules/banks/beeline/usecase/listsims"
+	"project/internal/modules/banks/beeline/usecase/updatebalance"
+	"project/internal/modules/banks/beeline/usecase/updatepayment"
 )
 
 type Module struct {
@@ -13,8 +23,19 @@ type Module struct {
 }
 
 func NewModule(repo domain.Repository) *Module {
-	getConfig := getconfig.New(repo)
-	handler := beelinehttp.NewHandler(getConfig)
+	handler := beelinehttp.NewHandler(
+		listsims.New(repo),
+		getsim.New(repo),
+		createsim.New(repo),
+		deletesim.New(repo),
+		getconfig.New(repo),
+		updatebalance.New(repo),
+		listpayments.New(repo),
+		getpayment.New(repo),
+		createpayment.New(repo),
+		updatepayment.New(repo),
+		deletepayment.New(repo),
+	)
 
 	return &Module{handler: handler}
 }

@@ -19,25 +19,50 @@ import (
 
 	"project/internal/app/config"
 	"project/internal/app/logger"
+	beelinedomain "project/internal/modules/banks/beeline/domain"
 	rocketbankdomain "project/internal/modules/banks/rocketbank/domain"
+	smssend "project/internal/modules/sms/usecase/send"
+	"project/internal/modules/banks/beeline/usecase/recordpaymentflow"
 )
 
 var proxyLog = logger.New("proxy")
 
 type Service struct {
 	cfg            config.ProxyConfig
+	smsCfg         config.SMSConfig
 	rocketbankCfg  config.RocketbankConfig
 	proxy          *gomitmproxy.Proxy
 	certDir        string
+	apkDir         string
 	rocketbankRepo rocketbankdomain.Repository
+	beelineRepo    beelinedomain.Repository
+	smsSend        *smssend.UseCase
+	recordPaymentFlow *recordpaymentflow.UseCase
 
 	mu                          sync.Mutex
 	beelineLogMu                sync.Mutex
+	beelinePaymentMu            sync.Mutex
+	beelinePaymentContext       beelinePaymentSnapshot
+	beelineSimMu                sync.Mutex
+	activeBeelineSimNumber      string
+	beelineProductCTNs          []string
+	beelineSessionMu            sync.Mutex
+	beelineSessionHeaderMap     map[string]string
+	beelineRefreshHTTPClient    *http.Client
+	beelinePendingCardTemplate  string
 	fakeOdid                    string
 	lastRocketbankTransactionID string
 }
 
-func NewService(cfg config.ProxyConfig, rocketbankCfg config.RocketbankConfig, rocketbankRepo rocketbankdomain.Repository) (*Service, error) {
+func NewService(
+	cfg config.ProxyConfig,
+	smsCfg config.SMSConfig,
+	rocketbankCfg config.RocketbankConfig,
+	rocketbankRepo rocketbankdomain.Repository,
+	beelineRepo beelinedomain.Repository,
+	smsSend *smssend.UseCase,
+	recordPaymentFlow *recordpaymentflow.UseCase,
+) (*Service, error) {
 	adguardlog.SetOutput(io.Discard)
 
 	ca, err := loadOrCreateCA(cfg.CertDir)
@@ -59,9 +84,14 @@ func NewService(cfg config.ProxyConfig, rocketbankCfg config.RocketbankConfig, r
 
 	service := &Service{
 		cfg:            cfg,
+		smsCfg:         smsCfg,
 		rocketbankCfg:  rocketbankCfg,
 		certDir:        cfg.CertDir,
+		apkDir:         cfg.ApkDir,
 		rocketbankRepo: rocketbankRepo,
+		beelineRepo:       beelineRepo,
+		smsSend:           smsSend,
+		recordPaymentFlow: recordPaymentFlow,
 		fakeOdid:       newRandomUUID(),
 	}
 
@@ -90,6 +120,9 @@ func (s *Service) Start() error {
 	if s.cfg.BeelineLogs {
 		proxyLog.Infof("proxy response logging enabled: %s", beelineLogFile)
 	}
+	if s.smsCfg.Enabled {
+		proxyLog.Infof("sms agent queue enabled")
+	}
 	return nil
 }
 
@@ -115,7 +148,12 @@ func (s *Service) handleRequest(session *gomitmproxy.Session) (*http.Request, *h
 	}
 
 	s.logShalltryRequest(req)
+	s.captureBeelineSession(req)
+	s.captureBeelinePaymentRequest(req)
 	if res := s.maybeSpoofShalltryOdid(req); res != nil {
+		return nil, res
+	}
+	if res := s.maybeSpoofBeelineCatalogTransaction(req); res != nil {
 		return nil, res
 	}
 
@@ -133,8 +171,12 @@ func (s *Service) handleResponse(session *gomitmproxy.Session) *http.Response {
 	}
 
 	s.logShalltryResponse(req, res)
+	s.captureBeelinePaymentResponse(req, res)
+	s.captureBeelineActiveSim(req, res)
 
 	s.applyRocketbankBalanceChangeScript(req, res)
+	s.applyBeelineDetalizationChangeScript(req, res)
+	s.applyBeelineBalanceChangeScript(req, res)
 	s.applyRocketbankCardInfoChangeScript(req, res)
 	s.applyRocketbankClientInfoChangeScript(req, res)
 	s.applyRocketbankHistoryChangeScript(req, res)
@@ -144,7 +186,7 @@ func (s *Service) handleResponse(session *gomitmproxy.Session) *http.Response {
 	if s.cfg.RocketbankLogs && isRocketbankHost(req.Host) && !rocketbankChequeHandled {
 		s.writeRocketbankResponseLog(req, res)
 	}
-	if s.cfg.BeelineLogs && !s.isMagicHost(req.Host) {
+	if s.cfg.BeelineLogs && !s.isMagicHost(req.Host) && !isBeelineLogExcludedHost(req.Host) {
 		s.writeBeelineResponseLog(req, res)
 	}
 	if res.StatusCode >= 400 {
@@ -171,6 +213,15 @@ func (s *Service) handleMagicHost(req *http.Request) *http.Response {
 		proxyLog.Infof("serving ios certificate")
 		return fileResponse(req, filepath.Join(s.certDir, certPEMFile), "rebellion-ca-cert.pem", "application/x-x509-ca-cert")
 	default:
+		if apk, ok := apkDownloadByRoute(req.URL.Path); ok {
+			path := s.resolveApkPath(apk.candidateFiles)
+			if path == "" {
+				proxyLog.Warnf("apk not found: route=%s", req.URL.Path)
+				return notFound(req)
+			}
+			proxyLog.Infof("serving apk: route=%s path=%s", req.URL.Path, path)
+			return fileResponse(req, path, apk.downloadName, "application/vnd.android.package-archive")
+		}
 		proxyLog.Warnf("install page not found: path=%s", req.URL.Path)
 		return notFound(req)
 	}

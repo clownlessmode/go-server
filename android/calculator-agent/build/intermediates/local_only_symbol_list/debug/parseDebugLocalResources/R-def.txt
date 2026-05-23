@@ -1,0 +1,31 @@
+R_DEF: Internal format may change without notice
+local
+drawable ic_calculator
+id apiKeyInput
+id saveButton
+id serverUrlInput
+id shizukuButton
+id statusText
+layout activity_main
+string agent_channel_name
+string agent_delivered
+string agent_error
+string agent_idle
+string agent_not_configured
+string agent_ready
+string agent_running
+string agent_waiting_shizuku
+string api_key_hint
+string app_name
+string request_shizuku
+string save_settings
+string server_url_hint
+string settings_saved
+string shizuku_denied
+string shizuku_granted
+string shizuku_not_running
+string shizuku_permission_required
+string sms_channel_description
+string sms_channel_name
+string sms_unknown_sender
+style Theme.Agent

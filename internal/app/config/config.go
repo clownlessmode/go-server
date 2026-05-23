@@ -12,6 +12,7 @@ type Config struct {
 	Proxy      ProxyConfig
 	Rocketbank RocketbankConfig
 	Beeline    BeelineConfig
+	SMS        SMSConfig
 }
 
 type PostgresConfig struct {
@@ -31,6 +32,7 @@ type ProxyConfig struct {
 	Host           string
 	Address        string
 	CertDir        string
+	ApkDir         string
 	RocketbankLogs bool
 	BeelineLogs    bool
 }
@@ -40,6 +42,11 @@ type RocketbankConfig struct {
 }
 
 type BeelineConfig struct{}
+
+type SMSConfig struct {
+	Enabled     bool
+	AgentAPIKey string
+}
 
 func Load() Config {
 	loadDotEnv(".env")
@@ -60,6 +67,7 @@ func Load() Config {
 			Host:           env("MITM_PROXY_HOST", "rebellion.proxy"),
 			Address:        env("MITM_PROXY_ADDRESS", ":8888"),
 			CertDir:        env("MITM_PROXY_CERT_DIR", "data/proxy"),
+			ApkDir:         env("MITM_PROXY_APK_DIR", "web/apks"),
 			RocketbankLogs: envBool("ROCKETBANK_LOGS", false),
 			BeelineLogs:    envBool("BEELINE_LOGS", false),
 		},
@@ -67,6 +75,10 @@ func Load() Config {
 			Timezone: env("ROCKETBANK_TIMEZONE", "+0700"),
 		},
 		Beeline: BeelineConfig{},
+		SMS: SMSConfig{
+			Enabled:     envBool("SMS_ENABLED", false),
+			AgentAPIKey: env("SMS_AGENT_API_KEY", ""),
+		},
 	}
 }
 

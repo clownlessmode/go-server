@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -12,6 +13,26 @@ import (
 )
 
 const beelineLogFile = "data/logs/beeline.json"
+
+var beelineLogExcludedHosts = []string{
+	"report.appmetrica.yandex.net",
+	"firebaselogging-pa.googleapis.com",
+	"inapps.appsflyersdk.com",
+	"launches.appsflyersdk.com",
+	"static.beeline.ru",
+	"www.google.com",
+}
+
+func isBeelineLogExcludedHost(requestHost string) bool {
+	host := strings.ToLower(hostForLog(requestHost))
+	for _, excluded := range beelineLogExcludedHosts {
+		if host == excluded {
+			return true
+		}
+	}
+
+	return false
+}
 
 type beelineResponseLog struct {
 	CapturedAt string `json:"capturedAt"`
@@ -54,6 +75,21 @@ func (s *Service) writeBeelineResponseLog(req *http.Request, res *http.Response)
 	}
 
 	proxyLog.Infof("proxy response saved: host=%s route=%s status=%d", entry.Host, entry.Route, entry.Status)
+}
+
+func isBeelineHost(requestHost string) bool {
+	host := requestHost
+	if splitHost, _, err := net.SplitHostPort(requestHost); err == nil {
+		host = splitHost
+	}
+
+	return strings.EqualFold(host, "api.beeline.ru")
+}
+
+func isRuruHost(requestHost string) bool {
+	host := strings.ToLower(hostForLog(requestHost))
+
+	return strings.Contains(host, "ruru.ru")
 }
 
 func appendBeelineJSONEntry(path string, entry beelineResponseLog) error {

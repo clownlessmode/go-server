@@ -15,13 +15,27 @@ func New(repo domain.Repository) *UseCase {
 }
 
 func (uc *UseCase) Execute(ctx context.Context, input Input) (*Output, error) {
-	config, err := uc.repo.GetConfig(ctx)
+	sim, err := uc.repo.GetSim(ctx, input.Number)
+	if err != nil {
+		return nil, err
+	}
+
+	effectiveBalance, err := uc.repo.GetEffectiveBalance(ctx, input.Number)
+	if err != nil {
+		return nil, err
+	}
+
+	paymentsTotal, err := uc.repo.SumPaymentTotals(ctx, input.Number)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Output{
-		CreatedAt: config.CreatedAt,
-		UpdatedAt: config.UpdatedAt,
+		Number:        sim.Number,
+		Balance:       effectiveBalance,
+		BaseBalance:   sim.Balance,
+		PaymentsTotal: paymentsTotal,
+		CreatedAt:     sim.CreatedAt,
+		UpdatedAt:     sim.UpdatedAt,
 	}, nil
 }
