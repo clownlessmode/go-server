@@ -29,6 +29,8 @@ func main() {
 	day := flag.Bool("day", false, "limit report to last day")
 	week := flag.Bool("week", false, "limit report to last 7 days")
 	month := flag.Bool("month", false, "use full billing month period (default)")
+	v1 := flag.Bool("v1", false, "use first-page.html template")
+	v2 := flag.Bool("v2", false, "use first-page-v2.html template")
 	flag.Parse()
 
 	if *sim == "" {
@@ -57,6 +59,16 @@ func main() {
 	}
 	if selected > 1 {
 		reportLog.Fatalf("only one of -day, -week, -month can be specified")
+	}
+
+	if *v1 && *v2 {
+		reportLog.Fatalf("only one of -v1, -v2 can be specified")
+	}
+	switch {
+	case *v2:
+		beelinedetalization.SetFirstPageType("2")
+	case *v1:
+		beelinedetalization.SetFirstPageType("1")
 	}
 
 	if err := resetOutputDir(pdfOutputDir); err != nil {

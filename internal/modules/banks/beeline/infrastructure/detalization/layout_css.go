@@ -4,8 +4,10 @@ import "strings"
 
 const amountFitCSS = `<style>
 .amount-fit{width:400px!important;right:72px!important;left:auto!important;text-align:right!important;transform-origin:100% 100%!important;-webkit-transform-origin:100% 100%!important}
+.amount-fit.ya{text-align:end!important}
 @media print{
 .amount-fit{width:355.555556pt!important;right:64pt!important;left:auto!important;text-align:right!important;transform-origin:100% 100%!important;-webkit-transform-origin:100% 100%!important}
+.amount-fit.ya{text-align:end!important}
 }
 </style>`
 

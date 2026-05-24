@@ -31,6 +31,10 @@ type ReportParams struct {
 }
 
 func renderFirstPageHTML(templateBody []byte, params ReportParams) []byte {
+	if isFirstPageV2Template(templateBody) {
+		return renderFirstPageHTMLV2(templateBody, params)
+	}
+
 	html := string(templateBody)
 	html = injectLayoutCSS(html, amountFitCSS)
 	replacements := map[string]string{

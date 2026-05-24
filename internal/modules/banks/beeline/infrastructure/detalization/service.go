@@ -10,11 +10,10 @@ import (
 	"strings"
 )
 
-//go:embed templates/first-page.html templates/second-page.html templates/data-page.html
+//go:embed templates/first-page.html templates/first-page-v2.html templates/second-page.html templates/data-page.html
 var templateFS embed.FS
 
 const (
-	firstPageTemplate  = "templates/first-page.html"
 	secondPageTemplate = "templates/second-page.html"
 	dataPageTemplate   = "templates/data-page.html"
 )
@@ -85,7 +84,7 @@ func (s *Service) GenerateFirstPagePDF(params ReportParams) ([]byte, error) {
 
 func (s *Service) generateFirstPagePDF(params ReportParams, htmlPagesDir string) ([]byte, error) {
 	return s.generatePagePDF(
-		firstPageTemplate,
+		firstPageTemplate(),
 		func(templateBody []byte, params ReportParams) []byte {
 			return renderFirstPageHTML(templateBody, params)
 		},

@@ -41,6 +41,17 @@ func TestFormatReportOpeningBalanceLine(t *testing.T) {
 	}
 }
 
+func TestFormatReportOpeningBalanceLineV2(t *testing.T) {
+	loc := time.FixedZone("MSK", 3*60*60)
+	date := time.Date(2026, 5, 17, 0, 0, 0, 0, loc)
+
+	got := detalization.FormatReportOpeningBalanceLineV2(date, 6.76)
+	want := `на 17 мая <span class="fc1">6,76 ₽</span>`
+	if got != want {
+		t.Fatalf("opening balance v2 = %q, want %q", got, want)
+	}
+}
+
 func TestFormatReportTitle(t *testing.T) {
 	loc := time.FixedZone("MSK", 3*60*60)
 	start := time.Date(2026, 4, 24, 0, 0, 0, 0, loc)

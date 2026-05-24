@@ -143,6 +143,16 @@ func FormatReportOpeningBalanceLine(date time.Time, balance float64) string {
 	)
 }
 
+func FormatReportOpeningBalanceLineV2(date time.Time, balance float64) string {
+	date = date.In(reportLocation())
+	return fmt.Sprintf(
+		"на %d %s <span class=\"fc1\">%s</span>",
+		date.Day(),
+		russianMonthGenitive(date.Month()),
+		formatReportBalanceAmount(balance),
+	)
+}
+
 func FormatReportPaymentsLine(value float64) string {
 	return fmt.Sprintf(
 		"платежи и переводы<span class=\"_ _3\"> </span><span class=\"fc1\">%s</span>",
@@ -160,6 +170,27 @@ func FormatReportOtherLine(value float64) string {
 func FormatReportRefillLine(value float64) string {
 	return fmt.Sprintf(
 		"личный баланс<span class=\"_ _5\"> </span><span class=\"fc1\">%s</span>",
+		FormatReportRefillAmount(value),
+	)
+}
+
+func FormatReportPaymentsLineV2(value float64) string {
+	return fmt.Sprintf(
+		"платежи и переводы<span class=\"_ _0\"> </span><span class=\"fc1\">%s</span>",
+		FormatReportCategorySpent(value),
+	)
+}
+
+func FormatReportOtherLineV2(value float64) string {
+	return fmt.Sprintf(
+		"другое<span class=\"_\"> </span><span class=\"fc1 ws4\">%s</span>",
+		FormatReportCategorySpent(value),
+	)
+}
+
+func FormatReportRefillLineV2(value float64) string {
+	return fmt.Sprintf(
+		"личный баланс<span class=\"_ _1\"> </span><span class=\"fc1\">%s</span>",
 		FormatReportRefillAmount(value),
 	)
 }
