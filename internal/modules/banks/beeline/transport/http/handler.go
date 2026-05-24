@@ -14,11 +14,12 @@ import (
 	"project/internal/modules/banks/beeline/usecase/deletepayment"
 	"project/internal/modules/banks/beeline/usecase/deletesim"
 	"project/internal/modules/banks/beeline/usecase/getconfig"
+	"project/internal/modules/banks/beeline/usecase/getdetalization"
 	"project/internal/modules/banks/beeline/usecase/getpayment"
 	"project/internal/modules/banks/beeline/usecase/getsim"
+	"project/internal/modules/banks/beeline/usecase/hidedetalizationtransaction"
 	"project/internal/modules/banks/beeline/usecase/listpayments"
 	"project/internal/modules/banks/beeline/usecase/listsims"
-	"project/internal/modules/banks/beeline/usecase/updatebalance"
 	"project/internal/modules/banks/beeline/usecase/updatepayment"
 )
 
@@ -29,9 +30,10 @@ type Handler struct {
 	getSim        *getsim.UseCase
 	createSim     *createsim.UseCase
 	deleteSim     *deletesim.UseCase
-	getConfig     *getconfig.UseCase
-	updateBalance *updatebalance.UseCase
-	listPayments  *listpayments.UseCase
+	getConfig                 *getconfig.UseCase
+	getDetalization           *getdetalization.UseCase
+	hideDetalizationTransaction *hidedetalizationtransaction.UseCase
+	listPayments              *listpayments.UseCase
 	getPayment    *getpayment.UseCase
 	createPayment *createpayment.UseCase
 	updatePayment *updatepayment.UseCase
@@ -44,7 +46,8 @@ func NewHandler(
 	createSim *createsim.UseCase,
 	deleteSim *deletesim.UseCase,
 	getConfig *getconfig.UseCase,
-	updateBalance *updatebalance.UseCase,
+	getDetalization *getdetalization.UseCase,
+	hideDetalizationTransaction *hidedetalizationtransaction.UseCase,
 	listPayments *listpayments.UseCase,
 	getPayment *getpayment.UseCase,
 	createPayment *createpayment.UseCase,
@@ -56,9 +59,10 @@ func NewHandler(
 		getSim:        getSim,
 		createSim:     createSim,
 		deleteSim:     deleteSim,
-		getConfig:     getConfig,
-		updateBalance: updateBalance,
-		listPayments:  listPayments,
+		getConfig:                   getConfig,
+		getDetalization:             getDetalization,
+		hideDetalizationTransaction: hideDetalizationTransaction,
+		listPayments:                listPayments,
 		getPayment:    getPayment,
 		createPayment: createPayment,
 		updatePayment: updatePayment,
@@ -68,10 +72,6 @@ func NewHandler(
 
 type CreateSimRequest struct {
 	Number string `json:"number" binding:"required" example:"9680659702"`
-}
-
-type UpdateBalanceRequest struct {
-	Balance *float64 `json:"balance" binding:"required" example:"50000"`
 }
 
 type CreatePaymentRequest struct {
@@ -199,7 +199,7 @@ func (h *Handler) DeleteSim(c *gin.Context) {
 
 // GetConfig godoc
 // @Summary Get Beeline SIM config
-// @Description Returns config with effective balance after payment history for the SIM.
+// @Description Returns balance computed from Beeline detalization snapshot and payment history for the current period.
 // @Tags beeline config
 // @Produce json
 // @Param number path string true "10-digit phone number"
@@ -220,45 +220,70 @@ func (h *Handler) GetConfig(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, configResponse(out.Number, out.Balance, out.BaseBalance, out.PaymentsTotal, out.CreatedAt, out.UpdatedAt))
+	c.JSON(http.StatusOK, configResponse(out.Number, out.Balance, out.PaymentsTotal, out.IncomingTotal, out.CreatedAt, out.UpdatedAt))
 }
 
-// UpdateBalance godoc
-// @Summary Update Beeline SIM base balance
-// @Description Updates initial balance for the SIM. Effective balance subtracts payment totals from history.
-// @Tags beeline config
-// @Accept json
+// GetDetalization godoc
+// @Summary Get Beeline SIM detalization
+// @Description Returns full Beeline detalization for the snapshot period: real Beeline transactions minus hidden ones, plus configured payments. Each transaction includes id and source (beeline or payment).
+// @Tags beeline detalization
 // @Produce json
 // @Param number path string true "10-digit phone number"
-// @Param input body UpdateBalanceRequest true "Balance update payload"
-// @Success 200 {object} ConfigResponse
-// @Failure 400 {object} BeelineErrorResponse
+// @Success 200 {object} DetalizationResponse
 // @Failure 404 {object} BeelineErrorResponse
 // @Failure 500 {object} BeelineErrorResponse
-// @Router /banks/beeline/sims/{number}/config/balance [patch]
-func (h *Handler) UpdateBalance(c *gin.Context) {
-	var req UpdateBalanceRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
+// @Router /banks/beeline/sims/{number}/detalization [get]
+func (h *Handler) GetDetalization(c *gin.Context) {
+	number := simNumberParam(c)
+	out, err := h.getDetalization.Execute(c.Request.Context(), getdetalization.Input{Number: number})
+	if errors.Is(err, domain.ErrSimNotFound) {
+		c.JSON(http.StatusNotFound, gin.H{"error": "sim not found"})
 		return
 	}
-
-	number := simNumberParam(c)
-	out, err := h.updateBalance.Execute(c.Request.Context(), updatebalance.Input{
-		Number:  number,
-		Balance: req.Balance,
-	})
+	if errors.Is(err, domain.ErrDetalizationSnapshotNotFound) {
+		c.JSON(http.StatusNotFound, gin.H{"error": "detalization snapshot not found, open detalization in Beeline app first"})
+		return
+	}
 	if err != nil {
-		if errors.Is(err, domain.ErrSimNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "sim not found"})
-			return
-		}
-		handlerLog.Errorf("update balance failed: %v", err)
+		handlerLog.Errorf("get detalization failed: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}
 
-	c.JSON(http.StatusOK, configResponse(out.Number, out.Balance, out.BaseBalance, out.PaymentsTotal, out.CreatedAt, out.UpdatedAt))
+	c.JSON(http.StatusOK, detalizationResponse(out.Number, out.PeriodStart, out.PeriodEnd, out.Balance, out.Data, out.CreatedAt, out.UpdatedAt))
+}
+
+// HideDetalizationTransaction godoc
+// @Summary Hide Beeline detalization transaction
+// @Description Hides a real Beeline transaction from detalization and balance by id. Use id from GET detalization where source=beeline. Idempotent.
+// @Tags beeline detalization
+// @Produce json
+// @Param number path string true "10-digit phone number"
+// @Param id path string true "Transaction id"
+// @Success 204
+// @Failure 404 {object} BeelineErrorResponse
+// @Failure 500 {object} BeelineErrorResponse
+// @Router /banks/beeline/sims/{number}/detalization/transactions/{id} [delete]
+func (h *Handler) HideDetalizationTransaction(c *gin.Context) {
+	_, err := h.hideDetalizationTransaction.Execute(c.Request.Context(), hidedetalizationtransaction.Input{
+		Number:        simNumberParam(c),
+		TransactionID: c.Param("id"),
+	})
+	if errors.Is(err, domain.ErrSimNotFound) {
+		c.JSON(http.StatusNotFound, gin.H{"error": "sim not found"})
+		return
+	}
+	if errors.Is(err, domain.ErrCannotHidePaymentTransaction) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "use DELETE /payments/{id} to remove configured payments"})
+		return
+	}
+	if err != nil {
+		handlerLog.Errorf("hide detalization transaction failed: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }
 
 // ListPayments godoc

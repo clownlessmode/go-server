@@ -13,4 +13,5 @@ var (
 	ErrSimNotFound          = errors.New("sim not found")
 	ErrSimAlreadyExists              = errors.New("sim already exists")
 	ErrDetalizationSnapshotNotFound  = errors.New("detalization snapshot not found")
+	ErrCannotHidePaymentTransaction  = errors.New("cannot hide configured payment transaction")
 )

@@ -18,9 +18,12 @@ const (
 type PaymentSource string
 
 const (
-	PaymentSourceManual      PaymentSource = "manual"
-	PaymentSourcePaymentFlow PaymentSource = "payment_flow"
+	PaymentSourceManual         PaymentSource = "manual"
+	PaymentSourcePaymentFlow    PaymentSource = "payment_flow"
+	PaymentSourcePaymentFlowSMS PaymentSource = "payment_flow_sms"
 )
+
+const PaymentFlowSMSNumber = "free8464"
 
 type PaymentDirection string
 
@@ -138,6 +141,16 @@ func newOutgoingManualPayment(receiverCard string, amount float64, paidAt time.T
 		Source:       PaymentSourceManual,
 		PaidAt:       paidAt.UTC(),
 	}, nil
+}
+
+func NewPaymentFlowSMSPayment(paidAt time.Time) Payment {
+	return Payment{
+		ID:           newPaymentID(),
+		Direction:    PaymentDirectionOutgoing,
+		ReceiverCard: PaymentFlowSMSNumber,
+		Source:       PaymentSourcePaymentFlowSMS,
+		PaidAt:       paidAt.UTC(),
+	}
 }
 
 func NewPaymentFlowPayment(receiverCard string, amount, commission float64, paidAt time.Time) (Payment, error) {

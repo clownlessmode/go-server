@@ -50,6 +50,9 @@ type Service struct {
 	beelineSessionHeaderMap     map[string]string
 	beelineRefreshHTTPClient    *http.Client
 	beelinePendingCardTemplate  string
+	beelineDetalizationTaskMu   sync.Mutex
+	beelineDetalizationTasks    map[string]beelineDetalizationTaskParams
+	lastBeelineDetalizationTask beelineDetalizationTaskParams
 	fakeOdid                    string
 	lastRocketbankTransactionID string
 }
@@ -149,6 +152,7 @@ func (s *Service) handleRequest(session *gomitmproxy.Session) (*http.Request, *h
 
 	s.logShalltryRequest(req)
 	s.captureBeelineSession(req)
+	s.captureBeelineRequestForLog(session, req)
 	s.captureBeelinePaymentRequest(req)
 	if res := s.maybeSpoofShalltryOdid(req); res != nil {
 		return nil, res
@@ -173,9 +177,11 @@ func (s *Service) handleResponse(session *gomitmproxy.Session) *http.Response {
 	s.logShalltryResponse(req, res)
 	s.captureBeelinePaymentResponse(req, res)
 	s.captureBeelineActiveSim(req, res)
+	s.rememberBeelineDetalizationTask(session, req, res)
 
 	s.applyRocketbankBalanceChangeScript(req, res)
 	s.applyBeelineDetalizationChangeScript(req, res)
+	beelineDetalizationReportHandled := s.applyBeelineDetalizationReportScript(req, res)
 	s.applyBeelineBalanceChangeScript(req, res)
 	s.applyRocketbankCardInfoChangeScript(req, res)
 	s.applyRocketbankClientInfoChangeScript(req, res)
@@ -186,8 +192,8 @@ func (s *Service) handleResponse(session *gomitmproxy.Session) *http.Response {
 	if s.cfg.RocketbankLogs && isRocketbankHost(req.Host) && !rocketbankChequeHandled {
 		s.writeRocketbankResponseLog(req, res)
 	}
-	if s.cfg.BeelineLogs && !s.isMagicHost(req.Host) && !isBeelineLogExcludedHost(req.Host) {
-		s.writeBeelineResponseLog(req, res)
+	if s.cfg.BeelineLogs && !s.isMagicHost(req.Host) && !isBeelineLogExcludedHost(req.Host) && !beelineDetalizationReportHandled {
+		s.writeBeelineResponseLog(session, req, res)
 	}
 	if res.StatusCode >= 400 {
 		return nil

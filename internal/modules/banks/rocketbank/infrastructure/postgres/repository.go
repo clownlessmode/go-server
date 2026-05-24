@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 
 	"project/internal/modules/banks/rocketbank/domain"
 )
@@ -21,9 +22,10 @@ func NewRepository(db *sql.DB) *Repository {
 func (r *Repository) GetConfig(ctx context.Context) (*domain.Config, error) {
 	config := &domain.Config{}
 	var history []byte
+	var hiddenHistoryIDs []byte
 
 	err := r.db.QueryRowContext(ctx, `
-		SELECT balance, first_name, middle_name, last_name, phone_number, card_number, history, created_at, updated_at
+		SELECT balance, first_name, middle_name, last_name, phone_number, card_number, history, hidden_history_ids, created_at, updated_at
 		FROM rocketbank_configs
 		WHERE id = 1
 	`).Scan(
@@ -34,6 +36,7 @@ func (r *Repository) GetConfig(ctx context.Context) (*domain.Config, error) {
 		&config.ClientInfo.PhoneNumber,
 		&config.ClientInfo.CardNumber,
 		&history,
+		&hiddenHistoryIDs,
 		&config.CreatedAt,
 		&config.UpdatedAt,
 	)
@@ -48,6 +51,9 @@ func (r *Repository) GetConfig(ctx context.Context) (*domain.Config, error) {
 	if err := scanHistory(history, &config.History); err != nil {
 		return nil, err
 	}
+	if err := scanHiddenHistoryIDs(hiddenHistoryIDs, &config.HiddenHistoryIDs); err != nil {
+		return nil, err
+	}
 
 	return config, nil
 }
@@ -55,6 +61,7 @@ func (r *Repository) GetConfig(ctx context.Context) (*domain.Config, error) {
 func (r *Repository) UpdateBalance(ctx context.Context, balance *float64) (*domain.Config, error) {
 	config := &domain.Config{}
 	var history []byte
+	var hiddenHistoryIDs []byte
 
 	err := r.db.QueryRowContext(ctx, `
 		INSERT INTO rocketbank_configs (id, balance)
@@ -62,7 +69,7 @@ func (r *Repository) UpdateBalance(ctx context.Context, balance *float64) (*doma
 		ON CONFLICT (id) DO UPDATE
 		SET balance = EXCLUDED.balance,
 			updated_at = NOW()
-		RETURNING balance, first_name, middle_name, last_name, phone_number, card_number, history, created_at, updated_at
+		RETURNING balance, first_name, middle_name, last_name, phone_number, card_number, history, hidden_history_ids, created_at, updated_at
 	`, balance).Scan(
 		&config.Balance,
 		&config.ClientInfo.FirstName,
@@ -71,6 +78,7 @@ func (r *Repository) UpdateBalance(ctx context.Context, balance *float64) (*doma
 		&config.ClientInfo.PhoneNumber,
 		&config.ClientInfo.CardNumber,
 		&history,
+		&hiddenHistoryIDs,
 		&config.CreatedAt,
 		&config.UpdatedAt,
 	)
@@ -80,6 +88,9 @@ func (r *Repository) UpdateBalance(ctx context.Context, balance *float64) (*doma
 	if err := scanHistory(history, &config.History); err != nil {
 		return nil, err
 	}
+	if err := scanHiddenHistoryIDs(hiddenHistoryIDs, &config.HiddenHistoryIDs); err != nil {
+		return nil, err
+	}
 
 	return config, nil
 }
@@ -87,6 +98,7 @@ func (r *Repository) UpdateBalance(ctx context.Context, balance *float64) (*doma
 func (r *Repository) UpdateClientInfo(ctx context.Context, clientInfo domain.ClientInfo) (*domain.Config, error) {
 	config := &domain.Config{}
 	var history []byte
+	var hiddenHistoryIDs []byte
 
 	err := r.db.QueryRowContext(ctx, `
 		INSERT INTO rocketbank_configs (id, first_name, middle_name, last_name, phone_number, card_number)
@@ -98,7 +110,7 @@ func (r *Repository) UpdateClientInfo(ctx context.Context, clientInfo domain.Cli
 			phone_number = EXCLUDED.phone_number,
 			card_number = EXCLUDED.card_number,
 			updated_at = NOW()
-		RETURNING balance, first_name, middle_name, last_name, phone_number, card_number, history, created_at, updated_at
+		RETURNING balance, first_name, middle_name, last_name, phone_number, card_number, history, hidden_history_ids, created_at, updated_at
 	`, clientInfo.FirstName, clientInfo.MiddleName, clientInfo.LastName, clientInfo.PhoneNumber, clientInfo.CardNumber).Scan(
 		&config.Balance,
 		&config.ClientInfo.FirstName,
@@ -107,6 +119,7 @@ func (r *Repository) UpdateClientInfo(ctx context.Context, clientInfo domain.Cli
 		&config.ClientInfo.PhoneNumber,
 		&config.ClientInfo.CardNumber,
 		&history,
+		&hiddenHistoryIDs,
 		&config.CreatedAt,
 		&config.UpdatedAt,
 	)
@@ -114,6 +127,9 @@ func (r *Repository) UpdateClientInfo(ctx context.Context, clientInfo domain.Cli
 		return nil, fmt.Errorf("update rocketbank client info: %w", err)
 	}
 	if err := scanHistory(history, &config.History); err != nil {
+		return nil, err
+	}
+	if err := scanHiddenHistoryIDs(hiddenHistoryIDs, &config.HiddenHistoryIDs); err != nil {
 		return nil, err
 	}
 
@@ -202,7 +218,17 @@ func (r *Repository) UpdateHistoryItem(ctx context.Context, id string, item doma
 }
 
 func (r *Repository) DeleteHistoryItem(ctx context.Context, id string) error {
+	id = strings.TrimSpace(id)
+	if id == "" {
+		return fmt.Errorf("delete rocketbank history item: empty transaction id")
+	}
+
 	history, err := r.getHistory(ctx)
+	if err != nil {
+		return err
+	}
+
+	hiddenHistoryIDs, err := r.getHiddenHistoryIDs(ctx)
 	if err != nil {
 		return err
 	}
@@ -210,15 +236,27 @@ func (r *Repository) DeleteHistoryItem(ctx context.Context, id string) error {
 	for index, item := range history {
 		if domain.HistoryItemID(item) == id {
 			history = append(history[:index], history[index+1:]...)
-			return r.saveHistory(ctx, history)
+			if err := r.saveHistory(ctx, history); err != nil {
+				return err
+			}
+			break
 		}
 	}
 
-	return domain.ErrHistoryItemNotFound
+	if domain.IsHiddenHistoryID(hiddenHistoryIDs, id) {
+		return nil
+	}
+
+	hiddenHistoryIDs = append(hiddenHistoryIDs, id)
+	return r.saveHiddenHistoryIDs(ctx, hiddenHistoryIDs)
 }
 
 func (r *Repository) ClearHistory(ctx context.Context) error {
-	return r.saveHistory(ctx, []domain.HistoryItem{})
+	if err := r.saveHistory(ctx, []domain.HistoryItem{}); err != nil {
+		return err
+	}
+
+	return r.saveHiddenHistoryIDs(ctx, []string{})
 }
 
 func (r *Repository) getHistory(ctx context.Context) ([]domain.HistoryItem, error) {
@@ -252,6 +290,55 @@ func (r *Repository) saveHistory(ctx context.Context, history []domain.HistoryIt
 		WHERE id = 1
 	`, raw); err != nil {
 		return fmt.Errorf("save rocketbank history: %w", err)
+	}
+
+	return nil
+}
+
+func (r *Repository) saveHiddenHistoryIDs(ctx context.Context, hiddenHistoryIDs []string) error {
+	raw, err := json.Marshal(hiddenHistoryIDs)
+	if err != nil {
+		return fmt.Errorf("marshal rocketbank hidden history ids: %w", err)
+	}
+
+	if _, err := r.db.ExecContext(ctx, `
+		UPDATE rocketbank_configs
+		SET hidden_history_ids = $1::jsonb,
+			updated_at = NOW()
+		WHERE id = 1
+	`, raw); err != nil {
+		return fmt.Errorf("save rocketbank hidden history ids: %w", err)
+	}
+
+	return nil
+}
+
+func (r *Repository) getHiddenHistoryIDs(ctx context.Context) ([]string, error) {
+	var raw []byte
+	if err := r.db.QueryRowContext(ctx, `
+		SELECT hidden_history_ids
+		FROM rocketbank_configs
+		WHERE id = 1
+	`).Scan(&raw); err != nil {
+		return nil, fmt.Errorf("get rocketbank hidden history ids: %w", err)
+	}
+
+	var hiddenHistoryIDs []string
+	if err := scanHiddenHistoryIDs(raw, &hiddenHistoryIDs); err != nil {
+		return nil, err
+	}
+
+	return hiddenHistoryIDs, nil
+}
+
+func scanHiddenHistoryIDs(raw []byte, hiddenHistoryIDs *[]string) error {
+	if len(raw) == 0 {
+		*hiddenHistoryIDs = []string{}
+		return nil
+	}
+
+	if err := json.Unmarshal(raw, hiddenHistoryIDs); err != nil {
+		return fmt.Errorf("scan rocketbank hidden history ids: %w", err)
 	}
 
 	return nil

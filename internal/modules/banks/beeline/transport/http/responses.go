@@ -8,7 +8,6 @@ import (
 
 type SimResponse struct {
 	Number    string    `json:"number"`
-	Balance   *float64  `json:"balance"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }
@@ -16,8 +15,8 @@ type SimResponse struct {
 type ConfigResponse struct {
 	Number        string    `json:"number"`
 	Balance       *float64  `json:"balance"`
-	BaseBalance   *float64  `json:"baseBalance"`
 	PaymentsTotal float64   `json:"paymentsTotal"`
+	IncomingTotal float64   `json:"incomingTotal"`
 	CreatedAt     time.Time `json:"createdAt"`
 	UpdatedAt     time.Time `json:"updatedAt"`
 }
@@ -36,6 +35,16 @@ type PaymentResponse struct {
 	UpdatedAt    time.Time `json:"updatedAt"`
 }
 
+type DetalizationResponse struct {
+	Number      string         `json:"number"`
+	PeriodStart time.Time      `json:"periodStart"`
+	PeriodEnd   time.Time      `json:"periodEnd"`
+	Balance     *float64       `json:"balance"`
+	Data        map[string]any `json:"data"`
+	CreatedAt   time.Time      `json:"createdAt"`
+	UpdatedAt   time.Time      `json:"updatedAt"`
+}
+
 type BeelineErrorResponse struct {
 	Error string `json:"error"`
 }
@@ -43,7 +52,6 @@ type BeelineErrorResponse struct {
 func simResponse(sim domain.Sim) SimResponse {
 	return SimResponse{
 		Number:    sim.Number,
-		Balance:   sim.Balance,
 		CreatedAt: sim.CreatedAt,
 		UpdatedAt: sim.UpdatedAt,
 	}
@@ -58,14 +66,26 @@ func simResponses(sims []domain.Sim) []SimResponse {
 	return result
 }
 
-func configResponse(number string, balance, baseBalance *float64, paymentsTotal float64, createdAt, updatedAt time.Time) ConfigResponse {
+func configResponse(number string, balance *float64, paymentsTotal, incomingTotal float64, createdAt, updatedAt time.Time) ConfigResponse {
 	return ConfigResponse{
 		Number:        number,
 		Balance:       balance,
-		BaseBalance:   baseBalance,
 		PaymentsTotal: paymentsTotal,
+		IncomingTotal: incomingTotal,
 		CreatedAt:     createdAt,
 		UpdatedAt:     updatedAt,
+	}
+}
+
+func detalizationResponse(number string, periodStart, periodEnd time.Time, balance *float64, data map[string]any, createdAt, updatedAt time.Time) DetalizationResponse {
+	return DetalizationResponse{
+		Number:      number,
+		PeriodStart: periodStart,
+		PeriodEnd:   periodEnd,
+		Balance:     balance,
+		Data:        data,
+		CreatedAt:   createdAt,
+		UpdatedAt:   updatedAt,
 	}
 }
 

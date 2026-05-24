@@ -22,14 +22,19 @@ func (s *Service) applyRocketbankHistoryTransactionChangeScript(req *http.Reques
 		return
 	}
 
-	item, err := s.rocketbankRepo.GetHistoryItem(req.Context(), transactionID)
-	if err != nil {
-		return
-	}
-
 	config, err := s.rocketbankRepo.GetConfig(req.Context())
 	if err != nil {
 		proxyLog.Warnf("rocketbank history transaction config read failed: err=%v", err)
+		return
+	}
+	if domain.IsHiddenHistoryID(config.HiddenHistoryIDs, transactionID) {
+		blockRocketbankHistoryTransaction(res)
+		proxyLog.Infof("rocketbank history transaction hidden: transactionId=%s", transactionID)
+		return
+	}
+
+	item, err := s.rocketbankRepo.GetHistoryItem(req.Context(), transactionID)
+	if err != nil {
 		return
 	}
 
@@ -68,4 +73,21 @@ func isRocketbankHistoryTransactionRequest(req *http.Request, res *http.Response
 	return req.Method == http.MethodGet &&
 		isRocketbankHost(req.Host) &&
 		pathForLog(req) == rocketbankHistoryTransactionPath
+}
+
+func blockRocketbankHistoryTransaction(res *http.Response) {
+	if res.Body != nil {
+		_ = res.Body.Close()
+	}
+
+	res.StatusCode = http.StatusNotFound
+	res.Status = "404 Not Found"
+	res.Body = io.NopCloser(bytes.NewReader([]byte(`{"error":"history item not found"}`)))
+	res.ContentLength = int64(len(`{"error":"history item not found"}`))
+	if res.Header == nil {
+		res.Header = make(http.Header)
+	}
+	res.Header.Set("Content-Type", "application/json; charset=utf-8")
+	res.Header.Set("Content-Length", strconv.Itoa(len(`{"error":"history item not found"}`)))
+	res.Header.Del("Content-Encoding")
 }

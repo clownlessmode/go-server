@@ -154,7 +154,10 @@ func (s *Service) fetchBeelineBalanceMain(ctx context.Context, simNumber string,
 	}
 
 	data, _ := response["data"].(map[string]any)
-	balanceValue := jsonNumber(data["balanceValue"])
+	balanceValue := float64(0)
+	if parsed := jsonNumberFromAny(data["balanceValue"]); parsed != nil {
+		balanceValue = *parsed
+	}
 
 	proxyLog.Infof("beeline refresh balance/main: sim=%s apiBalance=%.2f", simNumber, balanceValue)
 

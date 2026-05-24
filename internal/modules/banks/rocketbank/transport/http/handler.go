@@ -564,22 +564,18 @@ func (h *Handler) UpdateSBPTransfer(c *gin.Context) {
 
 // DeleteHistoryItem godoc
 // @Summary Delete Rocketbank history item
-// @Description Deletes Rocketbank configured history item by transaction id.
+// @Description Deletes Rocketbank history item by transaction id. Works for both configured items and real bank operations.
 // @Tags rocketbank history
 // @Produce json
 // @Param id path string true "History transaction id"
 // @Success 204
-// @Failure 404 {object} RocketbankErrorResponse
+// @Failure 400 {object} RocketbankErrorResponse
 // @Failure 500 {object} RocketbankErrorResponse
 // @Router /banks/rocketbank/config/history/items/{id} [delete]
 func (h *Handler) DeleteHistoryItem(c *gin.Context) {
 	_, err := h.deleteHistoryItem.Execute(c.Request.Context(), deletehistoryitem.Input{
 		ID: c.Param("id"),
 	})
-	if errors.Is(err, domain.ErrHistoryItemNotFound) {
-		c.JSON(http.StatusNotFound, gin.H{"error": "history item not found"})
-		return
-	}
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return

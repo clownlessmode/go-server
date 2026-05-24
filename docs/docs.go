@@ -202,7 +202,7 @@ const docTemplate = `{
         },
         "/banks/beeline/sims/{number}/config": {
             "get": {
-                "description": "Returns config with effective balance after payment history for the SIM.",
+                "description": "Returns balance computed from Beeline detalization snapshot and payment history for the current period.",
                 "produces": [
                     "application/json"
                 ],
@@ -241,19 +241,57 @@ const docTemplate = `{
                 }
             }
         },
-        "/banks/beeline/sims/{number}/config/balance": {
-            "patch": {
-                "description": "Updates initial balance for the SIM. Effective balance subtracts payment totals from history.",
-                "consumes": [
-                    "application/json"
-                ],
+        "/banks/beeline/sims/{number}/detalization": {
+            "get": {
+                "description": "Returns full Beeline detalization for the snapshot period: real Beeline transactions minus hidden ones, plus configured payments. Each transaction includes id and source (beeline or payment).",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "beeline config"
+                    "beeline detalization"
                 ],
-                "summary": "Update Beeline SIM base balance",
+                "summary": "Get Beeline SIM detalization",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "10-digit phone number",
+                        "name": "number",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.DetalizationResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/banks/beeline/sims/{number}/detalization/transactions/{id}": {
+            "delete": {
+                "description": "Hides a real Beeline transaction from detalization and balance by id. Use id from GET detalization where source=beeline. Idempotent.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "beeline detalization"
+                ],
+                "summary": "Hide Beeline detalization transaction",
                 "parameters": [
                     {
                         "type": "string",
@@ -263,27 +301,16 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Balance update payload",
-                        "name": "input",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.UpdateBalanceRequest"
-                        }
+                        "type": "string",
+                        "description": "Transaction id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.ConfigResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/internal_modules_banks_beeline_transport_http.BeelineErrorResponse"
-                        }
+                    "204": {
+                        "description": "No Content"
                     },
                     "404": {
                         "description": "Not Found",
@@ -869,7 +896,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Deletes Rocketbank configured history item by transaction id.",
+                "description": "Deletes Rocketbank history item by transaction id. Works for both configured items and real bank operations.",
                 "produces": [
                     "application/json"
                 ],
@@ -890,8 +917,8 @@ const docTemplate = `{
                     "204": {
                         "description": "No Content"
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/internal_modules_banks_rocketbank_transport_http.RocketbankErrorResponse"
                         }
@@ -1526,11 +1553,11 @@ const docTemplate = `{
                 "balance": {
                     "type": "number"
                 },
-                "baseBalance": {
-                    "type": "number"
-                },
                 "createdAt": {
                     "type": "string"
+                },
+                "incomingTotal": {
+                    "type": "number"
                 },
                 "number": {
                     "type": "string"
@@ -1584,6 +1611,33 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_banks_beeline_transport_http.DetalizationResponse": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "type": "number"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "number": {
+                    "type": "string"
+                },
+                "periodEnd": {
+                    "type": "string"
+                },
+                "periodStart": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_modules_banks_beeline_transport_http.PaymentResponse": {
             "type": "object",
             "properties": {
@@ -1625,9 +1679,6 @@ const docTemplate = `{
         "internal_modules_banks_beeline_transport_http.SimResponse": {
             "type": "object",
             "properties": {
-                "balance": {
-                    "type": "number"
-                },
                 "createdAt": {
                     "type": "string"
                 },
@@ -1636,18 +1687,6 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "type": "string"
-                }
-            }
-        },
-        "internal_modules_banks_beeline_transport_http.UpdateBalanceRequest": {
-            "type": "object",
-            "required": [
-                "balance"
-            ],
-            "properties": {
-                "balance": {
-                    "type": "number",
-                    "example": 50000
                 }
             }
         },

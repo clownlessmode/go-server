@@ -30,7 +30,7 @@ func (s *Service) applyRocketbankHistoryChangeScript(req *http.Request, res *htt
 		proxyLog.Warnf("rocketbank history change config read failed: err=%v", err)
 		return
 	}
-	if len(config.History) == 0 {
+	if len(config.History) == 0 && len(config.HiddenHistoryIDs) == 0 {
 		return
 	}
 
@@ -43,7 +43,7 @@ func (s *Service) applyRocketbankHistoryChangeScript(req *http.Request, res *htt
 		proxyLog.Warnf("rocketbank history change response close failed: err=%v", err)
 	}
 
-	changedBody, changed, err := rocketbankHistoryChangedBody(rawBody, res.Header.Get("Content-Encoding"), config.History, config.ClientInfo)
+	changedBody, changed, err := rocketbankHistoryChangedBody(rawBody, res.Header.Get("Content-Encoding"), config.History, config.ClientInfo, config.HiddenHistoryIDs)
 	if err != nil {
 		proxyLog.Warnf("rocketbank history change failed: err=%v", err)
 		res.Body = io.NopCloser(bytes.NewReader(rawBody))
@@ -58,7 +58,7 @@ func (s *Service) applyRocketbankHistoryChangeScript(req *http.Request, res *htt
 	res.ContentLength = int64(len(changedBody))
 	res.Header.Set("Content-Length", strconv.Itoa(len(changedBody)))
 
-	proxyLog.Infof("rocketbank history change applied: items=%d", len(config.History))
+	proxyLog.Infof("rocketbank history change applied: items=%d hidden=%d", len(config.History), len(config.HiddenHistoryIDs))
 }
 
 func isRocketbankHistoryRequest(req *http.Request, res *http.Response) bool {
@@ -68,7 +68,7 @@ func isRocketbankHistoryRequest(req *http.Request, res *http.Response) bool {
 		pathForLog(req) == rocketbankHistoryPath
 }
 
-func rocketbankHistoryChangedBody(rawBody []byte, encoding string, history []domain.HistoryItem, clientInfo domain.ClientInfo) ([]byte, bool, error) {
+func rocketbankHistoryChangedBody(rawBody []byte, encoding string, history []domain.HistoryItem, clientInfo domain.ClientInfo, hiddenHistoryIDs []string) ([]byte, bool, error) {
 	body := rawBody
 	encoded := false
 
@@ -96,8 +96,9 @@ func rocketbankHistoryChangedBody(rawBody []byte, encoding string, history []dom
 		return nil, false, nil
 	}
 
+	response, filtered := filterRocketbankHiddenHistory(response, hiddenHistoryIDs)
 	response, added := mergeRocketbankHistory(response, history, clientInfo)
-	if added == 0 {
+	if !filtered && added == 0 {
 		return nil, false, nil
 	}
 
@@ -161,6 +162,62 @@ func mergeRocketbankHistory(response []map[string]any, history []domain.HistoryI
 	}
 
 	return response, added
+}
+
+func filterRocketbankHiddenHistory(response []map[string]any, hiddenHistoryIDs []string) ([]map[string]any, bool) {
+	if len(hiddenHistoryIDs) == 0 {
+		return response, false
+	}
+
+	hiddenSet := make(map[string]struct{}, len(hiddenHistoryIDs))
+	for _, hiddenID := range hiddenHistoryIDs {
+		hiddenID = strings.TrimSpace(hiddenID)
+		if hiddenID == "" {
+			continue
+		}
+		hiddenSet[hiddenID] = struct{}{}
+	}
+	if len(hiddenSet) == 0 {
+		return response, false
+	}
+
+	changed := false
+	filteredResponse := make([]map[string]any, 0, len(response))
+	for _, period := range response {
+		operations, ok := period["operationsList"].([]any)
+		if !ok {
+			filteredResponse = append(filteredResponse, period)
+			continue
+		}
+
+		filteredOperations := make([]any, 0, len(operations))
+		for _, operation := range operations {
+			operationMap, ok := operation.(map[string]any)
+			if !ok {
+				filteredOperations = append(filteredOperations, operation)
+				continue
+			}
+			if _, hidden := hiddenSet[domain.LegacyHistoryOperationID(operationMap)]; hidden {
+				changed = true
+				continue
+			}
+			filteredOperations = append(filteredOperations, operation)
+		}
+
+		if len(filteredOperations) == 0 {
+			changed = true
+			continue
+		}
+
+		updatedPeriod := make(map[string]any, len(period))
+		for key, value := range period {
+			updatedPeriod[key] = value
+		}
+		updatedPeriod["operationsList"] = filteredOperations
+		filteredResponse = append(filteredResponse, updatedPeriod)
+	}
+
+	return filteredResponse, changed
 }
 
 func newRocketbankHistoryPeriod(response []map[string]any, period string, operation map[string]any) map[string]any {

@@ -27,6 +27,11 @@ func New(repo domain.Repository) *UseCase {
 	return &UseCase{repo: repo}
 }
 
+type SMSInput struct {
+	SimNumber string
+	PaidAt    time.Time
+}
+
 func (uc *UseCase) Execute(ctx context.Context, input Input) (*Output, error) {
 	if _, err := uc.repo.EnsureSim(ctx, input.SimNumber); err != nil {
 		return nil, err
@@ -43,6 +48,19 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) (*Output, error) {
 	}
 
 	created, err := uc.repo.CreatePayment(ctx, input.SimNumber, payment)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Output{Payment: created}, nil
+}
+
+func (uc *UseCase) ExecuteSMS(ctx context.Context, input SMSInput) (*Output, error) {
+	if _, err := uc.repo.EnsureSim(ctx, input.SimNumber); err != nil {
+		return nil, err
+	}
+
+	created, err := uc.repo.CreatePayment(ctx, input.SimNumber, domain.NewPaymentFlowSMSPayment(input.PaidAt))
 	if err != nil {
 		return nil, err
 	}

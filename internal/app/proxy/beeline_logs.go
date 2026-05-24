@@ -10,9 +10,15 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/AdguardTeam/gomitmproxy"
 )
 
-const beelineLogFile = "data/logs/beeline.json"
+const (
+	beelineLogFile              = "data/logs/beeline.json"
+	beelineRequestBodyProp      = "beelineRequestBody"
+	beelineRequestEncodingProp  = "beelineRequestEncoding"
+)
 
 var beelineLogExcludedHosts = []string{
 	"report.appmetrica.yandex.net",
@@ -40,11 +46,48 @@ type beelineResponseLog struct {
 	Host       string `json:"host"`
 	Route      string `json:"route"`
 	Query      string `json:"query,omitempty"`
+	Request    any    `json:"request,omitempty"`
 	Status     int    `json:"status"`
 	Response   any    `json:"response"`
 }
 
-func (s *Service) writeBeelineResponseLog(req *http.Request, res *http.Response) {
+func (s *Service) captureBeelineRequestForLog(session *gomitmproxy.Session, req *http.Request) {
+	if !s.cfg.BeelineLogs || s.isMagicHost(req.Host) || isBeelineLogExcludedHost(req.Host) {
+		return
+	}
+	if req.Body == nil {
+		return
+	}
+
+	rawBody, err := io.ReadAll(req.Body)
+	if err != nil {
+		proxyLog.Warnf("beeline request log read failed: route=%s err=%v", pathForLog(req), err)
+		return
+	}
+	req.Body = io.NopCloser(bytes.NewReader(rawBody))
+
+	session.SetProp(beelineRequestBodyProp, rawBody)
+	session.SetProp(beelineRequestEncodingProp, req.Header.Get("Content-Encoding"))
+}
+
+func beelineRequestForLog(session *gomitmproxy.Session) any {
+	rawBody, ok := session.GetProp(beelineRequestBodyProp)
+	if !ok {
+		return nil
+	}
+
+	body, ok := rawBody.([]byte)
+	if !ok || len(body) == 0 {
+		return nil
+	}
+
+	encoding, _ := session.GetProp(beelineRequestEncodingProp)
+	encodingValue, _ := encoding.(string)
+
+	return responseForLog(responseBodyForLog(body, encodingValue))
+}
+
+func (s *Service) writeBeelineResponseLog(session *gomitmproxy.Session, req *http.Request, res *http.Response) {
 	rawBody, err := io.ReadAll(res.Body)
 	if err != nil {
 		proxyLog.Warnf("beeline response log read failed: route=%s err=%v", pathForLog(req), err)
@@ -62,6 +105,7 @@ func (s *Service) writeBeelineResponseLog(req *http.Request, res *http.Response)
 		Host:       hostForLog(req.Host),
 		Route:      pathForLog(req),
 		Query:      req.URL.RawQuery,
+		Request:    beelineRequestForLog(session),
 		Status:     res.StatusCode,
 		Response:   responseForLog(responseBody),
 	}

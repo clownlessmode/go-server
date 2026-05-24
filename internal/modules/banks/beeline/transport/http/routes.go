@@ -11,7 +11,9 @@ func RegisterRoutes(router *gin.Engine, handler *Handler, middlewares ...gin.Han
 		beeline.DELETE("/sims/:number", handler.DeleteSim)
 
 		beeline.GET("/sims/:number/config", handler.GetConfig)
-		beeline.PATCH("/sims/:number/config/balance", handler.UpdateBalance)
+
+		beeline.GET("/sims/:number/detalization", handler.GetDetalization)
+		beeline.DELETE("/sims/:number/detalization/transactions/:id", handler.HideDetalizationTransaction)
 
 		beeline.GET("/sims/:number/payments", handler.ListPayments)
 		beeline.POST("/sims/:number/payments", handler.CreatePayment)

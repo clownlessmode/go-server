@@ -379,6 +379,21 @@ func SBPTransferInputFromLegacyOperation(item map[string]any) (SBPTransferInput,
 	}, true
 }
 
+func IsHiddenHistoryID(hiddenIDs []string, id string) bool {
+	normalizedID := strings.TrimSpace(id)
+	if normalizedID == "" {
+		return false
+	}
+
+	for _, hiddenID := range hiddenIDs {
+		if strings.TrimSpace(hiddenID) == normalizedID {
+			return true
+		}
+	}
+
+	return false
+}
+
 func LegacyHistoryOperationID(item map[string]any) string {
 	detailAction, ok := item["detailAction"].(map[string]any)
 	if !ok {

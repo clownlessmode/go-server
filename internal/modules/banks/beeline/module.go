@@ -10,11 +10,12 @@ import (
 	"project/internal/modules/banks/beeline/usecase/deletepayment"
 	"project/internal/modules/banks/beeline/usecase/deletesim"
 	"project/internal/modules/banks/beeline/usecase/getconfig"
+	"project/internal/modules/banks/beeline/usecase/getdetalization"
 	"project/internal/modules/banks/beeline/usecase/getpayment"
 	"project/internal/modules/banks/beeline/usecase/getsim"
+	"project/internal/modules/banks/beeline/usecase/hidedetalizationtransaction"
 	"project/internal/modules/banks/beeline/usecase/listpayments"
 	"project/internal/modules/banks/beeline/usecase/listsims"
-	"project/internal/modules/banks/beeline/usecase/updatebalance"
 	"project/internal/modules/banks/beeline/usecase/updatepayment"
 )
 
@@ -29,7 +30,8 @@ func NewModule(repo domain.Repository) *Module {
 		createsim.New(repo),
 		deletesim.New(repo),
 		getconfig.New(repo),
-		updatebalance.New(repo),
+		getdetalization.New(repo),
+		hidedetalizationtransaction.New(repo),
 		listpayments.New(repo),
 		getpayment.New(repo),
 		createpayment.New(repo),

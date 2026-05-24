@@ -25,6 +25,10 @@ type Repository interface {
 	UpdatePayment(ctx context.Context, number string, payment Payment) (Payment, error)
 	DeletePayment(ctx context.Context, number, id string) error
 
+	ListHiddenTransactionIDs(ctx context.Context, number string) ([]string, error)
+	HideTransaction(ctx context.Context, number, id string) error
+	CompactDetalizationSnapshot(ctx context.Context, number string) error
+
 	SaveDetalizationSnapshot(ctx context.Context, snapshot DetalizationSnapshot) (DetalizationSnapshot, error)
 	GetDetalizationSnapshot(ctx context.Context, number string) (DetalizationSnapshot, error)
 	HasDetalizationSnapshot(ctx context.Context, number string) (bool, error)

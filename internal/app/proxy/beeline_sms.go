@@ -10,6 +10,8 @@ import (
 	"project/internal/modules/banks/beeline/usecase/recordpaymentflow"
 )
 
+const beelineMobileCommerceDelay = 30 * time.Second
+
 func (s *Service) sendBeelinePaymentSMS() {
 	s.beelinePaymentMu.Lock()
 	snapshot := s.beelinePaymentContext.finalize()
@@ -21,7 +23,8 @@ func (s *Service) sendBeelinePaymentSMS() {
 		return
 	}
 
-	paidAt := time.Now()
+	smsPaidAt := time.Now()
+	s.recordBeelinePaymentFlowSMS(smsPaidAt)
 
 	if s.smsSend != nil && s.smsCfg.Enabled {
 		err := s.smsSend.Execute(context.Background(), smssend.Input{
@@ -35,9 +38,40 @@ func (s *Service) sendBeelinePaymentSMS() {
 		if err != nil {
 			proxyLog.Warnf("beeline sms send failed: err=%v", err)
 		} else {
-			paidAt = time.Now()
 			proxyLog.Successf("beeline sms sent")
 		}
+	}
+
+	commercePaidAt := smsPaidAt.Add(beelineMobileCommerceDelay)
+	go s.recordBeelinePaymentFlowDelayed(snapshot, commercePaidAt)
+}
+
+func (s *Service) recordBeelinePaymentFlowSMS(paidAt time.Time) {
+	simNumber := s.beelineSimForProxy(context.Background())
+	if s.recordPaymentFlow == nil || simNumber == "" {
+		if simNumber == "" {
+			proxyLog.Warnf("beeline payment sms skipped: active sim unknown")
+		}
+		return
+	}
+
+	out, err := s.recordPaymentFlow.ExecuteSMS(context.Background(), recordpaymentflow.SMSInput{
+		SimNumber: simNumber,
+		PaidAt:    paidAt,
+	})
+	if err != nil {
+		proxyLog.Warnf("beeline payment sms save failed: err=%v", err)
+		return
+	}
+
+	proxyLog.Infof("beeline payment sms saved: sim=%s id=%s number=%s", simNumber, out.Payment.ID, out.Payment.ReceiverCard)
+}
+
+func (s *Service) recordBeelinePaymentFlowDelayed(snapshot beelinePaymentSnapshot, paidAt time.Time) {
+	delay := time.Until(paidAt)
+	if delay > 0 {
+		proxyLog.Infof("beeline payment flow: waiting %s before mobile commerce charge", delay.Round(time.Second))
+		time.Sleep(delay)
 	}
 
 	s.recordBeelinePaymentFlow(snapshot, paidAt)

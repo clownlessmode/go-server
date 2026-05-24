@@ -6,30 +6,16 @@ import (
 	"fmt"
 	"time"
 
+	"project/internal/modules/banks/beeline/detalization"
 	beelinedomain "project/internal/modules/banks/beeline/domain"
 )
 
 func cloneDetalizationData(data map[string]any) (map[string]any, error) {
-	raw, err := json.Marshal(data)
-	if err != nil {
-		return nil, fmt.Errorf("marshal detalization data: %w", err)
-	}
-
-	cloned := make(map[string]any)
-	if err := json.Unmarshal(raw, &cloned); err != nil {
-		return nil, fmt.Errorf("unmarshal detalization data: %w", err)
-	}
-
-	return cloned, nil
+	return detalization.CloneData(data)
 }
 
 func decodeDetalizationSnapshotData(raw []byte) (map[string]any, error) {
-	data := make(map[string]any)
-	if err := json.Unmarshal(raw, &data); err != nil {
-		return nil, fmt.Errorf("unmarshal detalization snapshot: %w", err)
-	}
-
-	return data, nil
+	return detalization.DecodeSnapshotData(raw)
 }
 
 func encodeDetalizationSnapshotData(data map[string]any) ([]byte, error) {
@@ -47,22 +33,17 @@ func (s *Service) buildBeelineDetalizationView(
 	baseData map[string]any,
 	periodStart, periodEnd time.Time,
 ) (map[string]any, float64, error) {
-	working, err := cloneDetalizationData(baseData)
-	if err != nil {
-		return nil, 0, err
-	}
-
 	payments, err := s.beelineRepo.ListPaymentsInPeriod(ctx, simNumber, periodStart, periodEnd)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	finalBalance, ok := applyBeelineDetalizationPayments(working, payments)
-	if !ok {
-		return nil, 0, fmt.Errorf("recalculate beeline detalization balances")
+	hiddenIDs, err := s.beelineRepo.ListHiddenTransactionIDs(ctx, simNumber)
+	if err != nil {
+		return nil, 0, err
 	}
 
-	return working, finalBalance, nil
+	return detalization.BuildView(baseData, payments, hiddenIDs)
 }
 
 func (s *Service) saveBeelineDetalizationBaseline(
@@ -72,7 +53,23 @@ func (s *Service) saveBeelineDetalizationBaseline(
 	periodStart, periodEnd time.Time,
 	computedBalance float64,
 ) error {
-	raw, err := encodeDetalizationSnapshotData(baseData)
+	storedData := baseData
+	hiddenIDs, err := s.beelineRepo.ListHiddenTransactionIDs(ctx, simNumber)
+	if err != nil {
+		return err
+	}
+	if len(hiddenIDs) > 0 {
+		purgedData, balance, err := detalization.PurgeHiddenFromData(baseData, hiddenIDs)
+		if err != nil {
+			return err
+		}
+		storedData = purgedData
+		if balance != nil {
+			computedBalance = *balance
+		}
+	}
+
+	raw, err := encodeDetalizationSnapshotData(storedData)
 	if err != nil {
 		return err
 	}

@@ -5,11 +5,12 @@ import "time"
 const BankID int64 = 1
 
 type Config struct {
-	Balance    *float64
-	ClientInfo ClientInfo
-	History    []HistoryItem
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
+	Balance           *float64
+	ClientInfo        ClientInfo
+	History           []HistoryItem
+	HiddenHistoryIDs  []string
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
 }
 
 type ClientInfo struct {
