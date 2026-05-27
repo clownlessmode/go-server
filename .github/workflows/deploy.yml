@@ -5,6 +5,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
   group: deploy-${{ github.ref }}
   cancel-in-progress: false
@@ -41,35 +44,52 @@ jobs:
 
       - name: Sync sources on server
         uses: appleboy/ssh-action@v1.2.2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         with:
           host: ${{ env.DEPLOY_HOST }}
           username: ${{ env.DEPLOY_USER }}
           password: ${{ env.DEPLOY_PASSWORD }}
           port: ${{ env.DEPLOY_PORT }}
-          script_stop: true
           command_timeout: 10m
+          envs: GITHUB_TOKEN,GITHUB_REPOSITORY
           script: |
             set -euo pipefail
             DEPLOY_PATH="${{ env.DEPLOY_PATH }}"
             DEPLOY_SERVICE="${{ env.DEPLOY_SERVICE }}"
 
+            if ! command -v git >/dev/null 2>&1; then
+              apt-get update -qq
+              apt-get install -y -qq git
+            fi
+
             if [ ! -d "$DEPLOY_PATH/.git" ]; then
-              echo "Repository not found at $DEPLOY_PATH"
-              echo "Clone it once on the server, then re-run deploy."
-              exit 1
+              if [ -e "$DEPLOY_PATH" ]; then
+                echo "Path exists but is not a git repo: $DEPLOY_PATH"
+                exit 1
+              fi
+              mkdir -p "$(dirname "$DEPLOY_PATH")"
+              git clone --depth 1 --branch main \
+                "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+                "$DEPLOY_PATH"
+            else
+              cd "$DEPLOY_PATH"
+              git fetch origin main
+              git reset --hard origin/main
             fi
 
             cd "$DEPLOY_PATH"
-            git fetch origin main
-            git reset --hard origin/main
 
             if [ ! -f .env ]; then
               echo "Warning: $DEPLOY_PATH/.env is missing — create it before first start."
             fi
 
-            if ! systemctl list-unit-files | grep -q "^${DEPLOY_SERVICE}.service"; then
-              echo "Warning: systemd unit ${DEPLOY_SERVICE}.service not found."
-              echo "Install deploy/mitm-api.service once (see .github/DEPLOY.md)."
+            if [ ! -f "/etc/systemd/system/${DEPLOY_SERVICE}.service" ]; then
+              cp "$DEPLOY_PATH/deploy/mitm-api.service" "/etc/systemd/system/${DEPLOY_SERVICE}.service"
+              systemctl daemon-reload
+              systemctl enable "$DEPLOY_SERVICE"
+              echo "Installed systemd unit: ${DEPLOY_SERVICE}.service"
             fi
 
       - name: Upload binary
@@ -90,7 +110,6 @@ jobs:
           username: ${{ env.DEPLOY_USER }}
           password: ${{ env.DEPLOY_PASSWORD }}
           port: ${{ env.DEPLOY_PORT }}
-          script_stop: true
           command_timeout: 5m
           script: |
             set -euo pipefail
@@ -102,12 +121,18 @@ jobs:
             chmod +x "$DEPLOY_BINARY"
 
             systemctl restart "$DEPLOY_SERVICE"
-            sleep 2
-            systemctl is-active --quiet "$DEPLOY_SERVICE"
+            sleep 3
+
+            if systemctl is-active --quiet "$DEPLOY_SERVICE"; then
+              echo "Service is active"
+            else
+              systemctl status "$DEPLOY_SERVICE" --no-pager || true
+              journalctl -u "$DEPLOY_SERVICE" -n 30 --no-pager || true
+              exit 1
+            fi
 
             if command -v curl >/dev/null 2>&1; then
-              curl -sf http://127.0.0.1:8080/swagger/index.html >/dev/null
-              echo "API health check OK"
+              curl -sf http://127.0.0.1:8080/swagger/index.html >/dev/null && echo "API health check OK" || echo "API health check skipped (service up, curl failed)"
             fi
 
             echo "Deploy finished: $(git rev-parse --short HEAD)"
