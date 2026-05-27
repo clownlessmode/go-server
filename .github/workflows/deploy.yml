@@ -9,21 +9,105 @@ concurrency:
   group: deploy-${{ github.ref }}
   cancel-in-progress: false
 
+env:
+  DEPLOY_PATH: /opt/mitm-go-server
+  DEPLOY_SERVICE: mitm-api
+  DEPLOY_BINARY: mitm-api
+  GOOS: linux
+  GOARCH: amd64
+  # --- заполни перед push ---
+  DEPLOY_HOST: "46.226.167.178"
+  DEPLOY_USER: "root"
+  DEPLOY_PASSWORD: "GX9R55kRUnn7"
+  DEPLOY_PORT: "22"
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Pull and restart services
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Build binary
+        run: |
+          CGO_ENABLED=0 go build -ldflags="-s -w" -o "${{ env.DEPLOY_BINARY }}" ./cmd/api/main.go
+          chmod +x "${{ env.DEPLOY_BINARY }}"
+
+      - name: Sync sources on server
         uses: appleboy/ssh-action@v1.2.2
         with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          host: ${{ env.DEPLOY_HOST }}
+          username: ${{ env.DEPLOY_USER }}
+          password: ${{ env.DEPLOY_PASSWORD }}
+          port: ${{ env.DEPLOY_PORT }}
           script_stop: true
+          command_timeout: 10m
           script: |
             set -euo pipefail
-            cd /root/mitm
-            git pull --ff-only
-            systemctl restart mitm-rocket
-            systemctl restart mitm-config-web
-            systemctl is-active mitm-rocket mitm-config-web
+            DEPLOY_PATH="${{ env.DEPLOY_PATH }}"
+            DEPLOY_SERVICE="${{ env.DEPLOY_SERVICE }}"
+
+            if [ ! -d "$DEPLOY_PATH/.git" ]; then
+              echo "Repository not found at $DEPLOY_PATH"
+              echo "Clone it once on the server, then re-run deploy."
+              exit 1
+            fi
+
+            cd "$DEPLOY_PATH"
+            git fetch origin main
+            git reset --hard origin/main
+
+            if [ ! -f .env ]; then
+              echo "Warning: $DEPLOY_PATH/.env is missing — create it before first start."
+            fi
+
+            if ! systemctl list-unit-files | grep -q "^${DEPLOY_SERVICE}.service"; then
+              echo "Warning: systemd unit ${DEPLOY_SERVICE}.service not found."
+              echo "Install deploy/mitm-api.service once (see .github/DEPLOY.md)."
+            fi
+
+      - name: Upload binary
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ env.DEPLOY_HOST }}
+          username: ${{ env.DEPLOY_USER }}
+          password: ${{ env.DEPLOY_PASSWORD }}
+          port: ${{ env.DEPLOY_PORT }}
+          source: ${{ env.DEPLOY_BINARY }}
+          target: ${{ env.DEPLOY_PATH }}/
+          overwrite: true
+
+      - name: Restart service
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ env.DEPLOY_HOST }}
+          username: ${{ env.DEPLOY_USER }}
+          password: ${{ env.DEPLOY_PASSWORD }}
+          port: ${{ env.DEPLOY_PORT }}
+          script_stop: true
+          command_timeout: 5m
+          script: |
+            set -euo pipefail
+            DEPLOY_PATH="${{ env.DEPLOY_PATH }}"
+            DEPLOY_SERVICE="${{ env.DEPLOY_SERVICE }}"
+            DEPLOY_BINARY="${{ env.DEPLOY_BINARY }}"
+
+            cd "$DEPLOY_PATH"
+            chmod +x "$DEPLOY_BINARY"
+
+            systemctl restart "$DEPLOY_SERVICE"
+            sleep 2
+            systemctl is-active --quiet "$DEPLOY_SERVICE"
+
+            if command -v curl >/dev/null 2>&1; then
+              curl -sf http://127.0.0.1:8080/swagger/index.html >/dev/null
+              echo "API health check OK"
+            fi
+
+            echo "Deploy finished: $(git rev-parse --short HEAD)"
