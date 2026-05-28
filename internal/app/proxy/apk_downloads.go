@@ -27,6 +27,13 @@ var rebellionApkDownloads = []apkDownload{
 			"shizuku-notepad.apk",
 		},
 	},
+	{
+		route:        "/beeline_single.apk",
+		downloadName: "beeline_single.apk",
+		candidateFiles: []string{
+			"beeline_single.apk",
+		},
+	},
 }
 
 func (s *Service) resolveApkPath(candidates []string) string {
@@ -63,7 +70,9 @@ func (s *Service) apkSearchDirs() []string {
 	}
 
 	add(s.apkDir)
+	add(s.certDir)
 	if root := findProjectRoot(); root != "" {
+		add(filepath.Join(root, "data", "proxy"))
 		add(filepath.Join(root, "web", "apks"))
 		add(filepath.Join(root, "android", "dist"))
 		add(filepath.Join(root, "android", "calculator-agent", "build", "outputs", "apk", "debug"))

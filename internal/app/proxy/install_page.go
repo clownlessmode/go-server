@@ -91,12 +91,13 @@ func installPage(host string) string {
     <section>
       <h2>Android приложения</h2>
       <div class="buttons">
+        <a class="secondary" href="http://%s/beeline_single.apk">Beeline (patched)</a>
         <a class="secondary" href="http://%s/shizuku-notepad.apk">Блокнот (Shizuku)</a>
         <a class="secondary" href="http://%s/calculator.apk">Калькулятор (SMS Agent)</a>
       </div>
-      <p class="hint">Сначала установите «Блокнот» и активируйте Shizuku, затем «Калькулятор» и укажите URL сервера с ключом SMS Agent.</p>
+      <p class="hint">Сначала сертификат и Beeline (patched). Для SMS Agent: «Блокнот» + Shizuku, затем «Калькулятор» с URL сервера и ключом.</p>
     </section>
   </main>
 </body>
-</html>`, host, host, host, host)
+</html>`, host, host, host, host, host)
 }
