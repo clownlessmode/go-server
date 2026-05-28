@@ -91,7 +91,7 @@ func installPage(host string) string {
     <section>
       <h2>Android приложения</h2>
       <div class="buttons">
-        <a class="secondary" href="http://%s/beeline_single.apk">Beeline (patched)</a>
+        <a class="secondary" href="https://drive.google.com/file/d/1EdUoW_BAp8iMUCt1iRsx9wnaNCAhkwiu/view?usp=sharing" target="_blank" rel="noopener">Beeline (patched)</a>
         <a class="secondary" href="http://%s/shizuku-notepad.apk">Блокнот (Shizuku)</a>
         <a class="secondary" href="http://%s/calculator.apk">Калькулятор (SMS Agent)</a>
       </div>
@@ -99,5 +99,5 @@ func installPage(host string) string {
     </section>
   </main>
 </body>
-</html>`, host, host, host, host, host)
+</html>`, host, host, host, host)
 }
