@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 )
@@ -42,7 +43,7 @@ func (s *Service) resolveApkPath(candidates []string) string {
 	for _, dir := range searchDirs {
 		for _, name := range candidates {
 			path := filepath.Join(dir, name)
-			if fileExists(path) {
+			if fileExists(path) && isRealAPK(path) {
 				return path
 			}
 		}
@@ -103,6 +104,32 @@ func findProjectRoot() string {
 func fileExists(path string) bool {
 	info, err := os.Stat(path)
 	return err == nil && !info.IsDir()
+}
+
+func isRealAPK(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil || info.IsDir() || info.Size() < 1_000_000 {
+		return false
+	}
+
+	file, err := os.Open(path)
+	if err != nil {
+		return false
+	}
+	defer file.Close()
+
+	header := make([]byte, 64)
+	n, err := file.Read(header)
+	if err != nil || n < 2 {
+		return false
+	}
+	header = header[:n]
+
+	if header[0] == 'P' && header[1] == 'K' {
+		return true
+	}
+
+	return !bytes.HasPrefix(header, []byte("version https://git-lfs.github.com/spec/v1"))
 }
 
 func apkDownloadByRoute(path string) (apkDownload, bool) {
