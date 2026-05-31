@@ -17,7 +17,7 @@ func mergePDFs(parts ...[]byte) ([]byte, error) {
 		return parts[0], nil
 	}
 
-	tempDir, err := os.MkdirTemp("", "beeline-detalization-merge-*")
+	tempDir, err := makeDetalizationTempDir("beeline-detalization-merge-*")
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func readPDF(path string) ([]byte, error) {
 }
 
 func keepFirstPDFPage(body []byte) ([]byte, error) {
-	tempDir, err := os.MkdirTemp("", "beeline-detalization-page-*")
+	tempDir, err := makeDetalizationTempDir("beeline-detalization-page-*")
 	if err != nil {
 		return nil, err
 	}

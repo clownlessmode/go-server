@@ -132,7 +132,7 @@ func (s *Service) generatePagePDF(
 		}
 	}
 
-	tempDir, err := os.MkdirTemp("", "beeline-detalization-*")
+	tempDir, err := makeDetalizationTempDir("beeline-detalization-*")
 	if err != nil {
 		return nil, err
 	}
@@ -189,11 +189,20 @@ func injectPrintPageBreakFix(htmlBody []byte) []byte {
 
 func convertHTMLToPDF(htmlPath string, pdfPath string) error {
 	htmlURL := htmlFileURL(htmlPath)
+	userDataDir := chromeUserDataDir(filepath.Dir(pdfPath))
+	if err := os.MkdirAll(userDataDir, 0o755); err != nil {
+		return fmt.Errorf("create chrome profile dir: %w", err)
+	}
+
 	args := []string{
 		"--headless=new",
 		"--disable-gpu",
 		"--no-sandbox",
 		"--disable-dev-shm-usage",
+		"--disable-software-rasterizer",
+		"--no-first-run",
+		"--no-default-browser-check",
+		"--user-data-dir=" + userDataDir,
 		"--no-pdf-header-footer",
 		"--run-all-compositor-stages-before-draw",
 		"--virtual-time-budget=5000",
@@ -245,6 +254,8 @@ func htmlFileURL(path string) string {
 
 func htmlToPDFBrowsers() []string {
 	browsers := []string{
+		"/usr/lib/chromium/chromium",
+		"/usr/lib/chromium-browser/chromium-browser",
 		"chromium",
 		"chromium-browser",
 		"google-chrome",
