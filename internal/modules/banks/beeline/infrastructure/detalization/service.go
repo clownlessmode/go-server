@@ -149,8 +149,8 @@ func (s *Service) generatePagePDF(
 		}
 	}
 
-	htmlPath := filepath.Join(tempDir, baseName+".html")
-	pdfPath := filepath.Join(tempDir, baseName+".pdf")
+	htmlPath := absPath(filepath.Join(tempDir, baseName+".html"))
+	pdfPath := absPath(filepath.Join(tempDir, baseName+".pdf"))
 	if err := os.WriteFile(htmlPath, htmlBody, 0o644); err != nil {
 		return nil, err
 	}
@@ -188,8 +188,10 @@ func injectPrintPageBreakFix(htmlBody []byte) []byte {
 }
 
 func convertHTMLToPDF(htmlPath string, pdfPath string) error {
+	htmlPath = absPath(htmlPath)
+	pdfPath = absPath(pdfPath)
 	htmlURL := htmlFileURL(htmlPath)
-	userDataDir := chromeUserDataDir(filepath.Dir(pdfPath))
+	userDataDir := absPath(chromeUserDataDir(filepath.Dir(pdfPath)))
 	if err := os.MkdirAll(userDataDir, 0o755); err != nil {
 		return fmt.Errorf("create chrome profile dir: %w", err)
 	}
@@ -210,6 +212,7 @@ func convertHTMLToPDF(htmlPath string, pdfPath string) error {
 		htmlURL,
 	}
 
+	workDir := filepath.Dir(pdfPath)
 	var errors []string
 	for _, browser := range htmlToPDFBrowsers() {
 		if _, err := exec.LookPath(browser); err != nil {
@@ -220,6 +223,8 @@ func convertHTMLToPDF(htmlPath string, pdfPath string) error {
 		}
 
 		cmd := exec.Command(browser, args...)
+		cmd.Dir = workDir
+		cmd.Env = os.Environ()
 		output, err := cmd.CombinedOutput()
 		if err != nil {
 			errors = append(errors, fmt.Sprintf("%s failed: %v: %s", browser, err, strings.TrimSpace(string(output))))
@@ -254,12 +259,17 @@ func htmlFileURL(path string) string {
 
 func htmlToPDFBrowsers() []string {
 	browsers := []string{
+		"/snap/bin/chromium",
 		"/usr/lib/chromium/chromium",
 		"/usr/lib/chromium-browser/chromium-browser",
 		"chromium",
-		"chromium-browser",
 		"google-chrome",
 		"google-chrome-stable",
+		"chromium-browser",
+	}
+
+	if custom := strings.TrimSpace(os.Getenv("MITM_CHROME_BIN")); custom != "" {
+		browsers = append([]string{custom}, browsers...)
 	}
 
 	if runtime.GOOS == "darwin" {
