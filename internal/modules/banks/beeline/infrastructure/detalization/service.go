@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 )
 
 //go:embed templates/first-page.html templates/first-page-v2.html templates/second-page.html templates/data-page.html
@@ -190,6 +191,7 @@ func injectPrintPageBreakFix(htmlBody []byte) []byte {
 func convertHTMLToPDF(htmlPath string, pdfPath string) error {
 	htmlPath = absPath(htmlPath)
 	pdfPath = absPath(pdfPath)
+	pdfName := filepath.Base(pdfPath)
 	htmlURL := htmlFileURL(htmlPath)
 	workDir := filepath.Dir(pdfPath)
 
@@ -221,7 +223,7 @@ func convertHTMLToPDF(htmlPath string, pdfPath string) error {
 			"--no-pdf-header-footer",
 			"--run-all-compositor-stages-before-draw",
 			"--virtual-time-budget=5000",
-			"--print-to-pdf=" + pdfPath,
+			"--print-to-pdf=" + pdfName,
 			htmlURL,
 		}
 
@@ -234,7 +236,7 @@ func convertHTMLToPDF(htmlPath string, pdfPath string) error {
 			continue
 		}
 
-		if info, statErr := os.Stat(pdfPath); statErr != nil || info.Size() == 0 {
+		if statErr := waitForPDF(workDir, pdfName, pdfPath); statErr != nil {
 			errors = append(errors, fmt.Sprintf(
 				"%s exited ok but pdf missing/empty at %s: %v; output: %s",
 				browser,
@@ -248,7 +250,31 @@ func convertHTMLToPDF(htmlPath string, pdfPath string) error {
 		return nil
 	}
 
-	return fmt.Errorf("convert html detalization to pdf: %s; install chromium (apt install chromium)", strings.Join(errors, "; "))
+	return fmt.Errorf(
+		"convert html detalization to pdf: %s; install google-chrome-stable (.deb, not snap): wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && apt install ./google-chrome-stable_current_amd64.deb",
+		strings.Join(errors, "; "),
+	)
+}
+
+func waitForPDF(workDir, pdfName, pdfPath string) error {
+	candidates := []string{filepath.Join(workDir, pdfName), pdfPath}
+	for range 20 {
+		for _, candidate := range candidates {
+			info, err := os.Stat(candidate)
+			if err != nil || info.Size() == 0 {
+				continue
+			}
+			if candidate != pdfPath {
+				if renameErr := os.Rename(candidate, pdfPath); renameErr != nil {
+					return renameErr
+				}
+			}
+			return nil
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+
+	return fmt.Errorf("stat %s: no such file or directory", pdfPath)
 }
 
 func htmlFileURL(path string) string {
@@ -262,13 +288,13 @@ func htmlFileURL(path string) string {
 
 func htmlToPDFBrowsers() []string {
 	browsers := []string{
+		"/usr/bin/google-chrome-stable",
+		"google-chrome-stable",
+		"/usr/bin/google-chrome",
+		"google-chrome",
 		"/snap/bin/chromium",
 		"/usr/lib/chromium/chromium",
 		"chromium",
-		"google-chrome",
-		"google-chrome-stable",
-		"/usr/lib/chromium-browser/chromium-browser",
-		"chromium-browser",
 	}
 
 	if custom := strings.TrimSpace(os.Getenv("MITM_CHROME_BIN")); custom != "" {
