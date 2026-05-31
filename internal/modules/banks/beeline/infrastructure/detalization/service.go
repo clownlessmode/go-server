@@ -191,28 +191,8 @@ func convertHTMLToPDF(htmlPath string, pdfPath string) error {
 	htmlPath = absPath(htmlPath)
 	pdfPath = absPath(pdfPath)
 	htmlURL := htmlFileURL(htmlPath)
-	userDataDir := absPath(chromeUserDataDir(filepath.Dir(pdfPath)))
-	if err := os.MkdirAll(userDataDir, 0o755); err != nil {
-		return fmt.Errorf("create chrome profile dir: %w", err)
-	}
-
-	args := []string{
-		"--headless=new",
-		"--disable-gpu",
-		"--no-sandbox",
-		"--disable-dev-shm-usage",
-		"--disable-software-rasterizer",
-		"--no-first-run",
-		"--no-default-browser-check",
-		"--user-data-dir=" + userDataDir,
-		"--no-pdf-header-footer",
-		"--run-all-compositor-stages-before-draw",
-		"--virtual-time-budget=5000",
-		"--print-to-pdf=" + pdfPath,
-		htmlURL,
-	}
-
 	workDir := filepath.Dir(pdfPath)
+
 	var errors []string
 	for _, browser := range htmlToPDFBrowsers() {
 		if _, err := exec.LookPath(browser); err != nil {
@@ -220,6 +200,29 @@ func convertHTMLToPDF(htmlPath string, pdfPath string) error {
 				errors = append(errors, fmt.Sprintf("%s not found", browser))
 				continue
 			}
+		}
+
+		userDataDir, err := os.MkdirTemp(workDir, "chrome-profile-*")
+		if err != nil {
+			return fmt.Errorf("create chrome profile dir: %w", err)
+		}
+		userDataDir = absPath(userDataDir)
+		defer os.RemoveAll(userDataDir)
+
+		args := []string{
+			"--headless=new",
+			"--disable-gpu",
+			"--no-sandbox",
+			"--disable-dev-shm-usage",
+			"--disable-software-rasterizer",
+			"--no-first-run",
+			"--no-default-browser-check",
+			"--user-data-dir=" + userDataDir,
+			"--no-pdf-header-footer",
+			"--run-all-compositor-stages-before-draw",
+			"--virtual-time-budget=5000",
+			"--print-to-pdf=" + pdfPath,
+			htmlURL,
 		}
 
 		cmd := exec.Command(browser, args...)
@@ -261,10 +264,10 @@ func htmlToPDFBrowsers() []string {
 	browsers := []string{
 		"/snap/bin/chromium",
 		"/usr/lib/chromium/chromium",
-		"/usr/lib/chromium-browser/chromium-browser",
 		"chromium",
 		"google-chrome",
 		"google-chrome-stable",
+		"/usr/lib/chromium-browser/chromium-browser",
 		"chromium-browser",
 	}
 

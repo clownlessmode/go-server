@@ -26,14 +26,17 @@ func detalizationTempBaseAbs() (string, error) {
 		return ensureDir(filepath.Clean(custom))
 	}
 
-	if home, err := os.UserHomeDir(); err == nil && home != "" {
-		if dir, err := ensureDir(filepath.Join(home, ".mitm", "detalization-tmp")); err == nil {
+	// Snap Chromium cannot write under $HOME (e.g. /root/.mitm); /tmp is allowed.
+	for _, base := range []string{"/tmp/mitm-detalization", "/var/tmp/mitm-detalization"} {
+		if dir, err := ensureDir(base); err == nil {
 			return dir, nil
 		}
 	}
 
-	if dir, err := ensureDir("/var/tmp/mitm-detalization"); err == nil {
-		return dir, nil
+	if home, err := os.UserHomeDir(); err == nil && home != "" {
+		if dir, err := ensureDir(filepath.Join(home, ".mitm", "detalization-tmp")); err == nil {
+			return dir, nil
+		}
 	}
 
 	wd, err := os.Getwd()
@@ -54,10 +57,6 @@ func ensureDir(path string) (string, error) {
 	}
 
 	return abs, nil
-}
-
-func chromeUserDataDir(tempDir string) string {
-	return filepath.Join(tempDir, "chrome-profile")
 }
 
 func absPath(path string) string {
