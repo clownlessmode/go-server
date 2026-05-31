@@ -41,7 +41,9 @@ type RocketbankConfig struct {
 	Timezone string
 }
 
-type BeelineConfig struct{}
+type BeelineConfig struct {
+	FirstPageType string
+}
 
 type SMSConfig struct {
 	Enabled     bool
@@ -74,7 +76,9 @@ func Load() Config {
 		Rocketbank: RocketbankConfig{
 			Timezone: env("ROCKETBANK_TIMEZONE", "+0700"),
 		},
-		Beeline: BeelineConfig{},
+		Beeline: BeelineConfig{
+			FirstPageType: env("FIRST_PAGE_TYPE", env("FIRSTPAGETYPE", "1")),
+		},
 		SMS: SMSConfig{
 			Enabled:     envBool("SMS_ENABLED", false),
 			AgentAPIKey: env("SMS_AGENT_API_KEY", ""),

@@ -3,6 +3,7 @@ package detalization
 import (
 	"embed"
 	"fmt"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -187,7 +188,7 @@ func injectPrintPageBreakFix(htmlBody []byte) []byte {
 }
 
 func convertHTMLToPDF(htmlPath string, pdfPath string) error {
-	htmlURL := "file://" + htmlPath
+	htmlURL := htmlFileURL(htmlPath)
 	args := []string{
 		"--headless=new",
 		"--disable-gpu",
@@ -210,20 +211,42 @@ func convertHTMLToPDF(htmlPath string, pdfPath string) error {
 		}
 
 		cmd := exec.Command(browser, args...)
-		if output, err := cmd.CombinedOutput(); err != nil {
+		output, err := cmd.CombinedOutput()
+		if err != nil {
 			errors = append(errors, fmt.Sprintf("%s failed: %v: %s", browser, err, strings.TrimSpace(string(output))))
+			continue
+		}
+
+		if info, statErr := os.Stat(pdfPath); statErr != nil || info.Size() == 0 {
+			errors = append(errors, fmt.Sprintf(
+				"%s exited ok but pdf missing/empty at %s: %v; output: %s",
+				browser,
+				pdfPath,
+				statErr,
+				strings.TrimSpace(string(output)),
+			))
 			continue
 		}
 
 		return nil
 	}
 
-	return fmt.Errorf("convert html detalization to pdf: %s; install Chromium or Google Chrome", strings.Join(errors, "; "))
+	return fmt.Errorf("convert html detalization to pdf: %s; install chromium (apt install chromium)", strings.Join(errors, "; "))
+}
+
+func htmlFileURL(path string) string {
+	abs, err := filepath.Abs(path)
+	if err != nil {
+		abs = path
+	}
+
+	return (&url.URL{Scheme: "file", Path: filepath.ToSlash(abs)}).String()
 }
 
 func htmlToPDFBrowsers() []string {
 	browsers := []string{
 		"chromium",
+		"chromium-browser",
 		"google-chrome",
 		"google-chrome-stable",
 	}
