@@ -2,6 +2,7 @@ package detalization
 
 import (
 	"testing"
+	"time"
 )
 
 func serverSnapshot9063747835() map[string]any {
@@ -111,5 +112,57 @@ func TestRecalculateBalancesWithConfiguredOpeningZero(t *testing.T) {
 	}
 	if jsonNumber(summary["endValue"]) != 100 {
 		t.Fatalf("endValue = %.2f, want 100", summary["endValue"])
+	}
+}
+
+func TestFinanceTotalsForPeriodJune1OpeningZero(t *testing.T) {
+	loc := time.FixedZone("MSK", 3*60*60)
+	data := serverSnapshot9063747835()
+	opening := 0.0
+
+	if _, ok := recalculateBalances(data, &opening); !ok {
+		t.Fatal("recalculateBalances failed")
+	}
+
+	periodStart := time.Date(2026, 6, 1, 0, 0, 0, 0, loc)
+
+	totals, ok := FinanceTotalsForPeriod(data, periodStart)
+	if !ok {
+		t.Fatal("expected finance totals")
+	}
+	if totals.OpeningBalance != 0 {
+		t.Fatalf("opening balance = %.2f, want 0", totals.OpeningBalance)
+	}
+	if totals.Balance != 100 {
+		t.Fatalf("balance = %.2f, want 100", totals.Balance)
+	}
+}
+
+func TestTrimViewToPeriodJune1OpeningZero(t *testing.T) {
+	loc := time.FixedZone("MSK", 3*60*60)
+	data := serverSnapshot9063747835()
+	opening := 0.0
+
+	if _, ok := recalculateBalances(data, &opening); !ok {
+		t.Fatal("recalculateBalances failed")
+	}
+
+	periodStart := time.Date(2026, 6, 1, 0, 0, 0, 0, loc)
+	periodEnd := time.Date(2026, 6, 1, 23, 59, 59, int(time.Second-time.Nanosecond), loc)
+
+	view, finalBalance, err := TrimViewToPeriod(data, periodStart, periodEnd)
+	if err != nil {
+		t.Fatalf("TrimViewToPeriod: %v", err)
+	}
+
+	totals, ok := FinanceTotalsForPeriod(view, periodStart)
+	if !ok {
+		t.Fatal("expected finance totals")
+	}
+	if totals.OpeningBalance != 0 {
+		t.Fatalf("opening balance = %.2f, want 0", totals.OpeningBalance)
+	}
+	if totals.Paid != 450 || totals.Spent != 350 || totals.Balance != 100 || finalBalance != 100 {
+		t.Fatalf("unexpected totals: %+v final=%.2f", totals, finalBalance)
 	}
 }

@@ -147,7 +147,13 @@ func (s *Service) beelineDetalizationReportView(
 		return nil, detalization.ReportFinance{}, false
 	}
 
-	totals, ok := detalization.FinanceTotals(viewData)
+	viewData, finalBalance, err = detalization.TrimViewToPeriod(viewData, periodStart, periodEnd)
+	if err != nil {
+		proxyLog.Warnf("beeline detalization report trim failed: sim=%s err=%v", simNumber, err)
+		return nil, detalization.ReportFinance{}, false
+	}
+
+	totals, ok := detalization.FinanceTotalsForPeriod(viewData, periodStart)
 	if !ok {
 		return nil, detalization.ReportFinance{}, false
 	}

@@ -353,27 +353,7 @@ func recalculateBalances(data map[string]any, configuredOpening *float64) (float
 }
 
 func findOpeningBalance(transactions []any) float64 {
-	if opening := findAnchorOpeningBalance(transactions); opening != 0 {
-		return opening
-	}
-
-	for _, item := range transactions {
-		balance, ok := coreBalanceEntry(item)
-		if !ok {
-			continue
-		}
-
-		change := jsonNumber(balance["changeValue"])
-		if change == 0 {
-			continue
-		}
-
-		if start := jsonNumber(balance["startValue"]); start != 0 {
-			return domain.RoundMoney(start)
-		}
-	}
-
-	return 0
+	return findAnchorOpeningBalance(transactions)
 }
 
 func findAnchorOpeningBalance(transactions []any) float64 {

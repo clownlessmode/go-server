@@ -1,6 +1,7 @@
 package detalization_test
 
 import (
+	"regexp"
 	"testing"
 	"time"
 
@@ -49,6 +50,24 @@ func TestFormatReportOpeningBalanceLineV2(t *testing.T) {
 	want := `на 17 мая <span class="fc1">6,76 ₽</span>`
 	if got != want {
 		t.Fatalf("opening balance v2 = %q, want %q", got, want)
+	}
+}
+
+func TestFormatReportTrafficUsageLineV2(t *testing.T) {
+	const pattern = `^1,[1-9] гб<span class="_ _2"> </span>1[0-5] мин<span class="_ _3"> </span>[0-9] смс$`
+
+	first := detalization.FormatReportTrafficUsageLineV2("9063747835")
+	second := detalization.FormatReportTrafficUsageLineV2("9063747835")
+	other := detalization.FormatReportTrafficUsageLineV2("79629844593")
+
+	if first != second {
+		t.Fatalf("same phone should produce same usage: %q vs %q", first, second)
+	}
+	if first == other {
+		t.Fatalf("different phones should produce different usage: %q", first)
+	}
+	if !regexp.MustCompile(pattern).MatchString(first) {
+		t.Fatalf("traffic usage = %q, want pattern %q", first, pattern)
 	}
 }
 

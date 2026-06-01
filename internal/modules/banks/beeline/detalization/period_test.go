@@ -82,7 +82,7 @@ func TestTrimViewToPeriodKeepsOpeningBalance(t *testing.T) {
 		t.Fatalf("expected 1 transaction in week view, got %d", len(transactions))
 	}
 
-	totals, ok := detalization.FinanceTotals(view)
+	totals, ok := detalization.FinanceTotalsForPeriod(view, periodStart)
 	if !ok {
 		t.Fatal("expected finance totals")
 	}

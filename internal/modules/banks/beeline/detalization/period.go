@@ -119,6 +119,21 @@ func filterTransactionsInPeriod(transactions []any, periodStart, periodEnd time.
 	return filtered
 }
 
+func earliestTransactionDateTime(transactions []any) (time.Time, bool) {
+	sorted := append([]any(nil), transactions...)
+	sort.SliceStable(sorted, func(i, j int) bool {
+		return transactionDateTime(sorted[i]) < transactionDateTime(sorted[j])
+	})
+
+	for _, item := range sorted {
+		if dateTime, ok := parseReportTransactionDateTime(transactionDateTime(item)); ok {
+			return dateTime, true
+		}
+	}
+
+	return time.Time{}, false
+}
+
 func startOfReportDay(value time.Time) time.Time {
 	location := reportLocation()
 	value = value.In(location)

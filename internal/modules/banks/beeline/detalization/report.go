@@ -2,7 +2,9 @@ package detalization
 
 import (
 	"fmt"
+	"hash/fnv"
 	"math"
+	"math/rand"
 	"sort"
 	"strings"
 	"time"
@@ -22,6 +24,10 @@ type ReportFinance struct {
 }
 
 func FinanceTotals(data map[string]any) (ReportFinance, bool) {
+	return FinanceTotalsForPeriod(data, time.Time{})
+}
+
+func FinanceTotalsForPeriod(data map[string]any, periodStart time.Time) (ReportFinance, bool) {
 	transactions, ok := data["transactions"].([]any)
 	if !ok {
 		return ReportFinance{}, false
@@ -60,13 +66,34 @@ func FinanceTotals(data map[string]any) (ReportFinance, bool) {
 		Spent:             spent,
 		Paid:              paid,
 		Balance:           domain.RoundMoney(jsonNumber(summary["endValue"])),
-		OpeningBalance:    openingBalanceAtPeriodStart(data),
+		OpeningBalance:    openingBalanceAtPeriodStart(data, periodStart),
 		PaymentsTransfers: paymentsTransfers,
 		OtherSpent:        otherSpent,
 	}, true
 }
 
-func openingBalanceAtPeriodStart(data map[string]any) float64 {
+func openingBalanceAtPeriodStart(data map[string]any, periodStart time.Time) float64 {
+	if !periodStart.IsZero() {
+		if transactions, ok := data["transactions"].([]any); ok && len(transactions) > 0 {
+			periodDay := startOfReportDay(periodStart)
+			fromTransactions := balanceBeforePeriod(transactions, periodDay)
+
+			if hasRecalculatedCoreBalanceTransactions(data) {
+				if summary, ok := coreBalanceSummary(data); ok {
+					summaryOpening := domain.RoundMoney(jsonNumber(summary["startValue"]))
+					if fromTransactions != summaryOpening {
+						firstDateTime, ok := earliestTransactionDateTime(transactions)
+						if ok && !firstDateTime.Before(periodDay) {
+							return summaryOpening
+						}
+					}
+				}
+			}
+
+			return fromTransactions
+		}
+	}
+
 	if hasRecalculatedCoreBalanceTransactions(data) {
 		if summary, ok := coreBalanceSummary(data); ok {
 			return domain.RoundMoney(jsonNumber(summary["startValue"]))
@@ -221,6 +248,27 @@ func FormatReportRefillLineV2(value float64) string {
 		"личный баланс<span class=\"_ _1\"> </span><span class=\"fc1\">%s</span>",
 		FormatReportRefillAmount(value),
 	)
+}
+
+func FormatReportTrafficUsageLineV2(phoneNumber string) string {
+	rng := rand.New(rand.NewSource(trafficUsageSeed(phoneNumber)))
+	gbDecimal := rng.Intn(9) + 1
+	minutes := rng.Intn(6) + 10
+	sms := rng.Intn(10)
+
+	return fmt.Sprintf(
+		`1,%d гб<span class="_ _2"> </span>%d мин<span class="_ _3"> </span>%d смс`,
+		gbDecimal,
+		minutes,
+		sms,
+	)
+}
+
+func trafficUsageSeed(phoneNumber string) int64 {
+	hash := fnv.New64a()
+	_, _ = hash.Write([]byte(domain.NormalizeSimNumber(phoneNumber)))
+
+	return int64(hash.Sum64())
 }
 
 func FormatReportSpent(value float64) string {

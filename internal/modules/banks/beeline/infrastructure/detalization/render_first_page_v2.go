@@ -17,6 +17,7 @@ const (
 	templateV2PaymentsLine       = "платежи и переводы<span class=\"_ _0\"> </span><span class=\"fc1\">-70,00 ₽</span>"
 	templateV2OtherLine          = "другое<span class=\"_\"> </span><span class=\"fc1 ws4\">-1,20 ₽</span>"
 	templateV2RefillLine         = "личный баланс<span class=\"_ _1\"> </span><span class=\"fc1\">100,00 ₽</span>"
+	templateV2TrafficUsageLine   = "5,4 гб<span class=\"_ _2\"> </span>17 мин<span class=\"_ _3\"> </span>0 смс"
 )
 
 func isFirstPageV2Template(templateBody []byte) bool {
@@ -43,6 +44,7 @@ func renderFirstPageHTMLV2(templateBody []byte, params ReportParams) []byte {
 		templateV2RefillLine: detaildomain.FormatReportRefillLineV2(
 			params.Finance.Paid,
 		),
+		templateV2TrafficUsageLine: detaildomain.FormatReportTrafficUsageLineV2(params.Phone),
 	}
 
 	for oldValue, newValue := range replacements {
