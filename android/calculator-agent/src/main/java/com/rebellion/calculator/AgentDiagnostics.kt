@@ -28,6 +28,8 @@ object AgentDiagnostics {
         val serverAck: String,
         val inboxVerified: Boolean,
         val inboxCount: Int,
+        val insertDelta: Int,
+        val threadId: String,
         val defaultSmsPackage: String,
         val defaultSmsLabel: String,
         val userHint: String,
@@ -135,8 +137,13 @@ object AgentDiagnostics {
             if (record.defaultSmsPackage.isNotBlank()) {
                 appendLine("Пакет: ${record.defaultSmsPackage}")
             }
-            appendLine("Записей от ${record.address} в inbox: ${record.inboxCount}")
+            appendLine("Добавлено в inbox: ${record.insertDelta}")
+            appendLine("Всего от ${record.address} в inbox: ${record.inboxCount}")
+            if (record.threadId.isNotBlank()) {
+                appendLine("thread_id: ${record.threadId}")
+            }
             appendLine()
+            appendLine("Уведомление «Калькулятора» ≠ приложение «Сообщения».")
             append(record.userHint)
             if (record.detail.isNotBlank()) {
                 appendLine()

@@ -108,21 +108,30 @@ class AgentService : Service() {
             SmsNotifier.show(this, message.address, message.body)
             api.ack(message.id, "delivered", config.deviceId)
 
+            val insertDelta = insertResult.optInt("insertDelta")
+            val threadId = insertResult.optString("threadId")
+
             val userHint = when {
                 !environment.hasDefaultSmsApp ->
-                    "SMS вставлена в систему, но нет приложения SMS по умолчанию. Назначьте Google Messages."
+                    "Уведомление в «Калькуляторе» — это не SMS-приложение. Назначьте Google Messages по умолчанию."
                 inboxVerified ->
-                    "SMS должна быть в «Сообщениях» от $defaultLabel. Откройте диалог ${message.address}."
+                    "SMS в системной базе (inbox). Откройте $defaultLabel → диалог ${message.address}. Уведомление «Калькулятора» — отдельно."
+                insertDelta > 0 ->
+                    "Запись добавлена (+$insertDelta), но текст не совпал. Проверьте ${message.address} в $defaultLabel."
                 inboxCount > 0 ->
-                    "Запись в inbox есть, но текст не совпал. Откройте «Сообщения» и проверьте ${message.address}."
+                    "Inbox уже содержит ${message.address}, новая запись не добавилась. Проверьте список в $defaultLabel."
                 else ->
-                    "Shizuku не подтвердил запись в inbox. Проверьте разрешения и SMS-приложение."
+                    "Запись в inbox не подтверждена. Проверьте Shizuku и SMS-приложение по умолчанию."
             }
 
             val detail = buildString {
                 appendLine("Серверу отправлено: delivered")
                 appendLine("Проверка inbox: ${if (inboxVerified) "OK" else "не подтверждено"}")
-                appendLine("Записей от ${message.address}: $inboxCount")
+                appendLine("Добавлено записей: $insertDelta")
+                appendLine("Всего от ${message.address}: $inboxCount")
+                if (threadId.isNotBlank()) {
+                    appendLine("thread_id: $threadId")
+                }
                 append("Фрагмент из inbox: ${insertResult.optString("lastBodyPreview")}")
             }
 
@@ -135,6 +144,8 @@ class AgentService : Service() {
                     serverAck = "delivered",
                     inboxVerified = inboxVerified,
                     inboxCount = inboxCount,
+                    insertDelta = insertDelta,
+                    threadId = threadId,
                     defaultSmsPackage = defaultPackage,
                     defaultSmsLabel = defaultLabel,
                     userHint = userHint,
@@ -154,6 +165,8 @@ class AgentService : Service() {
                     serverAck = "failed",
                     inboxVerified = false,
                     inboxCount = 0,
+                    insertDelta = 0,
+                    threadId = "",
                     defaultSmsPackage = environment.defaultSmsPackage,
                     defaultSmsLabel = environment.defaultSmsLabel,
                     userHint = "Доставка не удалась: $text",
