@@ -36,9 +36,17 @@ func (s *Service) applyBeelineDetalizationReportScript(req *http.Request, res *h
 		return false
 	}
 
+	proxyLog.Infof(
+		"beeline detalization report pdf generating: sim=%s period=%s..%s tx=%d",
+		params.Phone,
+		params.PeriodStart.Format("2006-01-02"),
+		params.PeriodEnd.Format("2006-01-02"),
+		detalization.CountReportTransactions(params.DetalizationData),
+	)
+
 	body, err := beelineDetalizationReportService.GenerateReportPDF(params)
 	if err != nil {
-		proxyLog.Warnf("beeline detalization report pdf failed: err=%v", err)
+		proxyLog.Warnf("beeline detalization report pdf failed: sim=%s err=%v", params.Phone, err)
 		return false
 	}
 

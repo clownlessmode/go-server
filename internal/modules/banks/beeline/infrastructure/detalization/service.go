@@ -1,6 +1,7 @@
 package detalization
 
 import (
+	"context"
 	"embed"
 	"fmt"
 	"net/url"
@@ -114,6 +115,7 @@ func (s *Service) generatePagePDF(
 	if templateName != dataPageTemplate {
 		htmlBody = injectPageLogo(htmlBody)
 		htmlBody = injectPrintPageBreakFix(htmlBody)
+		htmlBody = preparePDF2HtmlEXForPrint(htmlBody)
 	}
 
 	if htmlPagesDir != "" {
@@ -192,8 +194,13 @@ func convertHTMLToPDF(htmlPath string, pdfPath string) error {
 	htmlPath = absPath(htmlPath)
 	pdfPath = absPath(pdfPath)
 	pdfName := filepath.Base(pdfPath)
-	htmlURL := htmlFileURL(htmlPath)
 	workDir := filepath.Dir(pdfPath)
+
+	htmlURL, stopHTMLServer, err := htmlURLForPrint(workDir, htmlPath)
+	if err != nil {
+		return err
+	}
+	defer stopHTMLServer()
 
 	var errors []string
 	for _, browser := range htmlToPDFBrowsers() {
@@ -209,28 +216,16 @@ func convertHTMLToPDF(htmlPath string, pdfPath string) error {
 			return fmt.Errorf("create chrome profile dir: %w", err)
 		}
 		userDataDir = absPath(userDataDir)
-		defer os.RemoveAll(userDataDir)
 
-		args := []string{
-			"--headless=new",
-			"--disable-gpu",
-			"--no-sandbox",
-			"--disable-dev-shm-usage",
-			"--disable-software-rasterizer",
-			"--no-first-run",
-			"--no-default-browser-check",
-			"--user-data-dir=" + userDataDir,
-			"--no-pdf-header-footer",
-			"--run-all-compositor-stages-before-draw",
-			"--virtual-time-budget=5000",
-			"--print-to-pdf=" + pdfName,
-			htmlURL,
-		}
+		args := chromePDFArgs(userDataDir, pdfName, htmlURL)
 
-		cmd := exec.Command(browser, args...)
+		ctx, cancel := chromeCommandContext()
+		cmd := exec.CommandContext(ctx, browser, args...)
 		cmd.Dir = workDir
 		cmd.Env = os.Environ()
 		output, err := cmd.CombinedOutput()
+		cancel()
+		os.RemoveAll(userDataDir)
 		if err != nil {
 			errors = append(errors, fmt.Sprintf("%s failed: %v: %s", browser, err, strings.TrimSpace(string(output))))
 			continue
@@ -254,6 +249,30 @@ func convertHTMLToPDF(htmlPath string, pdfPath string) error {
 		"convert html detalization to pdf: %s; install google-chrome-stable (.deb, not snap): wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && apt install ./google-chrome-stable_current_amd64.deb",
 		strings.Join(errors, "; "),
 	)
+}
+
+func chromePDFArgs(userDataDir, pdfName, htmlURL string) []string {
+	args := []string{
+		"--headless=new",
+		"--disable-gpu",
+		"--no-sandbox",
+		"--disable-dev-shm-usage",
+		"--disable-software-rasterizer",
+		"--no-first-run",
+		"--no-default-browser-check",
+		"--user-data-dir=" + userDataDir,
+		"--no-pdf-header-footer",
+		"--print-to-pdf=" + pdfName,
+		htmlURL,
+	}
+	if runtime.GOOS != "darwin" {
+		args = append(args,
+			"--run-all-compositor-stages-before-draw",
+			"--virtual-time-budget=5000",
+		)
+	}
+
+	return args
 }
 
 func waitForPDF(workDir, pdfName, pdfPath string) error {
@@ -297,16 +316,27 @@ func htmlToPDFBrowsers() []string {
 		"chromium",
 	}
 
+	if runtime.GOOS == "darwin" {
+		browsers = append([]string{
+			"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+			"/Applications/Chromium.app/Contents/MacOS/Chromium",
+		}, browsers...)
+	}
+
 	if custom := strings.TrimSpace(os.Getenv("MITM_CHROME_BIN")); custom != "" {
 		browsers = append([]string{custom}, browsers...)
 	}
 
-	if runtime.GOOS == "darwin" {
-		browsers = append(browsers,
-			"/Applications/Chromium.app/Contents/MacOS/Chromium",
-			"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-		)
+	return browsers
+}
+
+func chromeCommandContext() (context.Context, context.CancelFunc) {
+	timeout := 90 * time.Second
+	if custom := strings.TrimSpace(os.Getenv("MITM_CHROME_TIMEOUT")); custom != "" {
+		if parsed, err := time.ParseDuration(custom); err == nil && parsed > 0 {
+			timeout = parsed
+		}
 	}
 
-	return browsers
+	return context.WithTimeout(context.Background(), timeout)
 }
