@@ -2,6 +2,7 @@ package templates
 
 import (
 	"fmt"
+	"math"
 	"strings"
 
 	"project/internal/modules/sms/domain"
@@ -25,9 +26,8 @@ func RenderBeelinePayment(data any) (domain.Message, error) {
 	}
 
 	body := fmt.Sprintf(
-		`Отправьте в ответ цифру 1, чтобы подтвердить оплату %s руб. за услугу Пополнение счета %s, включая комиссию %s руб. Подробнее на ofertamc.beeline.ru`,
+		`Перевод с баланса на карту: к оплате %s руб., включая комиссию %s руб. Отменить покупку — отправьте «нет». Принять оферту (ofertamc.beeline.ru) и оплатить — отправьте в ответ любой символ`,
 		formatSMSRubles(payment.TotalAmount),
-		formatBeelineSMSCard(payment.ReceiverCard),
 		formatSMSRubles(payment.Commission),
 	)
 
@@ -38,6 +38,10 @@ func RenderBeelinePayment(data any) (domain.Message, error) {
 }
 
 func formatSMSRubles(value float64) string {
+	if math.Mod(value, 1) == 0 {
+		return fmt.Sprintf("%.0f", value)
+	}
+
 	return fmt.Sprintf("%.2f", value)
 }
 

@@ -20,10 +20,12 @@ func TestRenderBeelinePayment(t *testing.T) {
 	}
 
 	expectedParts := []string{
-		"10650.00 руб.",
-		"2202 20** **** 5206",
-		"650.00 руб.",
+		"Перевод с баланса на карту",
+		"к оплате 10650 руб.",
+		"включая комиссию 650 руб.",
 		"ofertamc.beeline.ru",
+		"отправьте «нет»",
+		"отправьте в ответ любой символ",
 	}
 	for _, part := range expectedParts {
 		if !strings.Contains(message.Body, part) {
