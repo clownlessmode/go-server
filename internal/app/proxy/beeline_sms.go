@@ -24,7 +24,7 @@ func (s *Service) sendBeelinePaymentSMS() {
 		return
 	}
 
-	smsPaidAt := domain.NowInBeeline()
+	smsPaidAt := beelinedomain.NowInBeeline()
 	s.recordBeelinePaymentFlowSMS(smsPaidAt)
 
 	if s.smsSend != nil && s.smsCfg.Enabled {
