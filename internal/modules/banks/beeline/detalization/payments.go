@@ -170,23 +170,126 @@ func paymentDateTime(paidAt time.Time) string {
 }
 
 func transactionExists(existing []any, candidate map[string]any) bool {
-	candidateDate := transactionDateTime(candidate)
-	candidateChange := transactionChangeValue(candidate)
+	candidateFP := TransactionFingerprint(candidate)
+	candidateChange := domain.RoundMoney(transactionChangeValue(candidate))
+	candidateDate, candidateDateOK := parseReportTransactionDateTime(transactionDateTime(candidate))
 
 	for _, item := range existing {
 		tx, ok := item.(map[string]any)
 		if !ok {
 			continue
 		}
-		if tx["dateTime"] != candidateDate {
+
+		if TransactionFingerprint(tx) == candidateFP {
+			return true
+		}
+
+		existingChange := domain.RoundMoney(transactionChangeValue(tx))
+		if transactionDateTime(tx) == transactionDateTime(candidate) && existingChange == candidateChange {
+			return true
+		}
+
+		if !candidateDateOK || candidateChange == 0 {
 			continue
 		}
-		if transactionChangeValue(tx) == candidateChange {
+		if existingChange != candidateChange {
+			continue
+		}
+
+		existingDate, ok := parseReportTransactionDateTime(transactionDateTime(tx))
+		if !ok {
+			continue
+		}
+		if !samePaymentKind(tx, candidate) {
+			continue
+		}
+
+		if sameTransactionMinute(existingDate, candidateDate) {
+			return true
+		}
+
+		// Fallback for timezone/format skew between injected payments and Beeline snapshot rows.
+		if paymentTimeSkew(existingDate, candidateDate) <= 3*time.Hour {
 			return true
 		}
 	}
 
 	return false
+}
+
+func sameCalendarDay(left, right time.Time) bool {
+	left = left.In(domain.BeelineLocation())
+	right = right.In(domain.BeelineLocation())
+
+	return left.Year() == right.Year() &&
+		left.Month() == right.Month() &&
+		left.Day() == right.Day()
+}
+
+func paymentTimeSkew(left, right time.Time) time.Duration {
+	if !sameCalendarDay(left, right) {
+		return 24 * time.Hour
+	}
+
+	diff := left.Sub(right)
+	if diff < 0 {
+		diff = -diff
+	}
+
+	return diff
+}
+
+func sameTransactionMinute(left, right time.Time) bool {
+	left = left.In(domain.BeelineLocation())
+	right = right.In(domain.BeelineLocation())
+
+	return left.Year() == right.Year() &&
+		left.Month() == right.Month() &&
+		left.Day() == right.Day() &&
+		left.Hour() == right.Hour() &&
+		left.Minute() == right.Minute()
+}
+
+func samePaymentKind(left, right map[string]any) bool {
+	if isRefillLikeTransaction(left) && isRefillLikeTransaction(right) {
+		return true
+	}
+	if isMobileCommerceTransaction(left) && isMobileCommerceTransaction(right) {
+		return true
+	}
+	if isPaymentFlowSMSTransaction(left) && isPaymentFlowSMSTransaction(right) {
+		return true
+	}
+
+	return false
+}
+
+func isRefillLikeTransaction(tx map[string]any) bool {
+	category := strings.ToUpper(jsonString(tx["category"]))
+	if category == "REFILL" {
+		return true
+	}
+
+	name := strings.ToLower(strings.TrimSpace(jsonString(tx["name"])))
+	return strings.Contains(name, "пополнение")
+}
+
+func isMobileCommerceTransaction(tx map[string]any) bool {
+	category := strings.ToUpper(jsonString(tx["category"]))
+	if category != "SERVICES_PAYMENTS_AND_MOBILE_TRANSFERS" {
+		return false
+	}
+
+	name := strings.ToLower(strings.TrimSpace(jsonString(tx["name"])))
+	return strings.Contains(name, "мобильн") || strings.Contains(name, "коммерц")
+}
+
+func isPaymentFlowSMSTransaction(tx map[string]any) bool {
+	if strings.ToUpper(jsonString(tx["category"])) != "SMS_MMS" {
+		return false
+	}
+
+	return strings.TrimSpace(jsonString(tx["number"])) == domain.PaymentFlowSMSNumber
 }
 
 func recalculateBalances(data map[string]any) (float64, bool) {
