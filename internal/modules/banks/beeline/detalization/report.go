@@ -260,7 +260,7 @@ func formatReportInteger(value int64) string {
 }
 
 func reportLocation() *time.Location {
-	return time.FixedZone("MSK", 3*60*60)
+	return domain.BeelineLocation()
 }
 
 func russianMonthGenitive(month time.Month) string {

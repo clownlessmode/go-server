@@ -30,7 +30,7 @@ type PaymentResponse struct {
 	Commission   float64   `json:"commission"`
 	Total        float64   `json:"total"`
 	Source       string    `json:"source"`
-	PaidAt       time.Time `json:"paidAt"`
+	PaidAt       string    `json:"paidAt"`
 	CreatedAt    time.Time `json:"createdAt"`
 	UpdatedAt    time.Time `json:"updatedAt"`
 }
@@ -99,7 +99,7 @@ func paymentResponse(payment domain.Payment) PaymentResponse {
 		Commission:   payment.Commission,
 		Total:        payment.Total,
 		Source:       string(payment.Source),
-		PaidAt:       payment.PaidAt,
+		PaidAt:       domain.FormatBeelineDateTimeRFC3339(payment.PaidAt),
 		CreatedAt:    payment.CreatedAt,
 		UpdatedAt:    payment.UpdatedAt,
 	}

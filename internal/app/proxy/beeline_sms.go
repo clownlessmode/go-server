@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	beelinedomain "project/internal/modules/banks/beeline/domain"
 	smsdomain "project/internal/modules/sms/domain"
 	"project/internal/modules/sms/templates"
 	smssend "project/internal/modules/sms/usecase/send"
@@ -23,7 +24,7 @@ func (s *Service) sendBeelinePaymentSMS() {
 		return
 	}
 
-	smsPaidAt := time.Now()
+	smsPaidAt := domain.NowInBeeline()
 	s.recordBeelinePaymentFlowSMS(smsPaidAt)
 
 	if s.smsSend != nil && s.smsCfg.Enabled {

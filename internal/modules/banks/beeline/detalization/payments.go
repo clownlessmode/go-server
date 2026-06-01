@@ -166,7 +166,7 @@ func paymentFlowSMSTransaction(id, dateTime string) map[string]any {
 }
 
 func paymentDateTime(paidAt time.Time) string {
-	return paidAt.Format("2006-01-02T15:04:05")
+	return domain.FormatBeelineDateTime(paidAt)
 }
 
 func transactionExists(existing []any, candidate map[string]any) bool {

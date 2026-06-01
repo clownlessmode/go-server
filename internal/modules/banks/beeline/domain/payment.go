@@ -223,12 +223,34 @@ func (p Payment) ApplyUpdate(direction *PaymentDirection, receiverCard *string, 
 }
 
 func ParsePaymentTime(value string) (time.Time, error) {
-	parsed, err := time.Parse(PaymentTimeLayout, strings.TrimSpace(value))
-	if err != nil {
+	value = strings.TrimSpace(value)
+	if value == "" {
 		return time.Time{}, ErrInvalidPaymentTime
 	}
 
-	return parsed, nil
+	layouts := []struct {
+		layout   string
+		location *time.Location
+	}{
+		{PaymentTimeLayout, nil},
+		{"2006-01-02T15:04:05", BeelineLocation()},
+		{"2006-01-02 15:04:05", BeelineLocation()},
+	}
+
+	for _, item := range layouts {
+		var parsed time.Time
+		var err error
+		if item.location == nil {
+			parsed, err = time.Parse(item.layout, value)
+		} else {
+			parsed, err = time.ParseInLocation(item.layout, value, item.location)
+		}
+		if err == nil {
+			return parsed.UTC(), nil
+		}
+	}
+
+	return time.Time{}, ErrInvalidPaymentTime
 }
 
 func newPaymentID() string {
