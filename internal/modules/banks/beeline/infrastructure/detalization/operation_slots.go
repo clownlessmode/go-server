@@ -63,7 +63,8 @@ func replaceSectionDateDiv(html, yClass, oldValue, newValue string) string {
 		oldValue,
 	)
 	newDiv := fmt.Sprintf(
-		`<div class="t m0 section-date-fit h6 %s ff1 fs5 fc1 sc0 ls0 ws0">%s</div>`,
+		`<div class="t m0 section-date-cover h6 %s"></div><div class="t m0 section-date-badge h6 %s ff1 fs5 fc1 sc0 ls0 ws0"><span>%s</span></div>`,
+		yClass,
 		yClass,
 		escapeOperationHTML(newValue),
 	)

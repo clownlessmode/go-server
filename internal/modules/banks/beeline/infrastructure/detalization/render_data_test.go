@@ -51,7 +51,9 @@ func TestRenderSecondPageTransactions(t *testing.T) {
 		"sms free8464",
 		"1 шт (основной баланс)",
 		"amount-fit",
-		"section-date-fit",
+		"section-date-badge",
+		"section-date-cover",
+		"#F0F3F5",
 	}
 	for _, check := range checks {
 		if !strings.Contains(html, check) {

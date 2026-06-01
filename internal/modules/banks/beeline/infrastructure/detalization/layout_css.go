@@ -12,9 +12,13 @@ const amountFitCSS = `<style>
 </style>`
 
 const secondPageSectionDateCSS = `<style>
-.section-date-fit{width:308px!important;left:72px!important;right:auto!important;text-align:center!important;transform-origin:0 100%!important;-webkit-transform-origin:0 100%!important}
+.section-date-cover{left:180px!important;width:272px!important;background:#fff!important;z-index:1!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.section-date-badge{left:72px!important;width:auto!important;right:auto!important;z-index:2!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;white-space:nowrap!important;background:transparent!important}
+.section-date-badge span{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:107px;height:16px;padding:0 8px;background:#F0F3F5!important;border-radius:6px;color:#000!important;font-size:12.09px!important;font-family:Beeline Sans,sans-serif!important;line-height:16px!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 @media print{
-.section-date-fit{width:273.777778pt!important;left:64pt!important;right:auto!important;text-align:center!important;transform-origin:0 100%!important;-webkit-transform-origin:0 100%!important}
+.section-date-cover{left:160pt!important;width:241.777778pt!important;background:#fff!important;z-index:1!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.section-date-badge{left:64pt!important;z-index:2!important}
+.section-date-badge span{min-width:95.111111pt!important;height:14.222222pt!important;padding:0 7.111111pt!important;border-radius:5.333333pt!important;font-size:10.746667pt!important;line-height:14.222222pt!important}
 }
 </style>`
 
