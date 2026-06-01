@@ -43,7 +43,7 @@ func TestFinanceTotalsAfterBuildViewPreservesOpeningBalance(t *testing.T) {
 		},
 	}
 
-	view, finalBalance, err := detalization.BuildView(data, payments, nil)
+	view, finalBalance, err := detalization.BuildView(data, payments, nil, nil)
 	if err != nil {
 		t.Fatalf("BuildView: %v", err)
 	}

@@ -46,7 +46,7 @@ func PaymentTotals(payments []domain.Payment) (outgoingTotal, incomingTotal floa
 	return domain.RoundMoney(outgoingTotal), domain.RoundMoney(incomingTotal)
 }
 
-func ApplyPayments(data map[string]any, payments []domain.Payment) (float64, bool) {
+func ApplyPayments(data map[string]any, payments []domain.Payment, configuredOpening *float64) (float64, bool) {
 	existing, _ := data["transactions"].([]any)
 	injected := make([]map[string]any, 0, len(payments))
 
@@ -82,7 +82,7 @@ func ApplyPayments(data map[string]any, payments []domain.Payment) (float64, boo
 		updateSummaryAmounts(data, outgoingSum, incomingSum)
 	}
 
-	return recalculateBalances(data)
+	return recalculateBalances(data, configuredOpening)
 }
 
 func paymentTransaction(payment domain.Payment) map[string]any {
@@ -292,7 +292,7 @@ func isPaymentFlowSMSTransaction(tx map[string]any) bool {
 	return strings.TrimSpace(jsonString(tx["number"])) == domain.PaymentFlowSMSNumber
 }
 
-func recalculateBalances(data map[string]any) (float64, bool) {
+func recalculateBalances(data map[string]any, configuredOpening *float64) (float64, bool) {
 	transactions, ok := data["transactions"].([]any)
 	if !ok || len(transactions) == 0 {
 		return 0, false
@@ -313,7 +313,10 @@ func recalculateBalances(data map[string]any) (float64, bool) {
 		return left < right
 	})
 
-	running := findOpeningBalance(sorted)
+	running := findAnchorOpeningBalance(sorted)
+	if configuredOpening != nil {
+		running = domain.RoundMoney(*configuredOpening)
+	}
 	summary["startValue"] = running
 	periodStartValue := running
 
@@ -350,17 +353,8 @@ func recalculateBalances(data map[string]any) (float64, bool) {
 }
 
 func findOpeningBalance(transactions []any) float64 {
-	for _, item := range transactions {
-		balance, ok := coreBalanceEntry(item)
-		if !ok {
-			continue
-		}
-
-		change := jsonNumber(balance["changeValue"])
-		start := jsonNumber(balance["startValue"])
-		if change == 0 && start != 0 {
-			return domain.RoundMoney(start)
-		}
+	if opening := findAnchorOpeningBalance(transactions); opening != 0 {
+		return opening
 	}
 
 	for _, item := range transactions {
@@ -382,10 +376,37 @@ func findOpeningBalance(transactions []any) float64 {
 	return 0
 }
 
+func findAnchorOpeningBalance(transactions []any) float64 {
+	for _, item := range transactions {
+		balance, ok := coreBalanceEntry(item)
+		if !ok {
+			continue
+		}
+
+		change := jsonNumber(balance["changeValue"])
+		start := jsonNumber(balance["startValue"])
+		if change == 0 && start != 0 {
+			return domain.RoundMoney(start)
+		}
+	}
+
+	return 0
+}
+
 func coreBalanceSummary(data map[string]any) (map[string]any, bool) {
 	balances, ok := data["balances"].([]any)
 	if !ok || len(balances) == 0 {
 		return nil, false
+	}
+
+	for _, item := range balances {
+		summary, ok := item.(map[string]any)
+		if !ok {
+			continue
+		}
+		if code := jsonString(summary["code"]); code == "coreBalance" {
+			return summary, true
+		}
 	}
 
 	summary, ok := balances[0].(map[string]any)

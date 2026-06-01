@@ -67,6 +67,12 @@ func FinanceTotals(data map[string]any) (ReportFinance, bool) {
 }
 
 func openingBalanceAtPeriodStart(data map[string]any) float64 {
+	if hasRecalculatedCoreBalanceTransactions(data) {
+		if summary, ok := coreBalanceSummary(data); ok {
+			return domain.RoundMoney(jsonNumber(summary["startValue"]))
+		}
+	}
+
 	transactions, ok := data["transactions"].([]any)
 	if !ok || len(transactions) == 0 {
 		if summary, ok := coreBalanceSummary(data); ok {
@@ -82,6 +88,28 @@ func openingBalanceAtPeriodStart(data map[string]any) float64 {
 	})
 
 	return findOpeningBalance(sorted)
+}
+
+func hasRecalculatedCoreBalanceTransactions(data map[string]any) bool {
+	transactions, ok := data["transactions"].([]any)
+	if !ok {
+		return false
+	}
+
+	for _, item := range transactions {
+		balance, ok := coreBalanceEntry(item)
+		if !ok {
+			continue
+		}
+		if jsonNumber(balance["changeValue"]) == 0 {
+			continue
+		}
+		if _, ok := balance["endValue"]; ok {
+			return true
+		}
+	}
+
+	return false
 }
 
 func transactionCategoryID(item any) string {

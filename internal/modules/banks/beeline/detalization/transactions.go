@@ -72,7 +72,7 @@ func PurgeHiddenFromData(data map[string]any, hiddenIDs []string) (map[string]an
 
 	FilterHiddenTransactions(working, hiddenIDs)
 
-	balance, ok := recalculateBalances(working)
+	balance, ok := recalculateBalances(working, nil)
 	if !ok {
 		return working, nil, fmt.Errorf("recalculate detalization balances")
 	}
@@ -149,7 +149,7 @@ func FilterHiddenTransactions(data map[string]any, hiddenIDs []string) bool {
 	}
 
 	data["transactions"] = filtered
-	_, _ = recalculateBalances(data)
+	_, _ = recalculateBalances(data, nil)
 
 	return true
 }
@@ -183,7 +183,7 @@ func AnnotateTransactionIDs(data map[string]any, payments []domain.Payment) {
 	}
 }
 
-func BuildView(baseData map[string]any, payments []domain.Payment, hiddenIDs []string) (map[string]any, float64, error) {
+func BuildView(baseData map[string]any, payments []domain.Payment, hiddenIDs []string, configuredOpening *float64) (map[string]any, float64, error) {
 	working, err := CloneData(baseData)
 	if err != nil {
 		return nil, 0, err
@@ -191,7 +191,7 @@ func BuildView(baseData map[string]any, payments []domain.Payment, hiddenIDs []s
 
 	FilterHiddenTransactions(working, hiddenIDs)
 
-	balance, ok := ApplyPayments(working, payments)
+	balance, ok := ApplyPayments(working, payments, configuredOpening)
 	if !ok {
 		return nil, 0, fmt.Errorf("build beeline detalization view")
 	}

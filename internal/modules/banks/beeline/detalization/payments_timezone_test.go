@@ -22,7 +22,7 @@ func TestPaymentTransactionDateTimeInMoscow(t *testing.T) {
 		},
 	}
 
-	if _, ok := ApplyPayments(data, []domain.Payment{payment}); !ok {
+	if _, ok := ApplyPayments(data, []domain.Payment{payment}, nil); !ok {
 		t.Fatal("ApplyPayments failed")
 	}
 

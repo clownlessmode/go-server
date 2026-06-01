@@ -49,7 +49,7 @@ func TestApplyPaymentsSkipsDuplicateRefillSameMinute(t *testing.T) {
 		PaidAt:    time.Date(2026, 6, 1, 15, 21, 0, 0, domain.BeelineLocation()),
 	}
 
-	balance, ok := ApplyPayments(data, []domain.Payment{payment})
+	balance, ok := ApplyPayments(data, []domain.Payment{payment}, nil)
 	if !ok {
 		t.Fatal("ApplyPayments failed")
 	}
@@ -76,7 +76,7 @@ func TestApplyPaymentsSkipsDuplicateRefillTimezoneSkew(t *testing.T) {
 		PaidAt:    time.Date(2026, 6, 1, 15, 21, 0, 0, domain.BeelineLocation()),
 	}
 
-	balance, ok := ApplyPayments(data, []domain.Payment{payment})
+	balance, ok := ApplyPayments(data, []domain.Payment{payment}, nil)
 	if !ok {
 		t.Fatal("ApplyPayments failed")
 	}
@@ -103,7 +103,7 @@ func TestApplyPaymentsKeepsTwoRefillsSameDayDifferentTimes(t *testing.T) {
 		PaidAt:    time.Date(2026, 6, 1, 18, 0, 0, 0, domain.BeelineLocation()),
 	}
 
-	balance, ok := ApplyPayments(data, []domain.Payment{payment})
+	balance, ok := ApplyPayments(data, []domain.Payment{payment}, nil)
 	if !ok {
 		t.Fatal("ApplyPayments failed")
 	}
@@ -128,7 +128,7 @@ func TestApplyPaymentsUserScenario(t *testing.T) {
 	}
 	data["transactions"] = []any{beelineRefillTransaction("2026-06-01T15:21:30", 450)}
 
-	balance, ok := ApplyPayments(data, []domain.Payment{incoming})
+	balance, ok := ApplyPayments(data, []domain.Payment{incoming}, nil)
 	if !ok || balance != 450 {
 		t.Fatalf("after refill balance = %.2f, want 450", balance)
 	}
@@ -152,7 +152,7 @@ func TestApplyPaymentsUserScenario(t *testing.T) {
 		},
 	})
 
-	balance, ok = ApplyPayments(data, []domain.Payment{incoming, outgoing})
+	balance, ok = ApplyPayments(data, []domain.Payment{incoming, outgoing}, nil)
 	if !ok || balance != 100 {
 		t.Fatalf("final balance = %.2f, want 100", balance)
 	}

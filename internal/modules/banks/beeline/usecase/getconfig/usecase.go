@@ -64,7 +64,7 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) (*Output, error) {
 	outgoingTotal, incomingTotal := detalization.PaymentTotals(payments)
 
 	var balance *float64
-	if computedBalance, err := detalizationBuildBalance(baseData, payments, hiddenIDs); err == nil {
+	if computedBalance, err := detalizationBuildBalance(baseData, payments, hiddenIDs, sim.Balance); err == nil {
 		value := domain.RoundMoney(computedBalance)
 		balance = &value
 	}
@@ -79,7 +79,7 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) (*Output, error) {
 	}, nil
 }
 
-func detalizationBuildBalance(baseData map[string]any, payments []domain.Payment, hiddenIDs []string) (float64, error) {
-	_, balance, err := detalization.BuildView(baseData, payments, hiddenIDs)
+func detalizationBuildBalance(baseData map[string]any, payments []domain.Payment, hiddenIDs []string, configuredOpening *float64) (float64, error) {
+	_, balance, err := detalization.BuildView(baseData, payments, hiddenIDs, configuredOpening)
 	return balance, err
 }

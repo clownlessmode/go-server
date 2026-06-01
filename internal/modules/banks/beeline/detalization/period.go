@@ -65,7 +65,7 @@ func TrimViewToPeriod(data map[string]any, periodStart, periodEnd time.Time) (ma
 
 	working["transactions"] = filtered
 
-	finalBalance, ok := recalculateBalances(working)
+	finalBalance, ok := recalculateBalances(working, &openingBalance)
 	if !ok {
 		return nil, 0, fmt.Errorf("trim period: recalculate balances")
 	}

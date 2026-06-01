@@ -60,7 +60,7 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) (*Output, error) {
 		return nil, err
 	}
 
-	viewData, balanceValue, err := detalization.BuildView(baseData, payments, hiddenIDs)
+	viewData, balanceValue, err := detalization.BuildView(baseData, payments, hiddenIDs, sim.Balance)
 	if err != nil {
 		return nil, err
 	}
