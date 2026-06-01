@@ -10,7 +10,6 @@ var apiLog = logger.New("api")
 // @title Rebellion Banking APII
 // @version 1.0
 // @description API documentation for .
-// @host localhost:8080
 // @BasePath /
 func main() {
 	app := bootstrap.NewApp()

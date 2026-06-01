@@ -9,6 +9,7 @@ import (
 type Config struct {
 	Postgres   PostgresConfig
 	Auth       AuthConfig
+	Server     ServerConfig
 	Proxy      ProxyConfig
 	Rocketbank RocketbankConfig
 	Beeline    BeelineConfig
@@ -26,6 +27,11 @@ type PostgresConfig struct {
 
 type AuthConfig struct {
 	JWTSecret string
+}
+
+type ServerConfig struct {
+	SwaggerHost    string
+	SwaggerSchemes string
 }
 
 type ProxyConfig struct {
@@ -64,6 +70,10 @@ func Load() Config {
 		},
 		Auth: AuthConfig{
 			JWTSecret: env("JWT_SECRET", "dev-secret-change-me"),
+		},
+		Server: ServerConfig{
+			SwaggerHost:    env("MITM_SWAGGER_HOST", ""),
+			SwaggerSchemes: env("MITM_SWAGGER_SCHEMES", ""),
 		},
 		Proxy: ProxyConfig{
 			Host:           env("MITM_PROXY_HOST", "rebellion.proxy"),

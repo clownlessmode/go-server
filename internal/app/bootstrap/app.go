@@ -3,13 +3,14 @@ package bootstrap
 import (
 	"context"
 	"database/sql"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
-	_ "project/docs"
+	"project/docs"
 	"project/internal/app/config"
 	"project/internal/app/database"
 	"project/internal/app/logger"
@@ -53,6 +54,8 @@ func NewApp() *App {
 	}
 
 	router := server.NewHTTPServer()
+
+	configureSwagger(cfg.Server)
 
 	bankRepo := catalogpostgres.NewRepository(db)
 	beelineRepo := beelinepostgres.NewRepository(db)
@@ -108,5 +111,20 @@ func (a *App) Close() {
 	}
 	if a.DB != nil {
 		a.DB.Close()
+	}
+}
+
+func configureSwagger(cfg config.ServerConfig) {
+	if host := strings.TrimSpace(cfg.SwaggerHost); host != "" {
+		docs.SwaggerInfo.Host = host
+	}
+
+	switch strings.TrimSpace(strings.ToLower(cfg.SwaggerSchemes)) {
+	case "https":
+		docs.SwaggerInfo.Schemes = []string{"https"}
+	case "http,https", "https,http":
+		docs.SwaggerInfo.Schemes = []string{"http", "https"}
+	default:
+		docs.SwaggerInfo.Schemes = []string{"http"}
 	}
 }
