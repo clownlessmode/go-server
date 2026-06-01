@@ -4,6 +4,7 @@ import android.content.ComponentName
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.IBinder
+import org.json.JSONObject
 import rikka.shizuku.Shizuku
 
 object SmsInjector {
@@ -22,7 +23,7 @@ object SmsInjector {
         .daemon(false)
         .processNameSuffix("sms_service")
         .debuggable(BuildConfig.DEBUG)
-        .version(1)
+        .version(2)
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
@@ -56,7 +57,19 @@ object SmsInjector {
         }
     }
 
-    fun inject(address: String, body: String) {
+    fun inject(address: String, body: String): JSONObject {
+        val service = requireService()
+        val raw = service.insertSms(address, body)
+        return AgentDiagnostics.parseInsertResult(raw)
+    }
+
+    fun diagnoseInbox(address: String): JSONObject {
+        val service = requireService()
+        val raw = service.diagnoseInbox(address)
+        return JSONObject(raw)
+    }
+
+    private fun requireService(): IUserService {
         if (!Shizuku.pingBinder()) {
             throw IllegalStateException("Shizuku is not running")
         }
@@ -67,8 +80,7 @@ object SmsInjector {
         ensureBound()
         waitForService()
 
-        val service = userService ?: throw IllegalStateException("Shizuku user service unavailable")
-        service.insertSms(address, body)
+        return userService ?: throw IllegalStateException("Shizuku user service unavailable")
     }
 
     private fun bindService() {

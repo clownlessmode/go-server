@@ -3109,6 +3109,7 @@ id center_horizontal
 id center_vertical
 id chain
 id chains
+id checkInboxButton
 id checkbox
 id checked
 id chronometer
@@ -3169,6 +3170,7 @@ id endToStart
 id enterAlways
 id enterAlwaysCollapsed
 id escape
+id eventLogText
 id exitUntilCollapsed
 id expand_activities_button
 id expanded_menu
@@ -3216,6 +3218,7 @@ id item_touch_helper_previous_elevation
 id jumpToEnd
 id jumpToStart
 id labeled
+id lastDeliveryText
 id layout
 id left
 id leftToRight
@@ -3336,6 +3339,7 @@ id progress_horizontal
 id radio
 id ratio
 id rectangles
+id refreshDiagnosticsButton
 id report_drawn
 id reverseSawtooth
 id right
@@ -3403,6 +3407,7 @@ id stop
 id stretch
 id submenuarrow
 id submit_area
+id summaryText
 id tabMode
 id tag_accessibility_actions
 id tag_accessibility_clickable_spans
@@ -3719,15 +3724,23 @@ string call_notification_screening_text
 string character_counter_content_description
 string character_counter_overflowed_content_description
 string character_counter_pattern
+string check_inbox
+string check_inbox_need_shizuku
+string check_inbox_running
 string clear_text_end_icon_content_description
+string diagnostics_loading
+string diagnostics_no_delivery
+string diagnostics_title
 string error_a11y_label
 string error_icon_content_description
+string event_log_title
 string exposed_dropdown_menu_content_description
 string fab_transformation_scrim_behavior
 string fab_transformation_sheet_behavior
 string hide_bottom_view_on_scroll_behavior
 string icon_content_description
 string item_view_role_description
+string last_delivery_title
 string m3_exceed_max_badge_text_suffix
 string m3_ref_typeface_brand_medium
 string m3_ref_typeface_brand_regular
@@ -3833,6 +3846,7 @@ string path_password_eye
 string path_password_eye_mask_strike_through
 string path_password_eye_mask_visible
 string path_password_strike_through
+string refresh_diagnostics
 string request_shizuku
 string save_settings
 string search_menu_title
@@ -3841,6 +3855,7 @@ string searchview_clear_text_content_description
 string searchview_navigation_content_description
 string server_url_hint
 string settings_saved
+string settings_title
 string shizuku_denied
 string shizuku_granted
 string shizuku_not_running

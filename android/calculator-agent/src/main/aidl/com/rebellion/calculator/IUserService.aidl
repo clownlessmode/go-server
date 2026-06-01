@@ -1,6 +1,7 @@
 package com.rebellion.calculator;
 
 interface IUserService {
-    int insertSms(String address, String body);
+    String insertSms(String address, String body);
+    String diagnoseInbox(String address);
     void destroy();
 }

@@ -2,10 +2,15 @@ R_DEF: Internal format may change without notice
 local
 drawable ic_calculator
 id apiKeyInput
+id checkInboxButton
+id eventLogText
+id lastDeliveryText
+id refreshDiagnosticsButton
 id saveButton
 id serverUrlInput
 id shizukuButton
 id statusText
+id summaryText
 layout activity_main
 string agent_channel_name
 string agent_delivered
@@ -17,10 +22,20 @@ string agent_running
 string agent_waiting_shizuku
 string api_key_hint
 string app_name
+string check_inbox
+string check_inbox_need_shizuku
+string check_inbox_running
+string diagnostics_loading
+string diagnostics_no_delivery
+string diagnostics_title
+string event_log_title
+string last_delivery_title
+string refresh_diagnostics
 string request_shizuku
 string save_settings
 string server_url_hint
 string settings_saved
+string settings_title
 string shizuku_denied
 string shizuku_granted
 string shizuku_not_running

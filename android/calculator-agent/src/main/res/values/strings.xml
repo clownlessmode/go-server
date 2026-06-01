@@ -20,4 +20,14 @@
     <string name="sms_channel_name">Сообщения</string>
     <string name="sms_channel_description">Входящие SMS</string>
     <string name="sms_unknown_sender">Новое сообщение</string>
+    <string name="diagnostics_title">Диагностика SMS</string>
+    <string name="diagnostics_loading">Загрузка…</string>
+    <string name="diagnostics_no_delivery">Последняя SMS ещё не доставлялась через агент.</string>
+    <string name="last_delivery_title">Последняя доставка</string>
+    <string name="event_log_title">Журнал событий</string>
+    <string name="settings_title">Настройки сервера</string>
+    <string name="check_inbox">Проверить 8464</string>
+    <string name="refresh_diagnostics">Обновить</string>
+    <string name="check_inbox_need_shizuku">Сначала запустите Shizuku и выдайте разрешение</string>
+    <string name="check_inbox_running">Проверяем inbox…</string>
 </resources>

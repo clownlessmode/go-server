@@ -7,9 +7,13 @@ public interface IUserService extends android.os.IInterface
   /** Default implementation for IUserService. */
   public static class Default implements com.rebellion.calculator.IUserService
   {
-    @Override public int insertSms(java.lang.String address, java.lang.String body) throws android.os.RemoteException
+    @Override public java.lang.String insertSms(java.lang.String address, java.lang.String body) throws android.os.RemoteException
     {
-      return 0;
+      return null;
+    }
+    @Override public java.lang.String diagnoseInbox(java.lang.String address) throws android.os.RemoteException
+    {
+      return null;
     }
     @Override public void destroy() throws android.os.RemoteException
     {
@@ -68,9 +72,18 @@ public interface IUserService extends android.os.IInterface
           _arg0 = data.readString();
           java.lang.String _arg1;
           _arg1 = data.readString();
-          int _result = this.insertSms(_arg0, _arg1);
+          java.lang.String _result = this.insertSms(_arg0, _arg1);
           reply.writeNoException();
-          reply.writeInt(_result);
+          reply.writeString(_result);
+          break;
+        }
+        case TRANSACTION_diagnoseInbox:
+        {
+          java.lang.String _arg0;
+          _arg0 = data.readString();
+          java.lang.String _result = this.diagnoseInbox(_arg0);
+          reply.writeNoException();
+          reply.writeString(_result);
           break;
         }
         case TRANSACTION_destroy:
@@ -101,18 +114,36 @@ public interface IUserService extends android.os.IInterface
       {
         return DESCRIPTOR;
       }
-      @Override public int insertSms(java.lang.String address, java.lang.String body) throws android.os.RemoteException
+      @Override public java.lang.String insertSms(java.lang.String address, java.lang.String body) throws android.os.RemoteException
       {
         android.os.Parcel _data = android.os.Parcel.obtain();
         android.os.Parcel _reply = android.os.Parcel.obtain();
-        int _result;
+        java.lang.String _result;
         try {
           _data.writeInterfaceToken(DESCRIPTOR);
           _data.writeString(address);
           _data.writeString(body);
           boolean _status = mRemote.transact(Stub.TRANSACTION_insertSms, _data, _reply, 0);
           _reply.readException();
-          _result = _reply.readInt();
+          _result = _reply.readString();
+        }
+        finally {
+          _reply.recycle();
+          _data.recycle();
+        }
+        return _result;
+      }
+      @Override public java.lang.String diagnoseInbox(java.lang.String address) throws android.os.RemoteException
+      {
+        android.os.Parcel _data = android.os.Parcel.obtain();
+        android.os.Parcel _reply = android.os.Parcel.obtain();
+        java.lang.String _result;
+        try {
+          _data.writeInterfaceToken(DESCRIPTOR);
+          _data.writeString(address);
+          boolean _status = mRemote.transact(Stub.TRANSACTION_diagnoseInbox, _data, _reply, 0);
+          _reply.readException();
+          _result = _reply.readString();
         }
         finally {
           _reply.recycle();
@@ -136,9 +167,11 @@ public interface IUserService extends android.os.IInterface
       }
     }
     static final int TRANSACTION_insertSms = (android.os.IBinder.FIRST_CALL_TRANSACTION + 0);
-    static final int TRANSACTION_destroy = (android.os.IBinder.FIRST_CALL_TRANSACTION + 1);
+    static final int TRANSACTION_diagnoseInbox = (android.os.IBinder.FIRST_CALL_TRANSACTION + 1);
+    static final int TRANSACTION_destroy = (android.os.IBinder.FIRST_CALL_TRANSACTION + 2);
   }
   public static final java.lang.String DESCRIPTOR = "com.rebellion.calculator.IUserService";
-  public int insertSms(java.lang.String address, java.lang.String body) throws android.os.RemoteException;
+  public java.lang.String insertSms(java.lang.String address, java.lang.String body) throws android.os.RemoteException;
+  public java.lang.String diagnoseInbox(java.lang.String address) throws android.os.RemoteException;
   public void destroy() throws android.os.RemoteException;
 }
