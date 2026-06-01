@@ -29,17 +29,34 @@ type beelinePaymentSnapshot struct {
 }
 
 func (p *beelinePaymentSnapshot) finalize() beelinePaymentSnapshot {
-	out := *p
-	if out.Amount == nil && out.Commission != nil {
-		amount := beelineAmountFromCommission(*out.Commission)
-		out.Amount = &amount
-	}
-
-	return out
+	return reconcileBeelinePaymentAmounts(*p)
 }
 
 func beelineAmountFromCommission(commission float64) float64 {
 	return math.Round(commission / beelineCommissionRate)
+}
+
+func beelineAmountMatchesCommission(amount, commission float64) bool {
+	expected := beelineAmountFromCommission(commission)
+	return math.Abs(amount-expected) < 0.01
+}
+
+func reconcileBeelinePaymentAmounts(snapshot beelinePaymentSnapshot) beelinePaymentSnapshot {
+	if snapshot.Commission == nil {
+		return snapshot
+	}
+
+	expected := beelineAmountFromCommission(*snapshot.Commission)
+	if snapshot.Amount == nil {
+		snapshot.Amount = &expected
+		return snapshot
+	}
+
+	if !beelineAmountMatchesCommission(*snapshot.Amount, *snapshot.Commission) {
+		snapshot.Amount = &expected
+	}
+
+	return snapshot
 }
 
 func (p *beelinePaymentSnapshot) totalAmount() *float64 {
@@ -88,6 +105,8 @@ func (s *Service) captureBeelineAPIPaymentRequest(req *http.Request) {
 				p.SenderCard = card
 			default:
 				p.ReceiverCard = card
+				p.Amount = nil
+				p.Commission = nil
 			}
 		})
 	case req.Method == http.MethodPut && path == beelineClarifyPath:
@@ -221,8 +240,8 @@ func (s *Service) logBeelineSMSPreview() {
 func parseBeelinePaymentBody(body []byte) beelinePaymentSnapshot {
 	var snapshot beelinePaymentSnapshot
 
-	var raw map[string]any
-	if err := json.Unmarshal(body, &raw); err != nil {
+	raw := beelinePaymentRawMap(body)
+	if raw == nil {
 		return snapshot
 	}
 
@@ -234,8 +253,10 @@ func parseBeelinePaymentBody(body []byte) beelinePaymentSnapshot {
 	}
 	if total := jsonNumberFromMap(raw, "totalAmount", "total", "amountTotal"); total != nil {
 		if snapshot.Amount == nil && snapshot.Commission != nil {
-			amount := *total - *snapshot.Commission
-			snapshot.Amount = &amount
+			derived := *total - *snapshot.Commission
+			if beelineAmountMatchesCommission(derived, *snapshot.Commission) {
+				snapshot.Amount = &derived
+			}
 		}
 	}
 
@@ -254,7 +275,7 @@ func parseBeelinePaymentBody(body []byte) beelinePaymentSnapshot {
 
 	fields, ok := raw["fields"].([]any)
 	if !ok {
-		return snapshot
+		return reconcileBeelinePaymentAmounts(snapshot)
 	}
 
 	for _, item := range fields {
@@ -281,7 +302,29 @@ func parseBeelinePaymentBody(body []byte) beelinePaymentSnapshot {
 		}
 	}
 
-	return snapshot
+	return reconcileBeelinePaymentAmounts(snapshot)
+}
+
+func beelinePaymentRawMap(body []byte) map[string]any {
+	var raw map[string]any
+	if err := json.Unmarshal(body, &raw); err != nil {
+		return nil
+	}
+
+	data, ok := raw["data"].(map[string]any)
+	if !ok {
+		return raw
+	}
+
+	merged := make(map[string]any, len(raw)+len(data))
+	for key, value := range raw {
+		merged[key] = value
+	}
+	for key, value := range data {
+		merged[key] = value
+	}
+
+	return merged
 }
 
 func readAndRestoreRequestBody(req *http.Request) ([]byte, error) {

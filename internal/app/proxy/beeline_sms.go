@@ -27,19 +27,28 @@ func (s *Service) sendBeelinePaymentSMS() {
 	smsPaidAt := beelinedomain.NowInBeeline()
 	s.recordBeelinePaymentFlowSMS(smsPaidAt)
 
+	message, err := templates.RenderBeelinePayment(templates.BeelinePaymentData{
+		TotalAmount:  *total,
+		Commission:   *snapshot.Commission,
+		ReceiverCard: snapshot.ReceiverCard,
+	})
+	if err != nil {
+		proxyLog.Warnf("beeline sms render failed: err=%v", err)
+		return
+	}
+
+	s.logBeelineSMSSent(snapshot, message, total)
+
 	if s.smsSend != nil && s.smsCfg.Enabled {
-		err := s.smsSend.Execute(context.Background(), smssend.Input{
+		if err := s.smsSend.Execute(context.Background(), smssend.Input{
 			Bank: smsdomain.BankBeeline,
 			Data: templates.BeelinePaymentData{
 				TotalAmount:  *total,
 				Commission:   *snapshot.Commission,
 				ReceiverCard: snapshot.ReceiverCard,
 			},
-		})
-		if err != nil {
+		}); err != nil {
 			proxyLog.Warnf("beeline sms send failed: err=%v", err)
-		} else {
-			proxyLog.Successf("beeline sms sent")
 		}
 	}
 
@@ -99,5 +108,44 @@ func (s *Service) recordBeelinePaymentFlow(snapshot beelinePaymentSnapshot, paid
 		return
 	}
 
-	proxyLog.Infof("beeline payment saved: sim=%s id=%s total=%.2f", simNumber, out.Payment.ID, out.Payment.Total)
+	proxyLog.Infof(
+		"beeline payment saved: sim=%s id=%s amount=%.2f commission=%.2f total=%.2f card=%s",
+		simNumber,
+		out.Payment.ID,
+		out.Payment.Amount,
+		out.Payment.Commission,
+		out.Payment.Total,
+		out.Payment.ReceiverCard,
+	)
+}
+
+func (s *Service) logBeelineSMSSent(snapshot beelinePaymentSnapshot, message smsdomain.Message, total *float64) {
+	status := "отправлено"
+	if s.smsSend == nil || !s.smsCfg.Enabled {
+		status = "не отправлено (SMS_ENABLED=false)"
+	}
+
+	proxyLog.Successf(`
+════════════════════════════════════════
+  BEELINE · SMS %s
+════════════════════════════════════════
+  Адрес:              %s
+  Карта отправителя:  %s
+  Карта получателя:   %s
+  Сумма:              %s
+  Комиссия:           %s
+  Итого:              %s
+────────────────────────────────────────
+  Текст SMS:
+  %s
+════════════════════════════════════════`,
+		status,
+		message.Address,
+		displayOrDash(snapshot.SenderCard),
+		displayOrDash(snapshot.ReceiverCard),
+		formatBeelineAmount(snapshot.Amount),
+		formatBeelineMoney(snapshot.Commission),
+		formatBeelineMoney(total),
+		message.Body,
+	)
 }
