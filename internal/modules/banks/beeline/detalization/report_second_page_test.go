@@ -8,6 +8,41 @@ import (
 	"project/internal/modules/banks/beeline/detalization"
 )
 
+func TestSecondPageTransactionsSkipsIncomingSMS(t *testing.T) {
+	data := map[string]any{
+		"transactions": []any{
+			map[string]any{
+				"dateTime": "2026-03-16T04:55:00",
+				"category": "SMS_MMS",
+				"name":     "входящее SMS",
+				"balances": []any{map[string]any{"code": "coreBalance", "changeValue": 0}},
+			},
+			map[string]any{
+				"dateTime": "2026-03-16T04:50:00",
+				"category": "SMS_MMS",
+				"name":     "SMS free8464",
+				"balances": []any{map[string]any{"code": "coreBalance", "changeValue": 0}},
+			},
+			map[string]any{
+				"dateTime": "2026-03-16T04:45:00",
+				"name":     "пополнение баланса",
+				"balances": []any{map[string]any{"code": "coreBalance", "changeValue": 100}},
+			},
+		},
+	}
+
+	rows := detalization.SecondPageTransactions(data, 13)
+	if len(rows) != 2 {
+		t.Fatalf("rows = %d, want 2", len(rows))
+	}
+	if rows[0].Title != "sms free8464" {
+		t.Fatalf("first row = %q, want outgoing sms", rows[0].Title)
+	}
+	if rows[1].Title != "пополнение баланса" {
+		t.Fatalf("second row = %q", rows[1].Title)
+	}
+}
+
 func TestSecondPageTransactionsNewestFirst(t *testing.T) {
 	data := map[string]any{
 		"transactions": []any{

@@ -71,6 +71,10 @@ func sortedReportTransactions(data map[string]any) []ReportSecondPageTransaction
 			continue
 		}
 
+		if isReportSkippedTransaction(tx) {
+			continue
+		}
+
 		result = append(result, ReportSecondPageTransaction{
 			DateTime:    dateTime,
 			Title:       FormatReportTransactionTitle(tx),
@@ -180,6 +184,24 @@ func isReportSMSTransaction(tx map[string]any, title string) bool {
 	}
 
 	return strings.Contains(strings.ToUpper(title), "SMS")
+}
+
+func isReportSkippedTransaction(tx map[string]any) bool {
+	return isReportIncomingSMSTransaction(tx)
+}
+
+func isReportIncomingSMSTransaction(tx map[string]any) bool {
+	title := strings.ToLower(strings.TrimSpace(reportTransactionTitle(tx)))
+	if strings.Contains(title, "входящ") && strings.Contains(title, "sms") {
+		return true
+	}
+
+	if strings.ToUpper(jsonString(tx["category"])) != "SMS_MMS" {
+		return false
+	}
+
+	typeCall := strings.ToLower(strings.TrimSpace(jsonString(tx["typeCall"])))
+	return strings.Contains(typeCall, "incoming")
 }
 
 func parseReportTransactionDateTime(raw string) (time.Time, bool) {
