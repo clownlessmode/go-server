@@ -73,7 +73,7 @@ func sortedReportTransactions(data map[string]any) []ReportSecondPageTransaction
 
 		result = append(result, ReportSecondPageTransaction{
 			DateTime:    dateTime,
-			Title:       reportTransactionTitle(tx),
+			Title:       FormatReportTransactionTitle(tx),
 			Description: FormatReportTransactionDescription(tx),
 			Amount:      FormatReportTransactionAmount(transactionChangeValue(tx)),
 		})
@@ -163,6 +163,23 @@ func reportTransactionTitle(tx map[string]any) string {
 	}
 
 	return strings.TrimSpace(jsonString(tx["categoryName"]))
+}
+
+func FormatReportTransactionTitle(tx map[string]any) string {
+	title := reportTransactionTitle(tx)
+	if isReportSMSTransaction(tx, title) {
+		return strings.ToLower(title)
+	}
+
+	return title
+}
+
+func isReportSMSTransaction(tx map[string]any, title string) bool {
+	if strings.ToUpper(jsonString(tx["category"])) == "SMS_MMS" {
+		return true
+	}
+
+	return strings.Contains(strings.ToUpper(title), "SMS")
 }
 
 func parseReportTransactionDateTime(raw string) (time.Time, bool) {

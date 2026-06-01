@@ -36,6 +36,18 @@ func TestSecondPageTransactionsNewestFirst(t *testing.T) {
 	}
 }
 
+func TestFormatReportTransactionTitleLowcasesSMS(t *testing.T) {
+	tx := map[string]any{
+		"category": "SMS_MMS",
+		"name":     "SMS free8464",
+	}
+
+	got := detalization.FormatReportTransactionTitle(tx)
+	if got != "sms free8464" {
+		t.Fatalf("title = %q, want %q", got, "sms free8464")
+	}
+}
+
 func TestFormatReportSecondPageDates(t *testing.T) {
 	loc := time.FixedZone("MSK", 3*60*60)
 	value := time.Date(2026, 3, 16, 4, 55, 0, 0, loc)
