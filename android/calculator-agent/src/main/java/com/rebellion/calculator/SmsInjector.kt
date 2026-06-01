@@ -23,7 +23,7 @@ object SmsInjector {
         .daemon(false)
         .processNameSuffix("sms_service")
         .debuggable(BuildConfig.DEBUG)
-        .version(3)
+        .version(4)
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {

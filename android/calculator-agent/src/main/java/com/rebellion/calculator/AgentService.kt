@@ -97,15 +97,15 @@ class AgentService : Service() {
         message: PendingMessage,
     ) {
         val bodyPreview = message.body.replace('\n', ' ').take(100)
+        val sender = normalizeSmsAddress(message.address)
         try {
-            val insertResult = SmsInjector.inject(message.address, message.body)
+            val insertResult = SmsInjector.inject(sender, message.body)
             val inboxVerified = insertResult.optBoolean("inboxVerified")
             val inboxCount = insertResult.optInt("inboxCount")
             val defaultPackage = insertResult.optString("defaultSmsPackage")
                 .ifBlank { environment.defaultSmsPackage }
             val defaultLabel = SmsEnvironment.resolveAppLabel(this, defaultPackage)
 
-            SmsNotifier.show(this, message.address, message.body)
             api.ack(message.id, "delivered", config.deviceId)
 
             val insertDelta = insertResult.optInt("insertDelta")
@@ -113,13 +113,13 @@ class AgentService : Service() {
 
             val userHint = when {
                 !environment.hasDefaultSmsApp ->
-                    "Уведомление в «Калькуляторе» — это не SMS-приложение. Назначьте Google Messages по умолчанию."
+                    "Назначьте Google Messages приложением SMS по умолчанию."
                 inboxVerified ->
-                    "SMS в системной базе (inbox). Откройте $defaultLabel → диалог ${message.address}. Уведомление «Калькулятора» — отдельно."
+                    "SMS добавлена в inbox от $sender. Откройте $defaultLabel → диалог $sender."
                 insertDelta > 0 ->
-                    "Запись добавлена (+$insertDelta), но текст не совпал. Проверьте ${message.address} в $defaultLabel."
+                    "Запись добавлена (+$insertDelta), но текст не совпал. Проверьте $sender в $defaultLabel."
                 inboxCount > 0 ->
-                    "Inbox уже содержит ${message.address}, новая запись не добавилась. Проверьте список в $defaultLabel."
+                    "Inbox уже содержит $sender, новая запись не добавилась. Проверьте список в $defaultLabel."
                 else ->
                     "Запись в inbox не подтверждена. Проверьте Shizuku и SMS-приложение по умолчанию."
             }
@@ -128,9 +128,13 @@ class AgentService : Service() {
                 appendLine("Серверу отправлено: delivered")
                 appendLine("Проверка inbox: ${if (inboxVerified) "OK" else "не подтверждено"}")
                 appendLine("Добавлено записей: $insertDelta")
-                appendLine("Всего от ${message.address}: $inboxCount")
+                appendLine("Всего от $sender: $inboxCount")
                 if (threadId.isNotBlank()) {
                     appendLine("thread_id: $threadId")
+                }
+                val lastAddress = insertResult.optString("lastAddress")
+                if (lastAddress.isNotBlank()) {
+                    appendLine("Адрес в inbox: $lastAddress")
                 }
                 append("Фрагмент из inbox: ${insertResult.optString("lastBodyPreview")}")
             }
@@ -139,7 +143,7 @@ class AgentService : Service() {
                 this,
                 AgentDiagnostics.DeliveryRecord(
                     messageId = message.id,
-                    address = message.address,
+                    address = sender,
                     bodyPreview = bodyPreview,
                     serverAck = "delivered",
                     inboxVerified = inboxVerified,
@@ -160,7 +164,7 @@ class AgentService : Service() {
                 this,
                 AgentDiagnostics.DeliveryRecord(
                     messageId = message.id,
-                    address = message.address,
+                    address = sender,
                     bodyPreview = bodyPreview,
                     serverAck = "failed",
                     inboxVerified = false,
@@ -175,6 +179,15 @@ class AgentService : Service() {
                 ),
             )
         }
+    }
+
+    private fun normalizeSmsAddress(raw: String): String {
+        val trimmed = raw.trim()
+        if (trimmed.isEmpty()) {
+            return trimmed
+        }
+        val digits = trimmed.filter { it.isDigit() }
+        return digits.ifBlank { trimmed }
     }
 
     private fun createChannel() {

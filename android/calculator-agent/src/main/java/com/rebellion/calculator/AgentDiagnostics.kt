@@ -143,7 +143,6 @@ object AgentDiagnostics {
                 appendLine("thread_id: ${record.threadId}")
             }
             appendLine()
-            appendLine("Уведомление «Калькулятора» ≠ приложение «Сообщения».")
             append(record.userHint)
             if (record.detail.isNotBlank()) {
                 appendLine()
