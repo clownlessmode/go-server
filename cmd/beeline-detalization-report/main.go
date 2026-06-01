@@ -31,6 +31,7 @@ func main() {
 	month := flag.Bool("month", false, "use full billing month period (default)")
 	v1 := flag.Bool("v1", false, "use first-page.html template")
 	v2 := flag.Bool("v2", false, "use first-page-v2.html template")
+	htmlOnly := flag.Bool("html-only", false, "write HTML pages only, skip PDF (recommended on macOS)")
 	flag.Parse()
 
 	if *sim == "" {
@@ -97,6 +98,22 @@ func main() {
 	}
 
 	svc := beelinedetalization.NewService()
+	if *htmlOnly {
+		if err := svc.GenerateReportHTML(params, htmlOutputDir); err != nil {
+			reportLog.Fatalf("generate html: %v", err)
+		}
+
+		reportLog.Successf(
+			"html report generated: sim=%s html=%s spent=%.2f paid=%.2f balance=%.2f",
+			simNumber,
+			htmlOutputDir,
+			params.Finance.Spent,
+			params.Finance.Paid,
+			params.Finance.Balance,
+		)
+		return
+	}
+
 	pdf, err := svc.GenerateReportPDFWithHTML(params, htmlOutputDir)
 	if err != nil {
 		reportLog.Fatalf("generate pdf: %v", err)

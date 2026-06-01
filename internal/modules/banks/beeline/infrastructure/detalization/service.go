@@ -3,6 +3,7 @@ package detalization
 import (
 	"context"
 	"embed"
+	"errors"
 	"fmt"
 	"net/url"
 	"os"
@@ -10,6 +11,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -28,22 +30,38 @@ func NewService() *Service {
 }
 
 func (s *Service) GenerateReportPDF(params ReportParams) ([]byte, error) {
-	return s.generateReport(params, "")
+	return s.generateReport(params, "", false)
 }
 
 func (s *Service) GenerateReportPDFWithHTML(params ReportParams, htmlPagesDir string) ([]byte, error) {
-	return s.generateReport(params, htmlPagesDir)
+	return s.generateReport(params, htmlPagesDir, false)
 }
 
-func (s *Service) generateReport(params ReportParams, htmlPagesDir string) ([]byte, error) {
+func (s *Service) GenerateReportHTML(params ReportParams, htmlPagesDir string) error {
+	_, err := s.generateReport(params, htmlPagesDir, true)
+	return err
+}
+
+func (s *Service) generateReport(params ReportParams, htmlPagesDir string, htmlOnly bool) ([]byte, error) {
 	pages := ensureTransactionPages(buildTransactionPagePlan(params.DetalizationData))
 	pdfParts := make([][]byte, 0, 1+len(pages))
 
-	firstPagePDF, err := s.generateFirstPagePDF(params, htmlPagesDir)
+	firstPagePDF, err := s.generatePagePDF(
+		firstPageTemplate(),
+		func(templateBody []byte, params ReportParams) []byte {
+			return renderFirstPageHTML(templateBody, params)
+		},
+		params,
+		htmlPagesDir,
+		"first-page",
+		htmlOnly,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("first page: %w", err)
 	}
-	pdfParts = append(pdfParts, firstPagePDF)
+	if !htmlOnly {
+		pdfParts = append(pdfParts, firstPagePDF)
+	}
 
 	for _, page := range pages {
 		switch page.Kind {
@@ -56,11 +74,14 @@ func (s *Service) generateReport(params ReportParams, htmlPagesDir string) ([]by
 				params,
 				htmlPagesDir,
 				fmt.Sprintf("second-page-%d", page.PageNumber),
+				htmlOnly,
 			)
 			if err != nil {
 				return nil, fmt.Errorf("second page %d: %w", page.PageNumber, err)
 			}
-			pdfParts = append(pdfParts, secondPagePDF)
+			if !htmlOnly {
+				pdfParts = append(pdfParts, secondPagePDF)
+			}
 		case transactionPageData:
 			dataPagePDF, err := s.generatePagePDF(
 				dataPageTemplate,
@@ -70,12 +91,19 @@ func (s *Service) generateReport(params ReportParams, htmlPagesDir string) ([]by
 				params,
 				htmlPagesDir,
 				fmt.Sprintf("data-page-%d", page.PageNumber),
+				htmlOnly,
 			)
 			if err != nil {
 				return nil, fmt.Errorf("data page %d: %w", page.PageNumber, err)
 			}
-			pdfParts = append(pdfParts, dataPagePDF)
+			if !htmlOnly {
+				pdfParts = append(pdfParts, dataPagePDF)
+			}
 		}
+	}
+
+	if htmlOnly {
+		return nil, nil
 	}
 
 	return mergePDFs(pdfParts...)
@@ -83,18 +111,6 @@ func (s *Service) generateReport(params ReportParams, htmlPagesDir string) ([]by
 
 func (s *Service) GenerateFirstPagePDF(params ReportParams) ([]byte, error) {
 	return s.GenerateReportPDF(params)
-}
-
-func (s *Service) generateFirstPagePDF(params ReportParams, htmlPagesDir string) ([]byte, error) {
-	return s.generatePagePDF(
-		firstPageTemplate(),
-		func(templateBody []byte, params ReportParams) []byte {
-			return renderFirstPageHTML(templateBody, params)
-		},
-		params,
-		htmlPagesDir,
-		"first-page",
-	)
 }
 
 type pageRenderer func(templateBody []byte, params ReportParams) []byte
@@ -105,6 +121,7 @@ func (s *Service) generatePagePDF(
 	params ReportParams,
 	htmlPagesDir string,
 	htmlFileName string,
+	htmlOnly bool,
 ) ([]byte, error) {
 	templateBody, err := templateFS.ReadFile(templateName)
 	if err != nil {
@@ -158,7 +175,13 @@ func (s *Service) generatePagePDF(
 		return nil, err
 	}
 
-	if err := convertHTMLToPDF(htmlPath, pdfPath); err != nil {
+	if htmlOnly {
+		fmt.Fprintf(os.Stderr, "html: wrote %s\n", htmlFileName+".html")
+		return nil, nil
+	}
+
+	fmt.Fprintf(os.Stderr, "pdf: converting %s...\n", htmlFileName)
+	if err := convertHTMLToPDF(htmlPath, pdfPath, htmlFileName); err != nil {
 		return nil, err
 	}
 
@@ -190,7 +213,7 @@ func injectPrintPageBreakFix(htmlBody []byte) []byte {
 	return append([]byte(printPageBreakFix), htmlBody...)
 }
 
-func convertHTMLToPDF(htmlPath string, pdfPath string) error {
+func convertHTMLToPDF(htmlPath string, pdfPath string, pageName string) error {
 	htmlPath = absPath(htmlPath)
 	pdfPath = absPath(pdfPath)
 	pdfName := filepath.Base(pdfPath)
@@ -202,11 +225,11 @@ func convertHTMLToPDF(htmlPath string, pdfPath string) error {
 	}
 	defer stopHTMLServer()
 
-	var errors []string
+	var convertErrors []string
 	for _, browser := range htmlToPDFBrowsers() {
 		if _, err := exec.LookPath(browser); err != nil {
 			if _, statErr := os.Stat(browser); statErr != nil {
-				errors = append(errors, fmt.Sprintf("%s not found", browser))
+				convertErrors = append(convertErrors, fmt.Sprintf("%s not found", browser))
 				continue
 			}
 		}
@@ -223,16 +246,18 @@ func convertHTMLToPDF(htmlPath string, pdfPath string) error {
 		cmd := exec.CommandContext(ctx, browser, args...)
 		cmd.Dir = workDir
 		cmd.Env = os.Environ()
+		setChromeProcessGroup(cmd)
 		output, err := cmd.CombinedOutput()
 		cancel()
+		killChromeProcessGroup(cmd)
 		os.RemoveAll(userDataDir)
 		if err != nil {
-			errors = append(errors, fmt.Sprintf("%s failed: %v: %s", browser, err, strings.TrimSpace(string(output))))
+			convertErrors = append(convertErrors, fmt.Sprintf("%s failed: %v: %s", browser, err, strings.TrimSpace(string(output))))
 			continue
 		}
 
 		if statErr := waitForPDF(workDir, pdfName, pdfPath); statErr != nil {
-			errors = append(errors, fmt.Sprintf(
+			convertErrors = append(convertErrors, fmt.Sprintf(
 				"%s exited ok but pdf missing/empty at %s: %v; output: %s",
 				browser,
 				pdfPath,
@@ -242,13 +267,38 @@ func convertHTMLToPDF(htmlPath string, pdfPath string) error {
 			continue
 		}
 
+		fmt.Fprintf(os.Stderr, "pdf: converted %s\n", pageName)
 		return nil
 	}
 
-	return fmt.Errorf(
-		"convert html detalization to pdf: %s; install google-chrome-stable (.deb, not snap): wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && apt install ./google-chrome-stable_current_amd64.deb",
-		strings.Join(errors, "; "),
+	errMsg := fmt.Sprintf(
+		"convert html detalization to pdf (%s): %s",
+		pageName,
+		strings.Join(convertErrors, "; "),
 	)
+	if runtime.GOOS == "darwin" {
+		errMsg += " On macOS, headless Chrome often hangs on PDF export; use -html-only locally or generate PDF on the server."
+	} else {
+		errMsg += " Install google-chrome-stable (.deb, not snap): wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && apt install ./google-chrome-stable_current_amd64.deb"
+	}
+
+	return errors.New(errMsg)
+}
+
+func setChromeProcessGroup(cmd *exec.Cmd) {
+	if cmd == nil {
+		return
+	}
+
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+}
+
+func killChromeProcessGroup(cmd *exec.Cmd) {
+	if cmd == nil || cmd.Process == nil {
+		return
+	}
+
+	_ = syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
 }
 
 func chromePDFArgs(userDataDir, pdfName, htmlURL string) []string {
@@ -262,14 +312,10 @@ func chromePDFArgs(userDataDir, pdfName, htmlURL string) []string {
 		"--no-default-browser-check",
 		"--user-data-dir=" + userDataDir,
 		"--no-pdf-header-footer",
+		"--run-all-compositor-stages-before-draw",
+		"--virtual-time-budget=5000",
 		"--print-to-pdf=" + pdfName,
 		htmlURL,
-	}
-	if runtime.GOOS != "darwin" {
-		args = append(args,
-			"--run-all-compositor-stages-before-draw",
-			"--virtual-time-budget=5000",
-		)
 	}
 
 	return args
@@ -332,6 +378,9 @@ func htmlToPDFBrowsers() []string {
 
 func chromeCommandContext() (context.Context, context.CancelFunc) {
 	timeout := 90 * time.Second
+	if runtime.GOOS == "darwin" {
+		timeout = 45 * time.Second
+	}
 	if custom := strings.TrimSpace(os.Getenv("MITM_CHROME_TIMEOUT")); custom != "" {
 		if parsed, err := time.ParseDuration(custom); err == nil && parsed > 0 {
 			timeout = parsed

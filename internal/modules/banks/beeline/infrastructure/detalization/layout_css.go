@@ -12,9 +12,9 @@ const amountFitCSS = `<style>
 </style>`
 
 const secondPageSectionDateCSS = `<style>
-.section-date-fit{width:308px!important;left:72px!important;right:auto!important;text-align:center!important;transform-origin:0 100%!important;-webkit-transform-origin:0 100%!important}
+.section-date-fit{width:308px!important;left:76px!important;right:auto!important;text-align:center!important;transform-origin:0 100%!important;-webkit-transform-origin:0 100%!important}
 @media print{
-.section-date-fit{width:273.777778pt!important;left:64pt!important;right:auto!important;text-align:center!important;transform-origin:0 100%!important;-webkit-transform-origin:0 100%!important}
+.section-date-fit{width:273.777778pt!important;left:67.555556pt!important;right:auto!important;text-align:center!important;transform-origin:0 100%!important;-webkit-transform-origin:0 100%!important}
 }
 </style>`
 
