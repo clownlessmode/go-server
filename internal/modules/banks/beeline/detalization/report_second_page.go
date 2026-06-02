@@ -171,6 +171,9 @@ func reportTransactionTitle(tx map[string]any) string {
 
 func FormatReportTransactionTitle(tx map[string]any) string {
 	title := reportTransactionTitle(tx)
+	if isPaymentFlowSMSTransaction(tx) {
+		return "sms " + strings.ToLower(domain.PaymentFlowSMSNumber)
+	}
 	if isReportSMSTransaction(tx, title) {
 		return strings.ToLower(title)
 	}

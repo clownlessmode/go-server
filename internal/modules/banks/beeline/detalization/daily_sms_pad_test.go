@@ -69,6 +69,9 @@ func TestPadTodayOutgoingSMSAddsMissingOperations(t *testing.T) {
 			if tx["name"] != "исходящее sms" {
 				t.Fatalf("synthetic sms name = %q, want исходящее sms", tx["name"])
 			}
+			if tx["number"] == domain.PaymentFlowSMSNumber {
+				t.Fatalf("synthetic sms must not use payment flow number %q", domain.PaymentFlowSMSNumber)
+			}
 			if tx["typeCall"] != "outgoingCall" {
 				t.Fatalf("synthetic sms typeCall = %q, want outgoingCall", tx["typeCall"])
 			}

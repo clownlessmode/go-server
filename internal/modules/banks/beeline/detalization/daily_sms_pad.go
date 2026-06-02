@@ -168,7 +168,32 @@ func smsPadSeed(simNumber string, dayStart time.Time) uint64 {
 func syntheticOutgoingSMSTransaction(simNumber string, dayStart time.Time, index int, paidAt time.Time) map[string]any {
 	id := syntheticPaddingSMSID(simNumber, dayStart, index)
 	dateTime := domain.FormatBeelineDateTime(paidAt)
-	return paymentFlowSMSTransaction(id, dateTime)
+	return paddingOutgoingSMSTransaction(id, dateTime)
+}
+
+func paddingOutgoingSMSTransaction(id, dateTime string) map[string]any {
+	return map[string]any{
+		"id": id,
+		"balances": []any{
+			map[string]any{
+				"changeValue": 0,
+				"code":        "coreBalance",
+				"name":        "личный баланс",
+				"unit":        "RUB",
+			},
+		},
+		"category":        "SMS_MMS",
+		"categoryName":    "сообщения",
+		"dateTime":        dateTime,
+		"formattedNumber": "",
+		"icon":            "smsMms",
+		"name":            "исходящее sms",
+		"number":          "",
+		"roaming":         false,
+		"typeCall":        "outgoingCall",
+		"unit":            "PIECE",
+		"volume":          1,
+	}
 }
 
 func syntheticPaddingSMSID(simNumber string, dayStart time.Time, index int) string {

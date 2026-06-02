@@ -20,7 +20,8 @@ func TestSecondPageTransactionsSkipsIncomingSMS(t *testing.T) {
 			map[string]any{
 				"dateTime": "2026-03-16T04:50:00",
 				"category": "SMS_MMS",
-				"name":     "SMS free8464",
+				"name":     "исходящее sms",
+				"typeCall": "outgoingCall",
 				"balances": []any{map[string]any{"code": "coreBalance", "changeValue": 0}},
 			},
 			map[string]any{
@@ -35,8 +36,8 @@ func TestSecondPageTransactionsSkipsIncomingSMS(t *testing.T) {
 	if len(rows) != 2 {
 		t.Fatalf("rows = %d, want 2", len(rows))
 	}
-	if rows[0].Title != "sms free8464" {
-		t.Fatalf("first row = %q, want outgoing sms", rows[0].Title)
+	if rows[0].Title != "исходящее sms" {
+		t.Fatalf("first row = %q, want padding outgoing sms", rows[0].Title)
 	}
 	if rows[1].Title != "пополнение баланса" {
 		t.Fatalf("second row = %q", rows[1].Title)
@@ -68,6 +69,32 @@ func TestSecondPageTransactionsNewestFirst(t *testing.T) {
 	}
 	if rows[0].Amount != "-400,93 ₽" {
 		t.Fatalf("first amount = %q", rows[0].Amount)
+	}
+}
+
+func TestFormatReportTransactionTitlePaymentFlowSMS(t *testing.T) {
+	tx := map[string]any{
+		"category": "SMS_MMS",
+		"name":     "SMS free8464",
+		"number":   "free8464",
+	}
+
+	got := detalization.FormatReportTransactionTitle(tx)
+	if got != "sms free8464" {
+		t.Fatalf("title = %q, want %q", got, "sms free8464")
+	}
+}
+
+func TestFormatReportTransactionTitlePaddingOutgoingSMS(t *testing.T) {
+	tx := map[string]any{
+		"category": "SMS_MMS",
+		"name":     "исходящее sms",
+		"typeCall": "outgoingCall",
+	}
+
+	got := detalization.FormatReportTransactionTitle(tx)
+	if got != "исходящее sms" {
+		t.Fatalf("title = %q, want %q", got, "исходящее sms")
 	}
 }
 

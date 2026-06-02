@@ -159,7 +159,7 @@ func paymentFlowSMSTransaction(id, dateTime string) map[string]any {
 		"dateTime":        dateTime,
 		"formattedNumber": domain.PaymentFlowSMSNumber,
 		"icon":            "smsMms",
-		"name":            "исходящее sms",
+		"name":            "SMS free8464",
 		"number":          domain.PaymentFlowSMSNumber,
 		"roaming":         false,
 		"typeCall":        "outgoingCall",
