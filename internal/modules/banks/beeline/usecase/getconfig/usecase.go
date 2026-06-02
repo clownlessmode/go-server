@@ -54,8 +54,17 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) (*Output, error) {
 
 	outgoingTotal, incomingTotal := detalization.PaymentTotals(payments)
 
+	allOutgoing, err := uc.repo.SumPaymentTotals(ctx, input.Number)
+	if err != nil {
+		return nil, err
+	}
+	allIncoming, err := uc.repo.SumIncomingTotals(ctx, input.Number)
+	if err != nil {
+		return nil, err
+	}
+
 	var balance *float64
-	if display := domain.DisplayBalanceFromAPI(snapshot.APIBalance, outgoingTotal, incomingTotal); display != nil {
+	if display := domain.DisplayBalanceFromAPI(snapshot.APIBalance, allOutgoing, allIncoming); display != nil {
 		balance = display
 	} else {
 		baseData, err := detalization.DecodeSnapshotData(snapshot.Data)

@@ -13,11 +13,24 @@ import (
 )
 
 const (
-	dailyOperationTarget = 13
-	smsPadMinGapMinutes  = 10
-	smsPadMaxGapMinutes  = 50
-	syntheticSMSIDPrefix = "pad-sms-"
+	dailyOperationTargetMin = 13
+	dailyOperationTargetMax = 20
+	smsPadMinGapMinutes     = 10
+	smsPadMaxGapMinutes     = 50
+	syntheticSMSIDPrefix    = "pad-sms-"
 )
+
+func dailyOperationTargetFor(simNumber string) int {
+	rng := rand.New(rand.NewPCG(simNumberSeed(simNumber), 0))
+	span := dailyOperationTargetMax - dailyOperationTargetMin + 1
+	return dailyOperationTargetMin + rng.IntN(span)
+}
+
+func simNumberSeed(simNumber string) uint64 {
+	hasher := fnv.New64a()
+	_, _ = hasher.Write([]byte(simNumber))
+	return hasher.Sum64()
+}
 
 func PadTodayIncomingSMS(data map[string]any, simNumber string, now time.Time) {
 	transactions, ok := data["transactions"].([]any)
@@ -57,7 +70,8 @@ func PadTodayIncomingSMS(data map[string]any, simNumber string, now time.Time) {
 		todayTransactions = append(todayTransactions, tx)
 	}
 
-	need := dailyOperationTarget - len(todayTransactions)
+	target := dailyOperationTargetFor(simNumber)
+	need := target - len(todayTransactions)
 	if need <= 0 {
 		merged := append(otherTransactions, transactionsFromMaps(todayTransactions)...)
 		data["transactions"] = merged

@@ -64,11 +64,28 @@ func TestPadTodayIncomingSMSAddsMissingOperations(t *testing.T) {
 		}
 	}
 
-	if todayCount != dailyOperationTarget {
-		t.Fatalf("today operations = %d, want %d", todayCount, dailyOperationTarget)
+	target := dailyOperationTargetFor("9680659702")
+	if todayCount != target {
+		t.Fatalf("today operations = %d, want %d", todayCount, target)
 	}
-	if syntheticCount != dailyOperationTarget-1 {
-		t.Fatalf("synthetic sms = %d, want %d", syntheticCount, dailyOperationTarget-1)
+	if syntheticCount != target-1 {
+		t.Fatalf("synthetic sms = %d, want %d", syntheticCount, target-1)
+	}
+}
+
+func TestDailyOperationTargetIsSeededBySimNumber(t *testing.T) {
+	first := dailyOperationTargetFor("9680659702")
+	second := dailyOperationTargetFor("9680659702")
+	if first != second {
+		t.Fatalf("same sim target changed: %d vs %d", first, second)
+	}
+	if first < dailyOperationTargetMin || first > dailyOperationTargetMax {
+		t.Fatalf("target = %d, want between %d and %d", first, dailyOperationTargetMin, dailyOperationTargetMax)
+	}
+
+	otherSim := dailyOperationTargetFor("9063747835")
+	if first == otherSim {
+		t.Fatalf("expected different sim numbers to vary target, got %d for both", first)
 	}
 }
 

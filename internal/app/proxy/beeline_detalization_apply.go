@@ -44,7 +44,36 @@ func (s *Service) buildBeelineDetalizationView(
 		return nil, 0, err
 	}
 
-	return detalization.BuildView(baseData, payments, hiddenIDs, nil, simNumber, now)
+	view, balance, err := detalization.BuildView(baseData, payments, hiddenIDs, nil, simNumber, now)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	if synced, ok := s.syncBeelineDetalizationDisplayBalance(ctx, simNumber, view); ok {
+		balance = synced
+	}
+
+	return view, balance, nil
+}
+
+func (s *Service) syncBeelineDetalizationDisplayBalance(ctx context.Context, simNumber string, data map[string]any) (float64, bool) {
+	outgoing, err := s.beelineRepo.SumPaymentTotals(ctx, simNumber)
+	if err != nil {
+		return 0, false
+	}
+
+	incoming, err := s.beelineRepo.SumIncomingTotals(ctx, simNumber)
+	if err != nil {
+		return 0, false
+	}
+
+	var apiBalance *float64
+	snapshot, err := s.beelineRepo.GetDetalizationSnapshot(ctx, simNumber)
+	if err == nil {
+		apiBalance = snapshot.APIBalance
+	}
+
+	return detalization.SyncDisplayBalance(data, apiBalance, outgoing, incoming)
 }
 
 func (s *Service) saveBeelineDetalizationBaseline(

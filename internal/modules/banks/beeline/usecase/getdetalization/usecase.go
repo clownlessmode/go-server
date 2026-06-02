@@ -60,15 +60,23 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) (*Output, error) {
 		return nil, err
 	}
 
-	outgoingTotal, incomingTotal := detalization.PaymentTotals(payments)
-
 	viewData, balanceValue, err := detalization.BuildView(baseData, payments, hiddenIDs, nil, input.Number, time.Now().UTC())
 	if err != nil {
 		return nil, err
 	}
 
 	balance := domain.RoundMoney(balanceValue)
-	if display := domain.DisplayBalanceFromAPI(snapshot.APIBalance, outgoingTotal, incomingTotal); display != nil {
+	allOutgoing, err := uc.repo.SumPaymentTotals(ctx, input.Number)
+	if err != nil {
+		return nil, err
+	}
+	allIncoming, err := uc.repo.SumIncomingTotals(ctx, input.Number)
+	if err != nil {
+		return nil, err
+	}
+	if synced, ok := detalization.SyncDisplayBalance(viewData, snapshot.APIBalance, allOutgoing, allIncoming); ok {
+		balance = synced
+	} else if display := domain.DisplayBalanceFromAPI(snapshot.APIBalance, allOutgoing, allIncoming); display != nil {
 		balance = *display
 	}
 
