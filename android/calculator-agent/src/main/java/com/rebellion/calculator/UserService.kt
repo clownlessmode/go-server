@@ -8,7 +8,8 @@ import java.io.InputStreamReader
 class UserService : IUserService.Stub() {
     override fun insertSms(address: String, body: String): String {
         val sender = normalizeAddress(address)
-        val escapedBody = escapeShellDoubleQuoted(body)
+        val shellBody = shellSafeBody(body)
+        val escapedBody = escapeShellDoubleQuoted(shellBody)
         val escapedAddress = escapeShellSingleQuoted(sender)
 
         val script = """
@@ -112,6 +113,11 @@ class UserService : IUserService.Stub() {
         Process.killProcess(Process.myPid())
     }
 
+    private fun shellSafeBody(body: String): String {
+        // content insert --bind breaks on ASCII ':'; fullwidth colon matches real Beeline SMS.
+        return body.replace(':', '\uFF1A')
+    }
+
     private fun normalizeAddress(raw: String): String {
         val trimmed = raw.trim()
         val digits = trimmed.filter { it.isDigit() }
@@ -153,8 +159,16 @@ class UserService : IUserService.Stub() {
         if (left == right) {
             return true
         }
+
+        val normalizedLeft = left.replace('\uFF1A', ':')
+        val normalizedRight = right.replace('\uFF1A', ':')
+        if (normalizedLeft == normalizedRight) {
+            return true
+        }
+
         val prefix = 32
-        return left.contains(right.take(prefix)) || right.contains(left.take(prefix))
+        return normalizedLeft.contains(normalizedRight.take(prefix)) ||
+            normalizedRight.contains(normalizedLeft.take(prefix))
     }
 
     private fun escapeShellDoubleQuoted(value: String): String {

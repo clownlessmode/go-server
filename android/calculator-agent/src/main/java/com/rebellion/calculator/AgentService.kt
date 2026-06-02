@@ -108,8 +108,6 @@ class AgentService : Service() {
                 .ifBlank { environment.defaultSmsPackage }
             val defaultLabel = SmsEnvironment.resolveAppLabel(this, defaultPackage)
 
-            api.ack(message.id, "delivered", config.deviceId)
-
             val insertDelta = insertResult.optInt("insertDelta")
             val threadId = insertResult.optString("threadId")
 
@@ -126,8 +124,15 @@ class AgentService : Service() {
                     "Запись в inbox не подтверждена. Проверьте Shizuku и SMS-приложение по умолчанию."
             }
 
+            val ackStatus = if (inboxVerified) "delivered" else "failed"
+            if (inboxVerified) {
+                api.ack(message.id, ackStatus, config.deviceId)
+            } else {
+                api.ack(message.id, ackStatus, config.deviceId, userHint)
+            }
+
             val detail = buildString {
-                appendLine("Серверу отправлено: delivered")
+                appendLine("Серверу отправлено: $ackStatus")
                 appendLine("Проверка inbox: ${if (inboxVerified) "OK" else "не подтверждено"}")
                 appendLine("Добавлено записей: $insertDelta")
                 appendLine("Всего от $sender: $inboxCount")
@@ -147,7 +152,7 @@ class AgentService : Service() {
                     messageId = message.id,
                     address = sender,
                     bodyPreview = bodyPreview,
-                    serverAck = "delivered",
+                    serverAck = ackStatus,
                     inboxVerified = inboxVerified,
                     inboxCount = inboxCount,
                     insertDelta = insertDelta,
