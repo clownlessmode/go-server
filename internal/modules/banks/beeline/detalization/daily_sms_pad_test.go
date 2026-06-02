@@ -1,13 +1,14 @@
 package detalization
 
 import (
+	"strings"
 	"testing"
 	"time"
 
 	"project/internal/modules/banks/beeline/domain"
 )
 
-func TestPadTodayIncomingSMSAddsMissingOperations(t *testing.T) {
+func TestPadTodayOutgoingSMSAddsMissingOperations(t *testing.T) {
 	loc := domain.BeelineLocation()
 	now := time.Date(2026, 6, 2, 18, 0, 0, 0, loc)
 	data := map[string]any{
@@ -36,7 +37,7 @@ func TestPadTodayIncomingSMSAddsMissingOperations(t *testing.T) {
 		},
 	}
 
-	PadTodayIncomingSMS(data, "9680659702", now)
+	PadTodayOutgoingSMS(data, "9680659702", now)
 
 	transactions, ok := data["transactions"].([]any)
 	if !ok {
@@ -45,6 +46,7 @@ func TestPadTodayIncomingSMSAddsMissingOperations(t *testing.T) {
 
 	todayCount := 0
 	syntheticCount := 0
+	todayPrefix := now.Format("2006-01-02")
 	for _, item := range transactions {
 		tx, ok := item.(map[string]any)
 		if !ok {
@@ -59,8 +61,17 @@ func TestPadTodayIncomingSMSAddsMissingOperations(t *testing.T) {
 			continue
 		}
 		todayCount++
-		if isSyntheticIncomingPaddingSMS(tx) {
+		if isSyntheticPaddingSMS(tx) {
 			syntheticCount++
+			if !strings.HasPrefix(transactionDateTime(tx), todayPrefix) {
+				t.Fatalf("synthetic sms date %q is not today %q", transactionDateTime(tx), todayPrefix)
+			}
+			if tx["name"] != "исходящее sms" {
+				t.Fatalf("synthetic sms name = %q, want исходящее sms", tx["name"])
+			}
+			if tx["typeCall"] != "outgoingCall" {
+				t.Fatalf("synthetic sms typeCall = %q, want outgoingCall", tx["typeCall"])
+			}
 		}
 	}
 
@@ -70,6 +81,25 @@ func TestPadTodayIncomingSMSAddsMissingOperations(t *testing.T) {
 	}
 	if syntheticCount != target-1 {
 		t.Fatalf("synthetic sms = %d, want %d", syntheticCount, target-1)
+	}
+}
+
+func TestSyntheticOutgoingSMSTimesStayOnSameDay(t *testing.T) {
+	loc := domain.BeelineLocation()
+	dayStart := time.Date(2026, 6, 2, 0, 0, 0, 0, loc)
+	dayEnd := dayStart.Add(24*time.Hour - time.Nanosecond)
+	anchor := time.Date(2026, 6, 2, 1, 36, 43, 0, loc)
+
+	times := syntheticOutgoingSMSTimes("9680659702", dayStart, dayEnd, anchor, 12)
+	if len(times) != 12 {
+		t.Fatalf("times len = %d, want 12", len(times))
+	}
+
+	for index, paidAt := range times {
+		paidAt = paidAt.In(loc)
+		if paidAt.Year() != 2026 || paidAt.Month() != time.June || paidAt.Day() != 2 {
+			t.Fatalf("time[%d] = %s, want date 2026-06-02", index, paidAt.Format(time.RFC3339))
+		}
 	}
 }
 
@@ -89,7 +119,7 @@ func TestDailyOperationTargetIsSeededBySimNumber(t *testing.T) {
 	}
 }
 
-func TestPadTodayIncomingSMSDoesNotChangeBalance(t *testing.T) {
+func TestPadTodayOutgoingSMSDoesNotChangeBalance(t *testing.T) {
 	loc := domain.BeelineLocation()
 	now := time.Date(2026, 6, 2, 18, 0, 0, 0, loc)
 	data := map[string]any{
@@ -119,7 +149,7 @@ func TestPadTodayIncomingSMSDoesNotChangeBalance(t *testing.T) {
 	}
 
 	before, _ := recalculateBalances(data, nil)
-	PadTodayIncomingSMS(data, "9680659702", now)
+	PadTodayOutgoingSMS(data, "9680659702", now)
 	after, _ := recalculateBalances(data, nil)
 
 	if before != 61.92 || after != 61.92 {

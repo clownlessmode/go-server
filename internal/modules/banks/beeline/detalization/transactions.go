@@ -172,7 +172,7 @@ func AnnotateTransactionIDs(data map[string]any, payments []domain.Payment) {
 			continue
 		}
 		if id, ok := tx["id"].(string); ok && strings.TrimSpace(id) != "" {
-			if _, hasSource := tx["source"]; !hasSource && !isSyntheticIncomingPaddingSMS(tx) {
+			if _, hasSource := tx["source"]; !hasSource && !isSyntheticPaddingSMS(tx) {
 				tx["source"] = "beeline"
 			}
 			continue
@@ -200,7 +200,7 @@ func BuildView(baseData map[string]any, payments []domain.Payment, hiddenIDs []s
 		return nil, 0, fmt.Errorf("build beeline detalization view")
 	}
 
-	PadTodayIncomingSMS(working, simNumber, now)
+	PadTodayOutgoingSMS(working, simNumber, now)
 
 	balance, ok = recalculateBalances(working, configuredOpening)
 	if !ok {

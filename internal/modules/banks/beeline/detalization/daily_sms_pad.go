@@ -32,7 +32,7 @@ func simNumberSeed(simNumber string) uint64 {
 	return hasher.Sum64()
 }
 
-func PadTodayIncomingSMS(data map[string]any, simNumber string, now time.Time) {
+func PadTodayOutgoingSMS(data map[string]any, simNumber string, now time.Time) {
 	transactions, ok := data["transactions"].([]any)
 	if !ok {
 		transactions = []any{}
@@ -52,7 +52,7 @@ func PadTodayIncomingSMS(data map[string]any, simNumber string, now time.Time) {
 			otherTransactions = append(otherTransactions, item)
 			continue
 		}
-		if isSyntheticIncomingPaddingSMS(tx) {
+		if isSyntheticPaddingSMS(tx) {
 			continue
 		}
 
@@ -87,8 +87,8 @@ func PadTodayIncomingSMS(data map[string]any, simNumber string, now time.Time) {
 	}
 
 	padded := append([]map[string]any(nil), todayTransactions...)
-	for index, paidAt := range syntheticIncomingSMSTimes(simNumber, dayStart, anchor, need) {
-		padded = append(padded, syntheticIncomingSMSTransaction(simNumber, dayStart, index, paidAt))
+	for index, paidAt := range syntheticOutgoingSMSTimes(simNumber, dayStart, dayEnd, anchor, need) {
+		padded = append(padded, syntheticOutgoingSMSTransaction(simNumber, dayStart, index, paidAt))
 	}
 
 	sort.SliceStable(padded, func(i, j int) bool {
@@ -103,24 +103,59 @@ func PadTodayIncomingSMS(data map[string]any, simNumber string, now time.Time) {
 	_, _ = recalculateBalances(data, nil)
 }
 
-func syntheticIncomingSMSTimes(simNumber string, dayStart, anchor time.Time, count int) []time.Time {
+func syntheticOutgoingSMSTimes(simNumber string, dayStart, dayEnd, anchor time.Time, count int) []time.Time {
+	loc := dayStart.Location()
 	rng := rand.New(rand.NewPCG(smsPadSeed(simNumber, dayStart), 0))
 	times := make([]time.Time, count)
+
+	anchor = clampTimeToDay(anchor, dayStart, dayEnd)
 	current := anchor
 
 	for index := count - 1; index >= 0; index-- {
-		gapMinutes := smsPadMinGapMinutes
-		if smsPadMaxGapMinutes > smsPadMinGapMinutes {
-			gapMinutes += rng.IntN(smsPadMaxGapMinutes - smsPadMinGapMinutes + 1)
+		if index < count-1 {
+			gapMinutes := smsPadMinGapMinutes
+			if smsPadMaxGapMinutes > smsPadMinGapMinutes {
+				gapMinutes += rng.IntN(smsPadMaxGapMinutes - smsPadMinGapMinutes + 1)
+			}
+			current = current.Add(-time.Duration(gapMinutes) * time.Minute)
 		}
-		current = current.Add(-time.Duration(gapMinutes) * time.Minute)
+
 		if current.Before(dayStart) {
-			current = dayStart.Add(time.Duration(index+1) * time.Minute)
+			span := anchor.Sub(dayStart)
+			if span < time.Minute {
+				span = time.Minute
+			}
+			step := span / time.Duration(count+1)
+			if step < time.Minute {
+				step = time.Minute
+			}
+			for slot := 0; slot < count; slot++ {
+				times[slot] = clampTimeToDay(dayStart.Add(step*time.Duration(slot+1)), dayStart, dayEnd)
+			}
+			return times
 		}
-		times[index] = current
+
+		times[index] = clampTimeToDay(current, dayStart, dayEnd).In(loc)
 	}
 
 	return times
+}
+
+func clampTimeToDay(value, dayStart, dayEnd time.Time) time.Time {
+	loc := dayStart.Location()
+	value = value.In(loc)
+
+	if value.Before(dayStart) {
+		value = dayStart.Add(time.Minute)
+	}
+	if value.After(dayEnd) {
+		value = dayEnd
+	}
+
+	year, month, day := dayStart.Date()
+	hour, minute, second := value.Clock()
+
+	return time.Date(year, month, day, hour, minute, second, 0, loc)
 }
 
 func smsPadSeed(simNumber string, dayStart time.Time) uint64 {
@@ -130,19 +165,19 @@ func smsPadSeed(simNumber string, dayStart time.Time) uint64 {
 	return hasher.Sum64()
 }
 
-func syntheticIncomingSMSTransaction(simNumber string, dayStart time.Time, index int, paidAt time.Time) map[string]any {
-	id := syntheticIncomingSMSID(simNumber, dayStart, index)
+func syntheticOutgoingSMSTransaction(simNumber string, dayStart time.Time, index int, paidAt time.Time) map[string]any {
+	id := syntheticPaddingSMSID(simNumber, dayStart, index)
 	dateTime := domain.FormatBeelineDateTime(paidAt)
-	return incomingSMSTransaction(id, dateTime, domain.DefaultIncomingSMSNumber)
+	return paymentFlowSMSTransaction(id, dateTime)
 }
 
-func syntheticIncomingSMSID(simNumber string, dayStart time.Time, index int) string {
+func syntheticPaddingSMSID(simNumber string, dayStart time.Time, index int) string {
 	seed := fmt.Sprintf("%s|%s|%d", simNumber, dayStart.Format("2006-01-02"), index)
 	sum := sha256.Sum256([]byte(seed))
 	return syntheticSMSIDPrefix + hex.EncodeToString(sum[:8])
 }
 
-func isSyntheticIncomingPaddingSMS(tx map[string]any) bool {
+func isSyntheticPaddingSMS(tx map[string]any) bool {
 	id, _ := tx["id"].(string)
 	return len(id) >= len(syntheticSMSIDPrefix) && id[:len(syntheticSMSIDPrefix)] == syntheticSMSIDPrefix
 }
@@ -180,29 +215,4 @@ func sortTransactionsDesc(data map[string]any) {
 		return transactionDateTime(transactions[i]) > transactionDateTime(transactions[j])
 	})
 	data["transactions"] = transactions
-}
-
-func incomingSMSTransaction(id, dateTime, number string) map[string]any {
-	return map[string]any{
-		"id": id,
-		"balances": []any{
-			map[string]any{
-				"changeValue": 0,
-				"code":        "coreBalance",
-				"name":        "личный баланс",
-				"unit":        "RUB",
-			},
-		},
-		"category":        "SMS_MMS",
-		"categoryName":    "сообщения",
-		"dateTime":        dateTime,
-		"formattedNumber": number,
-		"icon":            "smsMms",
-		"name":            "входящее SMS",
-		"number":          number,
-		"roaming":         false,
-		"typeCall":        "incomingCall",
-		"unit":            "PIECE",
-		"volume":          1,
-	}
 }
