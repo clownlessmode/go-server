@@ -141,7 +141,7 @@ func (s *Service) beelineDetalizationReportView(
 		return nil, detalization.ReportFinance{}, false
 	}
 
-	viewData, finalBalance, err := s.buildBeelineDetalizationView(ctx, simNumber, baseData, periodStart, periodEnd)
+	viewData, finalBalance, err := s.buildBeelineDetalizationView(ctx, simNumber, baseData, periodStart, periodEnd, time.Now().UTC())
 	if err != nil {
 		proxyLog.Warnf("beeline detalization report view build failed: sim=%s err=%v", simNumber, err)
 		return nil, detalization.ReportFinance{}, false

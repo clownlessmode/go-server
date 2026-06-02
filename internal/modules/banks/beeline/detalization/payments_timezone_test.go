@@ -7,10 +7,24 @@ import (
 	"project/internal/modules/banks/beeline/domain"
 )
 
-func TestPaymentTransactionDateTimeInMoscow(t *testing.T) {
+func TestApplyPaymentsSkipsPaymentFlowSMS(t *testing.T) {
 	payment := domain.NewPaymentFlowSMSPayment(time.Date(2026, 6, 1, 12, 21, 0, 0, time.UTC))
 	data := map[string]any{
-		"transactions": []any{},
+		"transactions": []any{
+			map[string]any{
+				"category": "OTHER",
+				"name":     "period opening",
+				"dateTime": "2026-06-01T00:00:00",
+				"balances": []any{
+					map[string]any{
+						"code":        "coreBalance",
+						"changeValue": 0,
+						"startValue":  0,
+						"endValue":    0,
+					},
+				},
+			},
+		},
 		"balances": []any{
 			map[string]any{
 				"code":       "coreBalance",
@@ -28,16 +42,6 @@ func TestPaymentTransactionDateTimeInMoscow(t *testing.T) {
 
 	transactions, ok := data["transactions"].([]any)
 	if !ok || len(transactions) != 1 {
-		t.Fatalf("transactions = %#v", data["transactions"])
-	}
-
-	tx, ok := transactions[0].(map[string]any)
-	if !ok {
-		t.Fatalf("transaction type = %T", transactions[0])
-	}
-
-	got, _ := tx["dateTime"].(string)
-	if got != "2026-06-01T15:21:00" {
-		t.Fatalf("dateTime = %q", got)
+		t.Fatalf("transactions = %#v, want only opening row", data["transactions"])
 	}
 }

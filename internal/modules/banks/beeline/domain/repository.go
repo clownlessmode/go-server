@@ -33,4 +33,5 @@ type Repository interface {
 	GetDetalizationSnapshot(ctx context.Context, number string) (DetalizationSnapshot, error)
 	HasDetalizationSnapshot(ctx context.Context, number string) (bool, error)
 	UpdateDetalizationComputedBalance(ctx context.Context, number string, balance float64) error
+	UpdateDetalizationAPIBalance(ctx context.Context, number string, balance float64) error
 }

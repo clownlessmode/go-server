@@ -3,6 +3,7 @@ package getconfig
 import (
 	"context"
 	"errors"
+	"time"
 
 	"project/internal/modules/banks/beeline/detalization"
 	"project/internal/modules/banks/beeline/domain"
@@ -46,16 +47,6 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) (*Output, error) {
 		return nil, err
 	}
 
-	baseData, err := detalization.DecodeSnapshotData(snapshot.Data)
-	if err != nil {
-		return nil, err
-	}
-
-	hiddenIDs, err := uc.repo.ListHiddenTransactionIDs(ctx, input.Number)
-	if err != nil {
-		return nil, err
-	}
-
 	payments, err := uc.repo.ListPaymentsInPeriod(ctx, input.Number, snapshot.PeriodStart, snapshot.PeriodEnd)
 	if err != nil {
 		return nil, err
@@ -64,9 +55,23 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) (*Output, error) {
 	outgoingTotal, incomingTotal := detalization.PaymentTotals(payments)
 
 	var balance *float64
-	if computedBalance, err := detalizationBuildBalance(baseData, payments, hiddenIDs, nil); err == nil {
-		value := domain.RoundMoney(computedBalance)
-		balance = &value
+	if display := domain.DisplayBalanceFromAPI(snapshot.APIBalance, outgoingTotal, incomingTotal); display != nil {
+		balance = display
+	} else {
+		baseData, err := detalization.DecodeSnapshotData(snapshot.Data)
+		if err != nil {
+			return nil, err
+		}
+
+		hiddenIDs, err := uc.repo.ListHiddenTransactionIDs(ctx, input.Number)
+		if err != nil {
+			return nil, err
+		}
+
+		if computedBalance, err := detalizationBuildBalance(baseData, payments, hiddenIDs, input.Number, time.Now().UTC()); err == nil {
+			value := domain.RoundMoney(computedBalance)
+			balance = &value
+		}
 	}
 
 	return &Output{
@@ -79,7 +84,7 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) (*Output, error) {
 	}, nil
 }
 
-func detalizationBuildBalance(baseData map[string]any, payments []domain.Payment, hiddenIDs []string, configuredOpening *float64) (float64, error) {
-	_, balance, err := detalization.BuildView(baseData, payments, hiddenIDs, configuredOpening)
+func detalizationBuildBalance(baseData map[string]any, payments []domain.Payment, hiddenIDs []string, simNumber string, now time.Time) (float64, error) {
+	_, balance, err := detalization.BuildView(baseData, payments, hiddenIDs, nil, simNumber, now)
 	return balance, err
 }

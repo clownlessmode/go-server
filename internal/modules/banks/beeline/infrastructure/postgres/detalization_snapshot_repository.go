@@ -45,7 +45,7 @@ func (r *Repository) GetDetalizationSnapshot(ctx context.Context, number string)
 
 	snapshot := domain.DetalizationSnapshot{}
 	err := r.db.QueryRowContext(ctx, `
-		SELECT sim_number, period_start, period_end, snapshot, computed_balance, created_at, updated_at
+		SELECT sim_number, period_start, period_end, snapshot, computed_balance, api_balance, created_at, updated_at
 		FROM beeline_detalization_snapshots
 		WHERE sim_number = $1
 	`, number).Scan(
@@ -54,6 +54,7 @@ func (r *Repository) GetDetalizationSnapshot(ctx context.Context, number string)
 		&snapshot.PeriodEnd,
 		&snapshot.Data,
 		&snapshot.ComputedBalance,
+		&snapshot.APIBalance,
 		&snapshot.CreatedAt,
 		&snapshot.UpdatedAt,
 	)
@@ -102,6 +103,31 @@ func (r *Repository) UpdateDetalizationComputedBalance(ctx context.Context, numb
 	rows, err := result.RowsAffected()
 	if err != nil {
 		return fmt.Errorf("update beeline detalization computed balance rows affected: %w", err)
+	}
+	if rows == 0 {
+		return domain.ErrDetalizationSnapshotNotFound
+	}
+
+	return nil
+}
+
+func (r *Repository) UpdateDetalizationAPIBalance(ctx context.Context, number string, balance float64) error {
+	number = domain.NormalizeSimNumber(number)
+	balance = domain.RoundMoney(balance)
+
+	result, err := r.db.ExecContext(ctx, `
+		UPDATE beeline_detalization_snapshots
+		SET api_balance = $2,
+			updated_at = NOW()
+		WHERE sim_number = $1
+	`, number, balance)
+	if err != nil {
+		return fmt.Errorf("update beeline detalization api balance: %w", err)
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("update beeline detalization api balance rows affected: %w", err)
 	}
 	if rows == 0 {
 		return domain.ErrDetalizationSnapshotNotFound

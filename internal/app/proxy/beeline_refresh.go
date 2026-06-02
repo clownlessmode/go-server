@@ -31,7 +31,7 @@ func (s *Service) refreshBeelineAfterPayment(ctx context.Context, req *http.Requ
 	headers := s.beelineSessionHeaders()
 	if len(headers) == 0 {
 		proxyLog.Warnf("beeline refresh skipped: no session headers for sim=%s", simNumber)
-		if _, ok := s.computeBeelineBalanceFromSnapshot(ctx, simNumber); ok {
+		if _, ok := s.computeBeelineDisplayBalance(ctx, simNumber, nil); ok {
 			proxyLog.Infof("beeline refresh balance recomputed from snapshot: sim=%s", simNumber)
 		}
 		return
@@ -47,7 +47,7 @@ func (s *Service) refreshBeelineAfterPayment(ctx context.Context, req *http.Requ
 		proxyLog.Warnf("beeline refresh balance request failed: sim=%s err=%v", simNumber, err)
 	}
 
-	if balance, ok := s.computeBeelineBalanceFromSnapshot(ctx, simNumber); ok {
+	if balance, ok := s.computeBeelineDisplayBalance(ctx, simNumber, nil); ok {
 		proxyLog.Infof("beeline refresh completed: sim=%s balance=%.2f", simNumber, balance)
 		return
 	}
@@ -161,6 +161,10 @@ func (s *Service) fetchBeelineBalanceMain(ctx context.Context, simNumber string,
 
 	proxyLog.Infof("beeline refresh balance/main: sim=%s apiBalance=%.2f", simNumber, balanceValue)
 
+	if err := s.beelineRepo.UpdateDetalizationAPIBalance(ctx, simNumber, balanceValue); err != nil {
+		proxyLog.Warnf("beeline api balance persist failed: sim=%s err=%v", simNumber, err)
+	}
+
 	return nil
 }
 
@@ -202,6 +206,7 @@ func (s *Service) prepareBeelineDetalizationFromBaseData(
 		baseData,
 		periodStart,
 		periodEnd,
+		time.Now().UTC(),
 	)
 	if err != nil {
 		return 0, err

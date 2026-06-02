@@ -1,0 +1,573 @@
+{
+  "number": "9063747835",
+  "periodStart": "2026-05-04T04:00:00+07:00",
+  "periodEnd": "2026-06-03T03:59:59.999999+07:00",
+  "balance": -12573.5,
+  "data": {
+    "accumulators": [
+      {
+        "code": "internet",
+        "name": "Интернет",
+        "unit": "KBYTE",
+        "volume": 0
+      },
+      {
+        "code": "calls",
+        "name": "Звонки",
+        "unit": "SECONDS",
+        "volume": 0
+      },
+      {
+        "code": "sms",
+        "name": "Сообщения",
+        "unit": "SMS",
+        "volume": 0
+      }
+    ],
+    "balances": [
+      {
+        "changeValue": -60000,
+        "code": "bonusseconds",
+        "endValue": 0,
+        "name": "пакет минут",
+        "paidValue": 60000,
+        "screen": [],
+        "spentValue": 0,
+        "startValue": 60000,
+        "unit": "SECONDS"
+      },
+      {
+        "changeValue": -12573.5,
+        "code": "coreBalance",
+        "endValue": -12573.5,
+        "name": "личный баланс",
+        "paidValue": 450,
+        "screen": [
+          "operationExpenses",
+          "operationRefill",
+          "trafficSms"
+        ],
+        "spentValue": 13023.5,
+        "startValue": 0,
+        "unit": "RUB"
+      },
+      {
+        "changeValue": -1000,
+        "code": "sms",
+        "endValue": 0,
+        "name": "пакет sms",
+        "paidValue": 1000,
+        "screen": [],
+        "spentValue": 0,
+        "startValue": 1000,
+        "unit": "SMS"
+      },
+      {
+        "changeValue": -1073741824,
+        "code": "internet",
+        "endValue": 0,
+        "name": "пакет интернета",
+        "paidValue": 1073741824,
+        "screen": [],
+        "spentValue": 0,
+        "startValue": 1073741824,
+        "unit": "KBYTE"
+      }
+    ],
+    "categories": [
+      {
+        "id": "SUBSCRIBER_FEE_AND_SERVICE_CHANGE_FEE",
+        "name": "абонентская плата",
+        "screen": [
+          "operationExpenses"
+        ],
+        "subCategory": [],
+        "totalMonetaryCharge": -350,
+        "totalTrafficCharge": 0,
+        "unit": ""
+      },
+      {
+        "id": "REFILL",
+        "name": "пополнение баланса",
+        "screen": [
+          "operationRefill"
+        ],
+        "subCategory": [],
+        "totalMonetaryCharge": 450,
+        "totalTrafficCharge": 1073802824,
+        "unit": ""
+      },
+      {
+        "id": "SMS_MMS",
+        "name": "сообщения",
+        "screen": [],
+        "subCategory": [],
+        "totalMonetaryCharge": 0,
+        "totalTrafficCharge": 0,
+        "unit": "PIECE"
+      },
+      {
+        "id": "SERVICES_PAYMENTS_AND_MOBILE_TRANSFERS",
+        "name": "платежи и переводы",
+        "screen": [
+          "operationExpenses"
+        ],
+        "subCategory": [],
+        "totalMonetaryCharge": -12673.5,
+        "totalTrafficCharge": 0,
+        "unit": ""
+      }
+    ],
+    "creationDate": "2026-06-02T05:40:29.792",
+    "ctn": "9063747835",
+    "endDate": "2026-06-02T23:59:59",
+    "parameters": {
+      "tokenBalanceCode": null
+    },
+    "roaming": [],
+    "startDate": "2026-05-04T00:00:00",
+    "transactions": [
+      {
+        "balances": [
+          {
+            "changeValue": -10650,
+            "code": "coreBalance",
+            "endValue": -12573.5,
+            "name": "личный баланс",
+            "startValue": -1923.5,
+            "unit": "RUB"
+          }
+        ],
+        "category": "SERVICES_PAYMENTS_AND_MOBILE_TRANSFERS",
+        "categoryName": "платежи и переводы",
+        "dateTime": "2026-06-02T05:40:56",
+        "formattedNumber": "",
+        "id": "44c145625846a0f6186e74201d7e9488",
+        "name": "списание за мобильную коммерцию",
+        "number": "",
+        "roaming": false,
+        "typeCall": "incomingCall",
+        "unit": "",
+        "volume": 0
+      },
+      {
+        "balances": [
+          {
+            "changeValue": 0,
+            "code": "coreBalance",
+            "endValue": -1923.5,
+            "name": "личный баланс",
+            "startValue": -1923.5,
+            "unit": "RUB"
+          }
+        ],
+        "category": "SMS_MMS",
+        "categoryName": "сообщения",
+        "dateTime": "2026-06-02T05:40:26",
+        "formattedNumber": "free8464",
+        "icon": "smsMms",
+        "id": "7cd693e1f807ce02f924df43dbf92c63",
+        "name": "исходящее sms",
+        "number": "free8464",
+        "roaming": false,
+        "typeCall": "outgoingCall",
+        "unit": "PIECE",
+        "volume": 1
+      },
+      {
+        "balances": [
+          {
+            "changeValue": -2023.5,
+            "code": "coreBalance",
+            "endValue": -1923.5,
+            "name": "личный баланс",
+            "startValue": 100,
+            "unit": "RUB"
+          }
+        ],
+        "category": "SERVICES_PAYMENTS_AND_MOBILE_TRANSFERS",
+        "categoryName": "платежи и переводы",
+        "dateTime": "2026-06-02T05:13:32",
+        "formattedNumber": "",
+        "id": "1913dbc1c5cbeefc10d29414e03d6311",
+        "name": "списание за мобильную коммерцию",
+        "number": "",
+        "roaming": false,
+        "typeCall": "incomingCall",
+        "unit": "",
+        "volume": 0
+      },
+      {
+        "balances": [
+          {
+            "changeValue": 0,
+            "code": "coreBalance",
+            "endValue": 100,
+            "name": "личный баланс",
+            "startValue": 100,
+            "unit": "RUB"
+          }
+        ],
+        "category": "SMS_MMS",
+        "categoryName": "сообщения",
+        "dateTime": "2026-06-02T05:13:02",
+        "formattedNumber": "free8464",
+        "icon": "smsMms",
+        "id": "c2c26ea3d6ea74c454b42f57794f428d",
+        "name": "исходящее sms",
+        "number": "free8464",
+        "roaming": false,
+        "typeCall": "outgoingCall",
+        "unit": "PIECE",
+        "volume": 1
+      },
+      {
+        "balances": [
+          {
+            "changeValue": 0,
+            "code": "coreBalance",
+            "endValue": 100,
+            "name": "личный баланс",
+            "startValue": 100,
+            "unit": "RUB"
+          }
+        ],
+        "category": "SMS_MMS",
+        "categoryName": "сообщения",
+        "dateTime": "2026-06-01T16:47:52",
+        "formattedNumber": "beeline",
+        "icon": "smsMms",
+        "id": "1103ff3a982c33bb2eb74abc6166ac3b",
+        "name": "входящее SMS",
+        "number": "beeline",
+        "roaming": false,
+        "source": "beeline",
+        "typeCall": "incomingCall",
+        "unit": "PIECE",
+        "volume": 1
+      },
+      {
+        "balances": [
+          {
+            "changeValue": 0,
+            "code": "coreBalance",
+            "endValue": 100,
+            "name": "личный баланс",
+            "startValue": 100,
+            "unit": "RUB"
+          }
+        ],
+        "category": "SMS_MMS",
+        "categoryName": "сообщения",
+        "dateTime": "2026-06-01T16:23:51",
+        "formattedNumber": "beeline",
+        "icon": "smsMms",
+        "id": "ea6f5bb48d00ce66872d71e8b9227ab7",
+        "name": "входящее SMS",
+        "number": "beeline",
+        "roaming": false,
+        "source": "beeline",
+        "typeCall": "incomingCall",
+        "unit": "PIECE",
+        "volume": 1
+      },
+      {
+        "balances": [
+          {
+            "changeValue": 0,
+            "code": "coreBalance",
+            "endValue": 100,
+            "name": "личный баланс",
+            "startValue": 100,
+            "unit": "RUB"
+          }
+        ],
+        "category": "SMS_MMS",
+        "categoryName": "сообщения",
+        "dateTime": "2026-06-01T16:10:53",
+        "formattedNumber": "beeline",
+        "icon": "smsMms",
+        "id": "894a91240c8cbb27ca087ae10076e906",
+        "name": "входящее SMS",
+        "number": "beeline",
+        "roaming": false,
+        "source": "beeline",
+        "typeCall": "incomingCall",
+        "unit": "PIECE",
+        "volume": 1
+      },
+      {
+        "balances": [
+          {
+            "changeValue": 0,
+            "code": "coreBalance",
+            "endValue": 100,
+            "name": "личный баланс",
+            "startValue": 100,
+            "unit": "RUB"
+          }
+        ],
+        "category": "SMS_MMS",
+        "categoryName": "сообщения",
+        "dateTime": "2026-06-01T16:00:10",
+        "formattedNumber": "beeline",
+        "icon": "smsMms",
+        "id": "940b65e9fddae66e9975d71d3e771915",
+        "name": "входящее SMS",
+        "number": "beeline",
+        "roaming": false,
+        "source": "beeline",
+        "typeCall": "incomingCall",
+        "unit": "PIECE",
+        "volume": 1
+      },
+      {
+        "balances": [
+          {
+            "changeValue": 0,
+            "code": "coreBalance",
+            "endValue": 100,
+            "name": "личный баланс",
+            "startValue": 100,
+            "unit": "RUB"
+          }
+        ],
+        "category": "SMS_MMS",
+        "categoryName": "сообщения",
+        "dateTime": "2026-06-01T15:52:30",
+        "formattedNumber": "beeline",
+        "icon": "smsMms",
+        "id": "bd48c9512eaa347a33b3b9eec186d912",
+        "name": "входящее SMS",
+        "number": "beeline",
+        "roaming": false,
+        "source": "beeline",
+        "typeCall": "incomingCall",
+        "unit": "PIECE",
+        "volume": 1
+      },
+      {
+        "balances": [
+          {
+            "changeValue": 1073741824,
+            "code": "internet",
+            "endValue": 1073741824,
+            "name": "пакет интернета",
+            "startValue": 0,
+            "unit": "KBYTE"
+          }
+        ],
+        "category": "refill",
+        "categoryName": "пополнение баланса",
+        "dateTime": "2026-06-01T15:52:00",
+        "formattedNumber": "",
+        "icon": "download",
+        "id": "aab8f642d8abfd0ed092345caa4d991d",
+        "name": "начисление пакета трафика",
+        "number": "",
+        "roaming": false,
+        "source": "beeline",
+        "unit": "",
+        "volume": 0
+      },
+      {
+        "balances": [
+          {
+            "changeValue": 1000,
+            "code": "sms",
+            "endValue": 1000,
+            "name": "пакет sms",
+            "startValue": 0,
+            "unit": "SMS"
+          }
+        ],
+        "category": "refill",
+        "categoryName": "пополнение баланса",
+        "dateTime": "2026-06-01T15:52:00",
+        "formattedNumber": "",
+        "icon": "download",
+        "id": "1eeebe26f18e3a40672953a479d0a06d",
+        "name": "начисление пакета SMS",
+        "number": "",
+        "roaming": false,
+        "source": "beeline",
+        "unit": "",
+        "volume": 0
+      },
+      {
+        "balances": [
+          {
+            "changeValue": 60000,
+            "code": "bonusseconds",
+            "endValue": 60000,
+            "name": "пакет минут",
+            "startValue": 0,
+            "unit": "SECONDS"
+          }
+        ],
+        "category": "refill",
+        "categoryName": "пополнение баланса",
+        "dateTime": "2026-06-01T15:52:00",
+        "formattedNumber": "",
+        "icon": "download",
+        "id": "f35738e844e6c61e8d10ecae021b8bda",
+        "name": "начисление пакета минут",
+        "number": "",
+        "roaming": false,
+        "source": "beeline",
+        "unit": "",
+        "volume": 0
+      },
+      {
+        "balances": [
+          {
+            "changeValue": -350,
+            "code": "coreBalance",
+            "endValue": 100,
+            "name": "личный баланс",
+            "startValue": 450,
+            "unit": "RUB"
+          }
+        ],
+        "category": "SUBSCRIBER_FEE_AND_SERVICE_CHANGE_FEE",
+        "categoryName": "абонентская плата",
+        "dateTime": "2026-06-01T15:52:00",
+        "formattedNumber": "",
+        "icon": "services",
+        "id": "aef894d158265c9bb862a635e246b7c9",
+        "name": "абонентская плата по тарифу «ледовый»",
+        "number": "",
+        "roaming": false,
+        "source": "beeline",
+        "unit": "",
+        "volume": 0
+      },
+      {
+        "balances": [
+          {
+            "changeValue": 0,
+            "code": "coreBalance",
+            "endValue": 450,
+            "name": "личный баланс",
+            "startValue": 450,
+            "unit": "RUB"
+          }
+        ],
+        "category": "SMS_MMS",
+        "categoryName": "сообщения",
+        "dateTime": "2026-06-01T15:50:24",
+        "formattedNumber": "beeline",
+        "icon": "smsMms",
+        "id": "3a49c042c9ba94fc55981e6b3404108f",
+        "name": "входящее SMS",
+        "number": "beeline",
+        "roaming": false,
+        "source": "beeline",
+        "typeCall": "incomingCall",
+        "unit": "PIECE",
+        "volume": 1
+      },
+      {
+        "balances": [
+          {
+            "changeValue": 0,
+            "code": "coreBalance",
+            "endValue": 450,
+            "name": "личный баланс",
+            "startValue": 450,
+            "unit": "RUB"
+          }
+        ],
+        "category": "SMS_MMS",
+        "categoryName": "сообщения",
+        "dateTime": "2026-06-01T15:50:07",
+        "formattedNumber": "beeline",
+        "icon": "smsMms",
+        "id": "17acb783ccf4e0e9a47e7d94de4585e6",
+        "name": "входящее SMS",
+        "number": "beeline",
+        "roaming": false,
+        "source": "beeline",
+        "typeCall": "incomingCall",
+        "unit": "PIECE",
+        "volume": 1
+      },
+      {
+        "balances": [
+          {
+            "changeValue": 450,
+            "code": "coreBalance",
+            "endValue": 450,
+            "name": "личный баланс",
+            "startValue": 0,
+            "unit": "RUB"
+          }
+        ],
+        "category": "refill",
+        "categoryName": "пополнение баланса",
+        "dateTime": "2026-06-01T15:50:03",
+        "formattedNumber": "",
+        "icon": "download",
+        "id": "c47b6eb6ab5c2924a529acf3f62090b6",
+        "name": "пополнение баланса",
+        "number": "",
+        "roaming": false,
+        "source": "beeline",
+        "unit": "",
+        "volume": 0
+      },
+      {
+        "balances": [
+          {
+            "changeValue": 0,
+            "code": "coreBalance",
+            "endValue": 0,
+            "name": "личный баланс",
+            "startValue": 0,
+            "unit": "RUB"
+          }
+        ],
+        "category": "SMS_MMS",
+        "categoryName": "сообщения",
+        "dateTime": "2026-06-01T15:43:26",
+        "formattedNumber": "beeline",
+        "icon": "smsMms",
+        "id": "cc257832d3804045574b7e094f4b2118",
+        "name": "входящее SMS",
+        "number": "beeline",
+        "roaming": false,
+        "source": "beeline",
+        "typeCall": "incomingCall",
+        "unit": "PIECE",
+        "volume": 1
+      },
+      {
+        "balances": [
+          {
+            "changeValue": 0,
+            "code": "coreBalance",
+            "endValue": 0,
+            "name": "личный баланс",
+            "startValue": 0,
+            "unit": "RUB"
+          }
+        ],
+        "category": "SMS_MMS",
+        "categoryName": "сообщения",
+        "dateTime": "2026-06-01T15:37:41",
+        "formattedNumber": "Beeline",
+        "icon": "smsMms",
+        "id": "c633e66780efd5897a4843252a5b25b9",
+        "name": "входящее SMS",
+        "number": "Beeline",
+        "roaming": false,
+        "source": "beeline",
+        "typeCall": "incomingCall",
+        "unit": "PIECE",
+        "volume": 1
+      }
+    ]
+  },
+  "createdAt": "2026-06-01T20:26:41.770961+07:00",
+  "updatedAt": "2026-06-01T20:26:41.770961+07:00"
+}

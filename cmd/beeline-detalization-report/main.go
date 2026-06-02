@@ -171,7 +171,7 @@ func buildReportParams(
 		return beelinedetalization.ReportParams{}, fmt.Errorf("list hidden transactions: %w", err)
 	}
 
-	viewData, finalBalance, err := detalization.BuildView(baseData, payments, hiddenIDs, nil)
+	viewData, finalBalance, err := detalization.BuildView(baseData, payments, hiddenIDs, nil, simNumber, time.Now().UTC())
 	if err != nil {
 		return beelinedetalization.ReportParams{}, fmt.Errorf("build view: %w", err)
 	}

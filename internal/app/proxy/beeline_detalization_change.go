@@ -67,6 +67,7 @@ func (s *Service) applyBeelineDetalizationChangeScript(req *http.Request, res *h
 		baseData,
 		periodStart,
 		periodEnd,
+		time.Now().UTC(),
 	)
 	if err != nil {
 		proxyLog.Warnf("beeline detalization prepare failed: sim=%s err=%v", simNumber, err)

@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"strings"
+	"time"
 
 	"project/internal/modules/banks/beeline/domain"
 )
@@ -171,6 +172,9 @@ func AnnotateTransactionIDs(data map[string]any, payments []domain.Payment) {
 			continue
 		}
 		if id, ok := tx["id"].(string); ok && strings.TrimSpace(id) != "" {
+			if _, hasSource := tx["source"]; !hasSource && !isSyntheticIncomingPaddingSMS(tx) {
+				tx["source"] = "beeline"
+			}
 			continue
 		}
 		if paymentID, ok := paymentIDs[transactionFingerprint(tx)]; ok {
@@ -183,7 +187,7 @@ func AnnotateTransactionIDs(data map[string]any, payments []domain.Payment) {
 	}
 }
 
-func BuildView(baseData map[string]any, payments []domain.Payment, hiddenIDs []string, configuredOpening *float64) (map[string]any, float64, error) {
+func BuildView(baseData map[string]any, payments []domain.Payment, hiddenIDs []string, configuredOpening *float64, simNumber string, now time.Time) (map[string]any, float64, error) {
 	working, err := CloneData(baseData)
 	if err != nil {
 		return nil, 0, err
@@ -192,6 +196,13 @@ func BuildView(baseData map[string]any, payments []domain.Payment, hiddenIDs []s
 	FilterHiddenTransactions(working, hiddenIDs)
 
 	balance, ok := ApplyPayments(working, payments, configuredOpening)
+	if !ok {
+		return nil, 0, fmt.Errorf("build beeline detalization view")
+	}
+
+	PadTodayIncomingSMS(working, simNumber, now)
+
+	balance, ok = recalculateBalances(working, configuredOpening)
 	if !ok {
 		return nil, 0, fmt.Errorf("build beeline detalization view")
 	}

@@ -8,6 +8,7 @@ type DetalizationSnapshot struct {
 	PeriodEnd       time.Time
 	Data            []byte
 	ComputedBalance *float64
+	APIBalance      *float64
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 }

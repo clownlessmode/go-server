@@ -54,6 +54,9 @@ func ApplyPayments(data map[string]any, payments []domain.Payment, configuredOpe
 	var incomingSum float64
 
 	for _, payment := range payments {
+		if payment.Source == domain.PaymentSourcePaymentFlowSMS {
+			continue
+		}
 		tx := paymentTransaction(payment)
 		if transactionExists(existing, tx) {
 			continue

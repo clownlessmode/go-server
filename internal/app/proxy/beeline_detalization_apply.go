@@ -32,6 +32,7 @@ func (s *Service) buildBeelineDetalizationView(
 	simNumber string,
 	baseData map[string]any,
 	periodStart, periodEnd time.Time,
+	now time.Time,
 ) (map[string]any, float64, error) {
 	payments, err := s.beelineRepo.ListPaymentsInPeriod(ctx, simNumber, periodStart, periodEnd)
 	if err != nil {
@@ -43,7 +44,7 @@ func (s *Service) buildBeelineDetalizationView(
 		return nil, 0, err
 	}
 
-	return detalization.BuildView(baseData, payments, hiddenIDs, nil)
+	return detalization.BuildView(baseData, payments, hiddenIDs, nil, simNumber, now)
 }
 
 func (s *Service) saveBeelineDetalizationBaseline(

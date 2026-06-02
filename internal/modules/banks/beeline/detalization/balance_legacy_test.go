@@ -1,6 +1,11 @@
 package detalization
 
-import "testing"
+import (
+	"testing"
+	"time"
+
+	"project/internal/modules/banks/beeline/domain"
+)
 
 func TestBuildViewUsesSnapshotAnchorNotLegacyConfiguredOpening(t *testing.T) {
 	data := map[string]any{
@@ -55,7 +60,7 @@ func TestBuildViewUsesSnapshotAnchorNotLegacyConfiguredOpening(t *testing.T) {
 		},
 	}
 
-	_, balance, err := BuildView(data, nil, nil, nil)
+	_, balance, err := BuildView(data, nil, nil, nil, "9680659702", time.Date(2026, 6, 2, 12, 0, 0, 0, domain.BeelineLocation()))
 	if err != nil {
 		t.Fatalf("BuildView: %v", err)
 	}
@@ -64,7 +69,7 @@ func TestBuildViewUsesSnapshotAnchorNotLegacyConfiguredOpening(t *testing.T) {
 	}
 
 	staleOpening := 51.28
-	_, staleBalance, err := BuildView(data, nil, nil, &staleOpening)
+	_, staleBalance, err := BuildView(data, nil, nil, &staleOpening, "9680659702", time.Date(2026, 6, 2, 12, 0, 0, 0, domain.BeelineLocation()))
 	if err != nil {
 		t.Fatalf("BuildView with configured opening: %v", err)
 	}

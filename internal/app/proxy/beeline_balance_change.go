@@ -3,7 +3,6 @@ package proxy
 import (
 	"bytes"
 	"context"
-	"errors"
 	"io"
 	"net/http"
 	"strconv"
@@ -32,11 +31,6 @@ func (s *Service) applyBeelineBalanceChangeScript(req *http.Request, res *http.R
 		return
 	}
 
-	computedBalance, ok := s.computeBeelineBalanceFromSnapshot(req.Context(), simNumber)
-	if !ok {
-		return
-	}
-
 	rawBody, err := io.ReadAll(res.Body)
 	if err != nil {
 		proxyLog.Warnf("beeline balance change response read failed: err=%v", err)
@@ -52,7 +46,28 @@ func (s *Service) applyBeelineBalanceChangeScript(req *http.Request, res *http.R
 		res.Body = io.NopCloser(bytes.NewReader(rawBody))
 		return
 	}
-	if response == nil || !replaceBeelineMainBalanceValue(response, computedBalance) {
+	if response == nil {
+		res.Body = io.NopCloser(bytes.NewReader(originalBody))
+		return
+	}
+
+	liveBalance, hasLiveBalance := beelineMainBalanceValue(response)
+	var live *float64
+	if hasLiveBalance {
+		if err := s.beelineRepo.UpdateDetalizationAPIBalance(req.Context(), simNumber, liveBalance); err != nil {
+			proxyLog.Warnf("beeline api balance persist failed: sim=%s err=%v", simNumber, err)
+		}
+		value := liveBalance
+		live = &value
+	}
+
+	displayBalance, ok := s.computeBeelineDisplayBalance(req.Context(), simNumber, live)
+	if !ok {
+		res.Body = io.NopCloser(bytes.NewReader(originalBody))
+		return
+	}
+
+	if !replaceBeelineMainBalanceValue(response, displayBalance) {
 		res.Body = io.NopCloser(bytes.NewReader(originalBody))
 		return
 	}
@@ -68,46 +83,37 @@ func (s *Service) applyBeelineBalanceChangeScript(req *http.Request, res *http.R
 	res.Header.Set("Content-Length", strconv.Itoa(len(changedBody)))
 
 	proxyLog.Infof(
-		"beeline balance change applied: route=%s sim=%s balance=%.2f source=snapshot",
+		"beeline balance change applied: route=%s sim=%s balance=%.2f source=api+payments",
 		pathForLog(req),
 		simNumber,
-		computedBalance,
+		displayBalance,
 	)
 }
 
-func (s *Service) computeBeelineBalanceFromSnapshot(ctx context.Context, simNumber string) (float64, bool) {
-	snapshot, err := s.beelineRepo.GetDetalizationSnapshot(ctx, simNumber)
-	if errors.Is(err, beelinedomain.ErrDetalizationSnapshotNotFound) {
-		return 0, false
-	}
-	if err != nil {
-		proxyLog.Warnf("beeline snapshot read failed: sim=%s err=%v", simNumber, err)
+func (s *Service) computeBeelineDisplayBalance(ctx context.Context, simNumber string, liveAPIBalance *float64) (float64, bool) {
+	displayBalance, ok := s.beelineDisplayBalance(ctx, simNumber, liveAPIBalance)
+	if !ok {
 		return 0, false
 	}
 
-	baseData, err := decodeDetalizationSnapshotData(snapshot.Data)
-	if err != nil {
-		proxyLog.Warnf("beeline snapshot decode failed: sim=%s err=%v", simNumber, err)
-		return 0, false
-	}
-
-	_, finalBalance, err := s.buildBeelineDetalizationView(
-		ctx,
-		simNumber,
-		baseData,
-		snapshot.PeriodStart,
-		snapshot.PeriodEnd,
-	)
-	if err != nil {
-		proxyLog.Warnf("beeline snapshot balance compute failed: sim=%s err=%v", simNumber, err)
-		return 0, false
-	}
-
-	if err := s.beelineRepo.UpdateDetalizationComputedBalance(ctx, simNumber, finalBalance); err != nil {
+	if err := s.beelineRepo.UpdateDetalizationComputedBalance(ctx, simNumber, displayBalance); err != nil {
 		proxyLog.Warnf("beeline snapshot balance persist failed: sim=%s err=%v", simNumber, err)
 	}
 
-	return finalBalance, true
+	return displayBalance, true
+}
+
+func beelineMainBalanceValue(response map[string]any) (float64, bool) {
+	data, ok := response["data"].(map[string]any)
+	if !ok {
+		return 0, false
+	}
+	parsed := jsonNumberFromAny(data["balanceValue"])
+	if parsed == nil {
+		return 0, false
+	}
+
+	return beelinedomain.RoundMoney(*parsed), true
 }
 
 func isBeelineMainBalanceRequest(req *http.Request, res *http.Response) bool {

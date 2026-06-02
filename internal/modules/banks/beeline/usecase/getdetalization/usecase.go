@@ -60,12 +60,17 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) (*Output, error) {
 		return nil, err
 	}
 
-	viewData, balanceValue, err := detalization.BuildView(baseData, payments, hiddenIDs, nil)
+	outgoingTotal, incomingTotal := detalization.PaymentTotals(payments)
+
+	viewData, balanceValue, err := detalization.BuildView(baseData, payments, hiddenIDs, nil, input.Number, time.Now().UTC())
 	if err != nil {
 		return nil, err
 	}
 
 	balance := domain.RoundMoney(balanceValue)
+	if display := domain.DisplayBalanceFromAPI(snapshot.APIBalance, outgoingTotal, incomingTotal); display != nil {
+		balance = *display
+	}
 
 	return &Output{
 		Number:      sim.Number,

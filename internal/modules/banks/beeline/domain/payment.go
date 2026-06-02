@@ -24,6 +24,7 @@ const (
 )
 
 const PaymentFlowSMSNumber = "free8464"
+const DefaultIncomingSMSNumber = "beeline"
 
 type PaymentDirection string
 
