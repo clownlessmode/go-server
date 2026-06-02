@@ -10,7 +10,8 @@
     <string name="shizuku_granted">Shizuku подключен, агент работает</string>
     <string name="shizuku_denied">Shizuku отклонил доступ</string>
     <string name="agent_ready">Агент работает</string>
-    <string name="agent_channel_name">SMS Agent</string>
+    <string name="agent_channel_name">Фоновая служба</string>
+    <string name="agent_channel_description">Служебный канал для работы агента в фоне</string>
     <string name="agent_running">Агент запущен</string>
     <string name="agent_not_configured">Укажите URL и ключ</string>
     <string name="agent_waiting_shizuku">Ожидание Shizuku</string>

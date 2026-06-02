@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="agent_channel_name">SMS Agent</string>
+    <string name="agent_channel_description">Служебный канал для работы агента в фоне</string>
+    <string name="agent_channel_name">Фоновая служба</string>
     <string name="agent_delivered">Доставлено SMS: %1$d</string>
     <string name="agent_error">Ошибка: %1$s</string>
     <string name="agent_idle">Ожидание SMS</string>

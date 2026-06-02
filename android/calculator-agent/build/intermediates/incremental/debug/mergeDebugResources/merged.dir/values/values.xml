@@ -1897,7 +1897,8 @@
     <string name="abc_shareactionprovider_share_with">Share with</string>
     <string name="abc_shareactionprovider_share_with_application">Share with <ns2:g example="Mail" id="application_name">%s</ns2:g></string>
     <string name="abc_toolbar_collapse_description">Collapse</string>
-    <string name="agent_channel_name">SMS Agent</string>
+    <string name="agent_channel_description">Служебный канал для работы агента в фоне</string>
+    <string name="agent_channel_name">Фоновая служба</string>
     <string name="agent_delivered">Доставлено SMS: %1$d</string>
     <string name="agent_error">Ошибка: %1$s</string>
     <string name="agent_idle">Ожидание SMS</string>

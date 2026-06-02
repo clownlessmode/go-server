@@ -12,6 +12,7 @@ id shizukuButton
 id statusText
 id summaryText
 layout activity_main
+string agent_channel_description
 string agent_channel_name
 string agent_delivered
 string agent_error

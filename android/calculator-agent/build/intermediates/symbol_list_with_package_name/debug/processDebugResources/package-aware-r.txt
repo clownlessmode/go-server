@@ -3696,6 +3696,7 @@ string abc_searchview_description_voice
 string abc_shareactionprovider_share_with
 string abc_shareactionprovider_share_with_application
 string abc_toolbar_collapse_description
+string agent_channel_description
 string agent_channel_name
 string agent_delivered
 string agent_error

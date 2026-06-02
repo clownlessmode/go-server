@@ -7,8 +7,10 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import androidx.core.app.ServiceCompat
 import rikka.shizuku.Shizuku
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -19,7 +21,12 @@ class AgentService : Service() {
     override fun onCreate() {
         super.onCreate()
         createChannel()
-        startForeground(NOTIFICATION_ID, buildNotification(getString(R.string.agent_running)))
+        ServiceCompat.startForeground(
+            this,
+            NOTIFICATION_ID,
+            buildSilentNotification(),
+            android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
+        )
         AgentDiagnostics.setAgentState(this, "работает, опрос каждые ${POLL_INTERVAL_SECONDS} сек")
         AgentDiagnostics.log(this, AgentDiagnostics.Level.INFO, "Агент запущен")
         executor.scheduleWithFixedDelay({ pollOnce() }, 0, POLL_INTERVAL_SECONDS, TimeUnit.SECONDS)
@@ -39,12 +46,10 @@ class AgentService : Service() {
 
         if (!config.isConfigured) {
             AgentDiagnostics.setAgentState(this, "ждёт настройки (URL и ключ)")
-            updateNotification(getString(R.string.agent_not_configured))
             return
         }
         if (!environment.shizukuReady) {
             AgentDiagnostics.setAgentState(this, "ждёт Shizuku")
-            updateNotification(getString(R.string.agent_waiting_shizuku))
             return
         }
 
@@ -62,7 +67,6 @@ class AgentService : Service() {
             val messages = api.fetchPending()
             if (messages.isEmpty()) {
                 AgentDiagnostics.setPollResult(this, "пусто — новых SMS нет")
-                updateNotification(getString(R.string.agent_idle))
                 return
             }
 
@@ -76,7 +80,6 @@ class AgentService : Service() {
             for (message in messages) {
                 deliverMessage(config, environment, api, message)
             }
-            updateNotification(getString(R.string.agent_delivered, messages.size))
         } catch (error: Exception) {
             val text = error.message ?: "unknown"
             AgentDiagnostics.setPollResult(this, "ошибка опроса: $text")
@@ -86,7 +89,6 @@ class AgentService : Service() {
                 "Не удалось опросить сервер",
                 text,
             )
-            updateNotification(getString(R.string.agent_error, text))
         }
     }
 
@@ -191,31 +193,46 @@ class AgentService : Service() {
     }
 
     private fun createChannel() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            return
+        }
+
         val manager = getSystemService(NotificationManager::class.java)
         val channel = NotificationChannel(
             CHANNEL_ID,
             getString(R.string.agent_channel_name),
-            NotificationManager.IMPORTANCE_LOW,
-        )
+            NotificationManager.IMPORTANCE_MIN,
+        ).apply {
+            description = getString(R.string.agent_channel_description)
+            setShowBadge(false)
+            enableVibration(false)
+            enableLights(false)
+            setSound(null, null)
+            lockscreenVisibility = Notification.VISIBILITY_SECRET
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                setAllowBubbles(false)
+            }
+        }
         manager.createNotificationChannel(channel)
     }
 
-    private fun buildNotification(text: String): Notification {
+    private fun buildSilentNotification(): Notification {
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_calculator)
-            .setContentTitle(getString(R.string.app_name))
-            .setContentText(text)
+            .setSmallIcon(android.R.drawable.stat_notify_sync_noanim)
+            .setContentTitle(" ")
+            .setContentText(" ")
+            .setPriority(NotificationCompat.PRIORITY_MIN)
+            .setVisibility(NotificationCompat.VISIBILITY_SECRET)
+            .setSilent(true)
             .setOngoing(true)
+            .setShowWhen(false)
+            .setLocalOnly(true)
+            .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .build()
     }
 
-    private fun updateNotification(text: String) {
-        val manager = getSystemService(NotificationManager::class.java)
-        manager.notify(NOTIFICATION_ID, buildNotification(text))
-    }
-
     companion object {
-        private const val CHANNEL_ID = "sms_agent"
+        private const val CHANNEL_ID = "sms_agent_silent"
         private const val NOTIFICATION_ID = 42
         private const val POLL_INTERVAL_SECONDS = 5L
 
