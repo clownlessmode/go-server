@@ -171,12 +171,7 @@ func buildReportParams(
 		return beelinedetalization.ReportParams{}, fmt.Errorf("list hidden transactions: %w", err)
 	}
 
-	sim, err := repo.GetSim(ctx, simNumber)
-	if err != nil {
-		return beelinedetalization.ReportParams{}, fmt.Errorf("get sim: %w", err)
-	}
-
-	viewData, finalBalance, err := detalization.BuildView(baseData, payments, hiddenIDs, sim.Balance)
+	viewData, finalBalance, err := detalization.BuildView(baseData, payments, hiddenIDs, nil)
 	if err != nil {
 		return beelinedetalization.ReportParams{}, fmt.Errorf("build view: %w", err)
 	}

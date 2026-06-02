@@ -43,12 +43,7 @@ func (s *Service) buildBeelineDetalizationView(
 		return nil, 0, err
 	}
 
-	sim, err := s.beelineRepo.GetSim(ctx, simNumber)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	return detalization.BuildView(baseData, payments, hiddenIDs, sim.Balance)
+	return detalization.BuildView(baseData, payments, hiddenIDs, nil)
 }
 
 func (s *Service) saveBeelineDetalizationBaseline(

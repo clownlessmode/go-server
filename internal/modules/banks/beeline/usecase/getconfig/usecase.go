@@ -64,7 +64,7 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) (*Output, error) {
 	outgoingTotal, incomingTotal := detalization.PaymentTotals(payments)
 
 	var balance *float64
-	if computedBalance, err := detalizationBuildBalance(baseData, payments, hiddenIDs, sim.Balance); err == nil {
+	if computedBalance, err := detalizationBuildBalance(baseData, payments, hiddenIDs, nil); err == nil {
 		value := domain.RoundMoney(computedBalance)
 		balance = &value
 	}
