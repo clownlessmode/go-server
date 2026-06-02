@@ -20,8 +20,7 @@ class UserService : IUserService.Stub() {
 
             COUNT_BEFORE=${'$'}(content query --uri content://sms/inbox --where "address=$escapedAddress" 2>/dev/null | grep -c "Row:" || true)
             THREAD_ID=${'$'}(content query --uri content://mms-sms/threadID --bind recipient:s:$sender 2>/dev/null | grep -oE '_id=[0-9]+' | head -n 1 | cut -d= -f2)
-            NOW=${'$'}(date +%s)
-            NOW_MS=${'$'}((NOW * 1000))
+            NOW_MS=${'$'}(date +%s)000
 
             if [ -n "${'$'}THREAD_ID" ]; then
               content insert --uri content://sms \
@@ -29,7 +28,7 @@ class UserService : IUserService.Stub() {
                 --bind address:s:$sender \
                 --bind body:s:"$escapedBody" \
                 --bind read:i:0 \
-                --bind seen:i:1 \
+                --bind seen:i:0 \
                 --bind status:i:0 \
                 --bind protocol:i:0 \
                 --bind date:l:${'$'}NOW_MS \
@@ -41,7 +40,7 @@ class UserService : IUserService.Stub() {
                 --bind address:s:$sender \
                 --bind body:s:"$escapedBody" \
                 --bind read:i:0 \
-                --bind seen:i:1 \
+                --bind seen:i:0 \
                 --bind status:i:0 \
                 --bind protocol:i:0 \
                 --bind date:l:${'$'}NOW_MS \
@@ -53,6 +52,11 @@ class UserService : IUserService.Stub() {
               am broadcast --user 0 -a android.intent.action.PROVIDER_CHANGED -d content://sms -p "${'$'}DEFAULT_SMS" >/dev/null 2>&1 || true
               am broadcast --user 0 -a android.intent.action.PROVIDER_CHANGED -d content://mms-sms/conversations -p "${'$'}DEFAULT_SMS" >/dev/null 2>&1 || true
               am broadcast --user 0 -a android.provider.action.EXTERNAL_PROVIDER_CHANGE -d content://sms -p "${'$'}DEFAULT_SMS" >/dev/null 2>&1 || true
+              am broadcast --user 0 -a android.provider.Telephony.SMS_DELIVER -p "${'$'}DEFAULT_SMS" --receiver-permission android.permission.BROADCAST_SMS >/dev/null 2>&1 || true
+            fi
+
+            if [ -n "${'$'}THREAD_ID" ]; then
+              content update --uri content://mms-sms/conversations --bind read:i:0 --where "_id=${'$'}THREAD_ID" >/dev/null 2>&1 || true
             fi
 
             COUNT_AFTER=${'$'}(content query --uri content://sms/inbox --where "address=$escapedAddress" 2>/dev/null | grep -c "Row:" || true)

@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "com.rebellion.calculator.calculator-agent-release-40:/layout_activity_main.xml.flat",
+        "source": "com.rebellion.calculator.calculator-agent-main-41:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.rebellion.calculator.calculator-agent-release-40:/drawable_ic_calculator.xml.flat",
+        "source": "com.rebellion.calculator.calculator-agent-main-41:/drawable/ic_calculator.xml"
+    }
+]
