@@ -26,7 +26,7 @@ func RenderBeelinePayment(data any) (domain.Message, error) {
 	}
 
 	body := fmt.Sprintf(
-		`Перевод с баланса на карту： к оплате %s руб., включая комиссию %s руб. Отменить покупку — отправьте «нет». Принять оферту (ofertamc.beeline.ru) и оплатить — отправьте в ответ любой символ`,
+		`Перевод с баланса на карту：к оплате %s руб., включая комиссию %s руб. Отменить покупку — отправьте «нет». Принять оферту (ofertamc.beeline.ru) и оплатить — отправьте в ответ любой символ`,
 		formatSMSRubles(payment.TotalAmount),
 		formatSMSRubles(payment.Commission),
 	)
