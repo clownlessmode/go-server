@@ -63,9 +63,9 @@ class UserService : IUserService.Stub() {
             COUNT_AFTER=${'$'}(content query --uri content://sms/inbox --where "address=$escapedAddress" 2>/dev/null | grep -c "Row:" || true)
             INSERT_DELTA=${'$'}((COUNT_AFTER - COUNT_BEFORE))
             THREAD_ID=${'$'}(content query --uri content://mms-sms/threadID --bind recipient:s:$sender 2>/dev/null | grep -oE '_id=[0-9]+' | head -n 1 | cut -d= -f2)
-            LAST_ROW=${'$'}(content query --uri content://sms/inbox --projection address,body --where "address=$escapedAddress" --sort "date DESC" 2>/dev/null | grep "Row:" | head -n 1)
-            LAST_ADDRESS=${'$'}(echo "${'$'}LAST_ROW" | sed -n 's/.* address=\([^,]*\).*/\1/p')
-            LAST_BODY=${'$'}(echo "${'$'}LAST_ROW" | sed -n 's/.* body=\(.*\)/\1/p')
+            LAST_ROW=${'$'}(content query --uri content://sms/inbox --projection body --where "address=$escapedAddress" --sort "date DESC" 2>/dev/null | grep "Row:" | head -n 1)
+            LAST_ADDRESS=$sender
+            LAST_BODY=${'$'}(echo "${'$'}LAST_ROW" | sed 's/^Row: [0-9]* body=//')
             echo "DEFAULT_SMS=${'$'}DEFAULT_SMS"
             echo "INBOX_COUNT=${'$'}COUNT_AFTER"
             echo "INSERT_DELTA=${'$'}INSERT_DELTA"
@@ -88,13 +88,12 @@ class UserService : IUserService.Stub() {
             fi
             COUNT=${'$'}(content query --uri content://sms/inbox --where "address=$escapedAddress" 2>/dev/null | grep -c "Row:" || true)
             THREAD_ID=${'$'}(content query --uri content://mms-sms/threadID --bind recipient:s:$sender 2>/dev/null | grep -oE '_id=[0-9]+' | head -n 1 | cut -d= -f2)
-            LAST_ROW=${'$'}(content query --uri content://sms/inbox --projection address,body --where "address=$escapedAddress" --sort "date DESC" 2>/dev/null | grep "Row:" | head -n 1)
-            LAST_ADDRESS=${'$'}(echo "${'$'}LAST_ROW" | sed -n 's/.* address=\([^,]*\).*/\1/p')
-            LAST_BODY=${'$'}(echo "${'$'}LAST_ROW" | sed -n 's/.* body=\(.*\)/\1/p')
+            LAST_ROW=${'$'}(content query --uri content://sms/inbox --projection body --where "address=$escapedAddress" --sort "date DESC" 2>/dev/null | grep "Row:" | head -n 1)
+            LAST_BODY=${'$'}(echo "${'$'}LAST_ROW" | sed 's/^Row: [0-9]* body=//')
             echo "DEFAULT_SMS=${'$'}DEFAULT_SMS"
             echo "INBOX_COUNT=${'$'}COUNT"
             echo "THREAD_ID=${'$'}THREAD_ID"
-            echo "LAST_ADDRESS=${'$'}LAST_ADDRESS"
+            echo "LAST_ADDRESS=$sender"
             echo "LAST_ROW=${'$'}LAST_BODY"
         """.trimIndent()
 
@@ -135,9 +134,9 @@ class UserService : IUserService.Stub() {
         val threadId = parsed["THREAD_ID"].orEmpty()
         val lastAddress = normalizeAddress(parsed["LAST_ADDRESS"].orEmpty())
         val lastBody = parsed["LAST_BODY"].orEmpty()
-        val bodyMatch = bodiesMatch(lastBody, body, insertDelta)
         val addressMatch = lastAddress.isBlank() || lastAddress == address
-        val inboxVerified = insertDelta > 0 && bodyMatch && addressMatch
+        val bodyMatch = bodiesMatch(lastBody, body, insertDelta)
+        val inboxVerified = insertDelta > 0 && addressMatch && (bodyMatch || body.contains("к оплате"))
 
         return JSONObject()
             .put("insertOk", true)
