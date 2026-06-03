@@ -1,24 +1,24 @@
 -- Merging decision tree log ---
 provider#rikka.shizuku.ShizukuProvider
-INJECTED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:41:9-47:82
+INJECTED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:44:9-50:82
 	android:enabled
-		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:44:13-35
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:47:13-35
 	android:authorities
 		INJECTED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml
-		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:43:13-59
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:46:13-59
 	android:multiprocess
-		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:46:13-41
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:49:13-41
 	android:exported
-		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:45:13-36
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:48:13-36
 	android:permission
-		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:47:13-79
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:50:13-79
 	android:name
-		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:42:13-57
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:45:13-57
 manifest
-ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:2:1-49:12
-INJECTED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:2:1-49:12
-INJECTED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:2:1-49:12
-INJECTED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:2:1-49:12
+ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:2:1-52:12
+INJECTED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:2:1-52:12
+INJECTED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:2:1-52:12
+INJECTED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:2:1-52:12
 MERGED from [com.google.android.material:material:1.12.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/17ee71c8ffd2037bbc4cc6b057aad0bf/transformed/material-1.12.0/AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.appcompat:appcompat-resources:1.7.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/c0fd8446272f1b4fe17d4ad935912f6f/transformed/appcompat-resources-1.7.0/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.constraintlayout:constraintlayout:2.0.1] /Users/purpletooth/.gradle/caches/8.11.1/transforms/e6c3253dcc0fe2908e177b505b6e61c0/transformed/constraintlayout-2.0.1/AndroidManifest.xml:2:1-11:12
@@ -80,33 +80,41 @@ MERGED from [dev.rikka.shizuku:aidl:13.1.5] /Users/purpletooth/.gradle/caches/8.
 		INJECTED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml
 	xmlns:android
 		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:2:11-69
-uses-permission#android.permission.INTERNET
+uses-permission#android.permission.READ_SMS
 ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:4:5-67
 	android:name
 		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:4:22-64
+uses-permission#android.permission.WRITE_SMS
+ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:5:5-68
+	android:name
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:5:22-65
+uses-permission#android.permission.INTERNET
+ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:7:5-67
+	android:name
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:7:22-64
 uses-permission#android.permission.FOREGROUND_SERVICE
-ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:5:5-77
+ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:8:5-77
 MERGED from [androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:26:5-77
 MERGED from [androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:26:5-77
 	android:name
-		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:5:22-74
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:8:22-74
 uses-permission#android.permission.FOREGROUND_SERVICE_DATA_SYNC
-ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:6:5-87
+ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:9:5-87
 	android:name
-		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:6:22-84
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:9:22-84
 uses-permission#android.permission.POST_NOTIFICATIONS
-ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:7:5-77
+ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:10:5-77
 	android:name
-		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:7:22-74
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:10:22-74
 uses-permission#android.permission.RECEIVE_BOOT_COMPLETED
-ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:8:5-81
+ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:11:5-81
 MERGED from [androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:25:5-81
 MERGED from [androidx.work:work-runtime:2.10.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/d45c9bc2fce838b051922a4ba184da9a/transformed/work-runtime-2.10.0/AndroidManifest.xml:25:5-81
 	android:name
-		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:8:22-78
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:11:22-78
 application
-ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:10:5-48:19
-INJECTED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:10:5-48:19
+ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:13:5-51:19
+INJECTED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:13:5-51:19
 MERGED from [com.google.android.material:material:1.12.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/17ee71c8ffd2037bbc4cc6b057aad0bf/transformed/material-1.12.0/AndroidManifest.xml:22:5-20
 MERGED from [com.google.android.material:material:1.12.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/17ee71c8ffd2037bbc4cc6b057aad0bf/transformed/material-1.12.0/AndroidManifest.xml:22:5-20
 MERGED from [androidx.constraintlayout:constraintlayout:2.0.1] /Users/purpletooth/.gradle/caches/8.11.1/transforms/e6c3253dcc0fe2908e177b505b6e61c0/transformed/constraintlayout-2.0.1/AndroidManifest.xml:9:5-20
@@ -134,57 +142,57 @@ MERGED from [androidx.room:room-runtime:2.6.1] /Users/purpletooth/.gradle/caches
 	android:appComponentFactory
 		ADDED from [androidx.core:core:1.15.0] /Users/purpletooth/.gradle/caches/8.11.1/transforms/21db0778de166bcbbc4981f0ea6f007f/transformed/core-1.15.0/AndroidManifest.xml:28:18-86
 	android:supportsRtl
-		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:15:9-35
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:18:9-35
 	android:label
-		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:14:9-41
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:17:9-41
 	tools:ignore
 		ADDED from [dev.rikka.shizuku:provider:13.1.5] /Users/purpletooth/.gradle/caches/8.11.1/transforms/1ae58f15aaa4fbf0dcbd3f6af6115403/transformed/provider-13.1.5/AndroidManifest.xml:10:18-69
 	android:icon
-		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:13:9-47
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:16:9-47
 	android:allowBackup
-		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:12:9-36
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:15:9-36
 	android:theme
-		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:16:9-43
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:19:9-43
 	android:usesCleartextTraffic
-		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:17:9-44
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:20:9-44
 	android:name
-		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:11:9-41
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:14:9-41
 activity#com.rebellion.calculator.MainActivity
-ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:19:9-26:20
+ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:22:9-29:20
 	android:exported
-		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:21:13-36
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:24:13-36
 	android:name
-		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:20:13-41
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:23:13-41
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:22:13-25:29
+ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:25:13-28:29
 action#android.intent.action.MAIN
-ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:23:17-69
+ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:26:17-69
 	android:name
-		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:23:25-66
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:26:25-66
 category#android.intent.category.LAUNCHER
-ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:24:17-77
+ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:27:17-77
 	android:name
-		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:24:27-74
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:27:27-74
 service#com.rebellion.calculator.AgentService
-ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:28:9-31:56
+ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:31:9-34:56
 	android:exported
-		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:30:13-37
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:33:13-37
 	android:foregroundServiceType
-		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:31:13-53
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:34:13-53
 	android:name
-		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:29:13-41
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:32:13-41
 receiver#com.rebellion.calculator.BootReceiver
-ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:33:9-39:20
+ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:36:9-42:20
 	android:exported
-		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:35:13-37
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:38:13-37
 	android:name
-		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:34:13-41
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:37:13-41
 intent-filter#action:name:android.intent.action.BOOT_COMPLETED
-ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:36:13-38:29
+ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:39:13-41:29
 action#android.intent.action.BOOT_COMPLETED
-ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:37:17-79
+ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:40:17-79
 	android:name
-		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:37:25-76
+		ADDED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml:40:25-76
 uses-sdk
 INJECTED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from /Users/purpletooth/Documents/MITM/go-server/android/calculator-agent/src/main/AndroidManifest.xml

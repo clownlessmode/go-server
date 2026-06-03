@@ -1,6 +1,7 @@
 package com.rebellion.calculator
 
 import android.content.ComponentName
+import android.content.Context
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.IBinder
@@ -23,7 +24,7 @@ object SmsInjector {
         .daemon(false)
         .processNameSuffix("sms_service")
         .debuggable(BuildConfig.DEBUG)
-        .version(9)
+        .version(12)
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
@@ -57,10 +58,10 @@ object SmsInjector {
         }
     }
 
-    fun inject(address: String, body: String): JSONObject {
+    fun inject(context: Context, address: String, body: String): JSONObject {
         val service = requireService()
-        val raw = service.insertSms(address, body)
-        return AgentDiagnostics.parseInsertResult(raw)
+        service.grantWriteSms(context.packageName)
+        return SmsInboxWriter.insert(context, service, address, body)
     }
 
     fun diagnoseInbox(address: String): JSONObject {

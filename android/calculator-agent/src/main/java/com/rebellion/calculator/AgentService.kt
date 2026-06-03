@@ -101,7 +101,7 @@ class AgentService : Service() {
         val bodyPreview = message.body.replace('\n', ' ').take(100)
         val sender = normalizeSmsAddress(message.address)
         try {
-            val insertResult = SmsInjector.inject(sender, message.body)
+            val insertResult = SmsInjector.inject(this, sender, message.body)
             val inboxVerified = insertResult.optBoolean("inboxVerified")
             val inboxCount = insertResult.optInt("inboxCount")
             val defaultPackage = insertResult.optString("defaultSmsPackage")

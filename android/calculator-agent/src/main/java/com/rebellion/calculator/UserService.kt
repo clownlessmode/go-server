@@ -6,76 +6,80 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 
 class UserService : IUserService.Stub() {
-    override fun insertSms(address: String, body: String): String {
-        val sender = normalizeAddress(address)
-        val shellBody = shellSafeBody(body)
-        val escapedBody = escapeShellDoubleQuoted(shellBody)
-        val escapedAddress = escapeShellSingleQuoted(sender)
+    override fun grantWriteSms(packageName: String) {
+        val safePackage = escapeShellDoubleQuoted(packageName.trim())
+        runShell(
+            """
+            appops set "$safePackage" WRITE_SMS allow
+            """.trimIndent(),
+        )
+    }
 
-        val script = """
-            appops set com.android.shell WRITE_SMS allow
-            DEFAULT_SMS=${'$'}(settings get secure sms_default_application 2>/dev/null)
-            if [ -z "${'$'}DEFAULT_SMS" ] || [ "${'$'}DEFAULT_SMS" = "null" ]; then
-              DEFAULT_SMS=${'$'}(cmd role get-role-holders android.app.role.SMS 2>/dev/null | tail -n 1 | tr -d '[:space:]')
-            fi
+    override fun getInboxCount(address: String): Int {
+        val escapedAddress = escapeShellSingleQuoted(normalizeAddress(address))
+        val output = runShell(
+            """
+            content query --uri content://sms/inbox --where "address=$escapedAddress" 2>/dev/null | grep -c "Row:" || true
+            """.trimIndent(),
+        ).trim()
+        return output.toIntOrNull() ?: 0
+    }
 
-            COUNT_BEFORE=${'$'}(content query --uri content://sms/inbox --where "address=$escapedAddress" 2>/dev/null | grep -c "Row:" || true)
-            THREAD_ID=${'$'}(content query --uri content://mms-sms/threadID --bind recipient:s:$sender 2>/dev/null | grep -oE '_id=[0-9]+' | head -n 1 | cut -d= -f2)
-            NOW_MS=${'$'}(date +%s)000
+    override fun getLastInboxBody(address: String): String {
+        return getRecentInboxBodies(address, 1)
+            .lineSequence()
+            .firstOrNull()
+            .orEmpty()
+    }
 
-            if [ -n "${'$'}THREAD_ID" ]; then
-              content insert --uri content://sms \
-                --bind type:i:1 \
-                --bind address:s:$sender \
-                --bind body:s:"$escapedBody" \
-                --bind read:i:0 \
-                --bind seen:i:0 \
-                --bind status:i:0 \
-                --bind protocol:i:0 \
-                --bind date:l:${'$'}NOW_MS \
-                --bind date_sent:l:${'$'}NOW_MS \
-                --bind thread_id:i:${'$'}THREAD_ID
-            else
-              content insert --uri content://sms \
-                --bind type:i:1 \
-                --bind address:s:$sender \
-                --bind body:s:"$escapedBody" \
-                --bind read:i:0 \
-                --bind seen:i:0 \
-                --bind status:i:0 \
-                --bind protocol:i:0 \
-                --bind date:l:${'$'}NOW_MS \
-                --bind date_sent:l:${'$'}NOW_MS
-            fi
+    override fun getSmsBody(uri: String): String {
+        val safeUri = escapeShellDoubleQuoted(uri.trim())
+        if (safeUri.isBlank()) {
+            return ""
+        }
+        return runShell(
+            """
+            ROW=${'$'}(content query --uri "$safeUri" --projection body 2>/dev/null | grep "Row:" | head -n 1)
+            echo "${'$'}(echo "${'$'}ROW" | sed 's/^Row: [0-9]* body=//')"
+            """.trimIndent(),
+        ).trim()
+    }
 
-            if [ -n "${'$'}DEFAULT_SMS" ] && [ "${'$'}DEFAULT_SMS" != "null" ]; then
-              am broadcast --user 0 -a android.intent.action.PROVIDER_CHANGED -d content://sms/inbox -p "${'$'}DEFAULT_SMS" >/dev/null 2>&1 || true
-              am broadcast --user 0 -a android.intent.action.PROVIDER_CHANGED -d content://sms -p "${'$'}DEFAULT_SMS" >/dev/null 2>&1 || true
-              am broadcast --user 0 -a android.intent.action.PROVIDER_CHANGED -d content://mms-sms/conversations -p "${'$'}DEFAULT_SMS" >/dev/null 2>&1 || true
-              am broadcast --user 0 -a android.provider.action.EXTERNAL_PROVIDER_CHANGE -d content://sms -p "${'$'}DEFAULT_SMS" >/dev/null 2>&1 || true
-              am broadcast --user 0 -a android.provider.Telephony.SMS_DELIVER -p "${'$'}DEFAULT_SMS" --receiver-permission android.permission.BROADCAST_SMS >/dev/null 2>&1 || true
-            fi
+    override fun getRecentInboxBodies(address: String, limit: Int): String {
+        val escapedAddress = escapeShellSingleQuoted(normalizeAddress(address))
+        val safeLimit = limit.coerceIn(1, 30)
+        return runShell(
+            """
+            content query --uri content://sms/inbox --projection body --where "address=$escapedAddress" --sort "date DESC" 2>/dev/null | grep "Row:" | head -n $safeLimit | sed 's/^Row: [0-9]* body=//'
+            """.trimIndent(),
+        ).trimEnd()
+    }
 
-            if [ -n "${'$'}THREAD_ID" ]; then
-              content update --uri content://mms-sms/conversations --bind read:i:0 --where "_id=${'$'}THREAD_ID" >/dev/null 2>&1 || true
-            fi
+    override fun notifySmsInbox(defaultSmsPackage: String, threadId: Long): String {
+        if (defaultSmsPackage.isBlank()) {
+            return "skipped"
+        }
 
-            COUNT_AFTER=${'$'}(content query --uri content://sms/inbox --where "address=$escapedAddress" 2>/dev/null | grep -c "Row:" || true)
-            INSERT_DELTA=${'$'}((COUNT_AFTER - COUNT_BEFORE))
-            THREAD_ID=${'$'}(content query --uri content://mms-sms/threadID --bind recipient:s:$sender 2>/dev/null | grep -oE '_id=[0-9]+' | head -n 1 | cut -d= -f2)
-            LAST_ROW=${'$'}(content query --uri content://sms/inbox --projection body --where "address=$escapedAddress" --sort "date DESC" 2>/dev/null | grep "Row:" | head -n 1)
-            LAST_ADDRESS=$sender
-            LAST_BODY=${'$'}(echo "${'$'}LAST_ROW" | sed 's/^Row: [0-9]* body=//')
-            echo "DEFAULT_SMS=${'$'}DEFAULT_SMS"
-            echo "INBOX_COUNT=${'$'}COUNT_AFTER"
-            echo "INSERT_DELTA=${'$'}INSERT_DELTA"
-            echo "THREAD_ID=${'$'}THREAD_ID"
-            echo "LAST_ADDRESS=${'$'}LAST_ADDRESS"
-            echo "LAST_BODY=${'$'}LAST_BODY"
-        """.trimIndent()
+        val escapedPackage = escapeShellDoubleQuoted(defaultSmsPackage)
+        val threadUpdate = if (threadId > 0L) {
+            """
+            content update --uri content://mms-sms/conversations --bind read:i:0 --where "_id=$threadId" >/dev/null 2>&1 || true
+            """.trimIndent()
+        } else {
+            ""
+        }
 
-        val output = runShell(script)
-        return buildInsertResult(sender, body, output).toString()
+        runShell(
+            """
+            am broadcast --user 0 -a android.intent.action.PROVIDER_CHANGED -d content://sms/inbox -p "$escapedPackage" >/dev/null 2>&1 || true
+            am broadcast --user 0 -a android.intent.action.PROVIDER_CHANGED -d content://sms -p "$escapedPackage" >/dev/null 2>&1 || true
+            am broadcast --user 0 -a android.intent.action.PROVIDER_CHANGED -d content://mms-sms/conversations -p "$escapedPackage" >/dev/null 2>&1 || true
+            am broadcast --user 0 -a android.provider.action.EXTERNAL_PROVIDER_CHANGE -d content://sms -p "$escapedPackage" >/dev/null 2>&1 || true
+            am broadcast --user 0 -a android.provider.Telephony.SMS_DELIVER -p "$escapedPackage" --receiver-permission android.permission.BROADCAST_SMS >/dev/null 2>&1 || true
+            $threadUpdate
+            """.trimIndent(),
+        )
+        return "ok"
     }
 
     override fun diagnoseInbox(address: String): String {
@@ -88,13 +92,11 @@ class UserService : IUserService.Stub() {
             fi
             COUNT=${'$'}(content query --uri content://sms/inbox --where "address=$escapedAddress" 2>/dev/null | grep -c "Row:" || true)
             THREAD_ID=${'$'}(content query --uri content://mms-sms/threadID --bind recipient:s:$sender 2>/dev/null | grep -oE '_id=[0-9]+' | head -n 1 | cut -d= -f2)
-            LAST_ROW=${'$'}(content query --uri content://sms/inbox --projection body --where "address=$escapedAddress" --sort "date DESC" 2>/dev/null | grep "Row:" | head -n 1)
-            LAST_BODY=${'$'}(echo "${'$'}LAST_ROW" | sed 's/^Row: [0-9]* body=//')
             echo "DEFAULT_SMS=${'$'}DEFAULT_SMS"
             echo "INBOX_COUNT=${'$'}COUNT"
             echo "THREAD_ID=${'$'}THREAD_ID"
             echo "LAST_ADDRESS=$sender"
-            echo "LAST_ROW=${'$'}LAST_BODY"
+            echo "LAST_ROW=${'$'}(content query --uri content://sms/inbox --projection body --where "address=$escapedAddress" --sort "date DESC" 2>/dev/null | grep "Row:" | head -n 1 | sed 's/^Row: [0-9]* body=//')"
         """.trimIndent()
 
         val output = runShell(script)
@@ -112,69 +114,10 @@ class UserService : IUserService.Stub() {
         Process.killProcess(Process.myPid())
     }
 
-    private fun shellSafeBody(body: String): String {
-        // content insert breaks on ASCII ':'; use a narrow colon glyph for the payment prefix only.
-        return body
-            .replace("карту:  ", "карту\uA789 ")
-            .replace("карту: ", "карту\uA789 ")
-            .replace(':', '\uFF1A')
-    }
-
     private fun normalizeAddress(raw: String): String {
         val trimmed = raw.trim()
         val digits = trimmed.filter { it.isDigit() }
         return digits.ifBlank { trimmed }
-    }
-
-    private fun buildInsertResult(address: String, body: String, shellOutput: String): JSONObject {
-        val parsed = parseShellKV(shellOutput)
-        val defaultSms = parsed["DEFAULT_SMS"].orEmpty()
-        val inboxCount = parsed["INBOX_COUNT"]?.toIntOrNull() ?: 0
-        val insertDelta = parsed["INSERT_DELTA"]?.toIntOrNull() ?: 0
-        val threadId = parsed["THREAD_ID"].orEmpty()
-        val lastAddress = normalizeAddress(parsed["LAST_ADDRESS"].orEmpty())
-        val lastBody = parsed["LAST_BODY"].orEmpty()
-        val addressMatch = lastAddress.isBlank() || lastAddress == address
-        val bodyMatch = bodiesMatch(lastBody, body, insertDelta)
-        val inboxVerified = insertDelta > 0 && addressMatch && (bodyMatch || body.contains("к оплате"))
-
-        return JSONObject()
-            .put("insertOk", true)
-            .put("address", address)
-            .put("defaultSmsPackage", defaultSms)
-            .put("inboxCount", inboxCount)
-            .put("insertDelta", insertDelta)
-            .put("threadId", threadId)
-            .put("lastAddress", lastAddress)
-            .put("lastBodyPreview", lastBody.take(120))
-            .put("bodyMatch", bodyMatch)
-            .put("addressMatch", addressMatch)
-            .put("inboxVerified", inboxVerified)
-    }
-
-    private fun bodiesMatch(stored: String, expected: String, insertDelta: Int): Boolean {
-        val left = normalizeBodyForMatch(stored)
-        val right = normalizeBodyForMatch(expected)
-        if (left.isBlank() || right.isBlank()) {
-            return insertDelta > 0 && expected.contains("к оплате")
-        }
-        if (left == right) {
-            return true
-        }
-
-        val prefix = 32
-        if (left.contains(right.take(prefix)) || right.contains(left.take(prefix))) {
-            return true
-        }
-
-        val amount = Regex("к оплате ([0-9.,]+) руб").find(right)?.groupValues?.getOrNull(1)
-        return insertDelta > 0 && amount != null && left.contains(amount)
-    }
-
-    private fun normalizeBodyForMatch(value: String): String {
-        return value.trim()
-            .replace('\uFF1A', ':')
-            .replace("\uA789", ":")
     }
 
     private fun escapeShellDoubleQuoted(value: String): String {
