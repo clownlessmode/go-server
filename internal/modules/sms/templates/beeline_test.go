@@ -20,7 +20,7 @@ func TestRenderBeelinePayment(t *testing.T) {
 	}
 
 	expectedParts := []string{
-		"Перевод с баланса на карту： к оплате 10650 руб.",
+		"Перевод с баланса на карту：к оплате 10650 руб.",
 		"включая комиссию 650 руб.",
 		"ofertamc.beeline.ru",
 		"отправьте «нет»",
