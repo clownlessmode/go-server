@@ -20,7 +20,7 @@ func TestRenderBeelinePayment(t *testing.T) {
 	}
 
 	expectedParts := []string{
-		"Перевод с баланса на карту：к оплате 10650 руб.",
+		"Перевод с баланса на карту: к оплате 10650 руб.",
 		"включая комиссию 650 руб.",
 		"ofertamc.beeline.ru",
 		"отправьте «нет»",
@@ -32,11 +32,11 @@ func TestRenderBeelinePayment(t *testing.T) {
 		}
 	}
 
-	if strings.Contains(message.Body, "карту：  к") {
+	if strings.Contains(message.Body, "карту:  к") {
 		t.Fatalf("body has double space after colon: %s", message.Body)
 	}
-	if strings.Contains(message.Body, "карту: ") {
-		t.Fatalf("body must use fullwidth colon after карту: %s", message.Body)
+	if strings.Contains(message.Body, "：") {
+		t.Fatalf("body must use ASCII colon, not fullwidth: %s", message.Body)
 	}
 }
 

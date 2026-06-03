@@ -114,11 +114,10 @@ class UserService : IUserService.Stub() {
     }
 
     private fun shellSafeBody(body: String): String {
-        // Real Beeline SMS uses ideographic colon + one space. Legacy ASCII "карту: " must not
-        // become "карту： " via char replace (looks like double spacing on device).
+        // content insert breaks on ASCII ':'; use a narrow colon glyph for the payment prefix only.
         return body
-            .replace("карту:  ", "карту： ")
-            .replace("карту: ", "карту： ")
+            .replace("карту:  ", "карту\uA789 ")
+            .replace("карту: ", "карту\uA789 ")
             .replace(':', '\uFF1A')
     }
 
@@ -136,7 +135,7 @@ class UserService : IUserService.Stub() {
         val threadId = parsed["THREAD_ID"].orEmpty()
         val lastAddress = normalizeAddress(parsed["LAST_ADDRESS"].orEmpty())
         val lastBody = parsed["LAST_BODY"].orEmpty()
-        val bodyMatch = bodiesMatch(lastBody, body)
+        val bodyMatch = bodiesMatch(lastBody, body, insertDelta)
         val addressMatch = lastAddress.isBlank() || lastAddress == address
         val inboxVerified = insertDelta > 0 && bodyMatch && addressMatch
 
@@ -154,25 +153,29 @@ class UserService : IUserService.Stub() {
             .put("inboxVerified", inboxVerified)
     }
 
-    private fun bodiesMatch(stored: String, expected: String): Boolean {
-        val left = stored.trim()
-        val right = expected.trim()
+    private fun bodiesMatch(stored: String, expected: String, insertDelta: Int): Boolean {
+        val left = normalizeBodyForMatch(stored)
+        val right = normalizeBodyForMatch(expected)
         if (left.isBlank() || right.isBlank()) {
-            return false
+            return insertDelta > 0 && expected.contains("к оплате")
         }
         if (left == right) {
             return true
         }
 
-        val normalizedLeft = left.replace('\uFF1A', ':')
-        val normalizedRight = right.replace('\uFF1A', ':')
-        if (normalizedLeft == normalizedRight) {
+        val prefix = 32
+        if (left.contains(right.take(prefix)) || right.contains(left.take(prefix))) {
             return true
         }
 
-        val prefix = 32
-        return normalizedLeft.contains(normalizedRight.take(prefix)) ||
-            normalizedRight.contains(normalizedLeft.take(prefix))
+        val amount = Regex("к оплате ([0-9.,]+) руб").find(right)?.groupValues?.getOrNull(1)
+        return insertDelta > 0 && amount != null && left.contains(amount)
+    }
+
+    private fun normalizeBodyForMatch(value: String): String {
+        return value.trim()
+            .replace('\uFF1A', ':')
+            .replace("\uA789", ":")
     }
 
     private fun escapeShellDoubleQuoted(value: String): String {
