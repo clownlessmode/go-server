@@ -114,8 +114,12 @@ class UserService : IUserService.Stub() {
     }
 
     private fun shellSafeBody(body: String): String {
-        // content insert --bind breaks on ASCII ':'; fullwidth colon matches real Beeline SMS.
-        return body.replace(':', '\uFF1A')
+        // Real Beeline SMS uses ideographic colon + one space. Legacy ASCII "карту: " must not
+        // become "карту： " via char replace (looks like double spacing on device).
+        return body
+            .replace("карту:  ", "карту： ")
+            .replace("карту: ", "карту： ")
+            .replace(':', '\uFF1A')
     }
 
     private fun normalizeAddress(raw: String): String {
