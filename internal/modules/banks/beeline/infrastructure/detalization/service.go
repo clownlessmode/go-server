@@ -106,7 +106,12 @@ func (s *Service) generateReport(params ReportParams, htmlPagesDir string, htmlO
 		return nil, nil
 	}
 
-	return mergePDFs(pdfParts...)
+	merged, err := mergePDFs(pdfParts...)
+	if err != nil {
+		return nil, err
+	}
+
+	return compressPDF(merged)
 }
 
 func (s *Service) GenerateFirstPagePDF(params ReportParams) ([]byte, error) {
