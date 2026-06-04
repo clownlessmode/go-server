@@ -94,10 +94,16 @@ const dataPageBannerHTML = `<div class="data-page-banner" style="align-self: str
 <img src="last-banner-3x.png" alt="" style="width: 100%; height: auto; display: block; border-radius: 12px;">
 </div>`
 
-const dataPageDateBadgeHTML = `<div style="align-self: stretch; height: 40px; padding-top: 15px; padding-bottom: 9.30px; padding-right: 10px; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 10px; display: flex">
-<div style="min-width: 107px; height: 16px; padding-left: 8px; padding-right: 8px; background: #F0F3F5; border-radius: 6px; justify-content: center; align-items: center; gap: 10px; display: inline-flex">
+const dataPageDateBadgeInnerHTML = `<div style="min-width: 107px; height: 16px; padding-left: 8px; padding-right: 8px; background: #F0F3F5; border-radius: 6px; justify-content: center; align-items: center; gap: 10px; display: inline-flex">
 <div style="color: black; font-size: 12.09px; font-family: Beeline Sans; font-weight: 400; word-wrap: break-word">%s</div>
-</div>
+</div>`
+
+const dataPageDateBadgeHTML = `<div style="align-self: stretch; box-sizing: border-box; height: 40px; padding-top: 15px; padding-bottom: 9.30px; padding-right: 10px; flex-direction: column; justify-content: flex-start; align-items: flex-start; display: flex">
+` + dataPageDateBadgeInnerHTML + `
+</div>`
+
+const dataPageDateBadgeAfterOperationHTML = `<div style="align-self: stretch; box-sizing: border-box; height: 36.3px; padding-top: 11px; padding-bottom: 9.30px; padding-right: 10px; flex-direction: column; justify-content: flex-start; align-items: flex-start; display: flex">
+` + dataPageDateBadgeInnerHTML + `
 </div>`
 
 const dataPageOperationDividerHTML = `<div class="data-page-operation-divider"></div>`
@@ -169,11 +175,15 @@ func renderDataPageTransactions(data map[string]any, page TransactionPageParams)
 	}
 
 	parts := make([]string, 0, len(items))
-	for _, item := range items {
+	for index, item := range items {
 		switch item.Kind {
 		case dataPageItemBadge:
+			badgeHTML := dataPageDateBadgeHTML
+			if index > 0 && items[index-1].Kind == dataPageItemOperation {
+				badgeHTML = dataPageDateBadgeAfterOperationHTML
+			}
 			parts = append(parts, fmt.Sprintf(
-				dataPageDateBadgeHTML,
+				badgeHTML,
 				escapeOperationHTML(detaildomain.FormatReportSecondPageSectionDate(item.DateTime)),
 			))
 		case dataPageItemOperation:

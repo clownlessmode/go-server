@@ -145,4 +145,10 @@ func TestRenderDataPageTransactions(t *testing.T) {
 			t.Fatalf("rendered html missing %q", check)
 		}
 	}
+	if strings.Contains(html, "padding-top: 15px") {
+		t.Fatalf("badge after operation should not use first-badge top padding")
+	}
+	if !strings.Contains(html, "padding-top: 11px") {
+		t.Fatalf("badge after operation should use padding-top: 11px")
+	}
 }
