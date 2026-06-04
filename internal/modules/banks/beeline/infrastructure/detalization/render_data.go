@@ -102,13 +102,13 @@ const dataPageDateBadgeHTML = `<div style="align-self: stretch; box-sizing: bord
 ` + dataPageDateBadgeInnerHTML + `
 </div>`
 
-const dataPageDateBadgeAfterOperationHTML = `<div style="align-self: stretch; box-sizing: border-box; height: 36.3px; padding-top: 11px; padding-bottom: 9.30px; padding-right: 10px; flex-direction: column; justify-content: flex-start; align-items: flex-start; display: flex">
+const dataPageDateBadgeAfterOperationHTML = `<div style="align-self: stretch; box-sizing: border-box; height: 38.3px; padding-top: 13px; padding-bottom: 9.30px; padding-right: 10px; flex-direction: column; justify-content: flex-start; align-items: flex-start; display: flex">
 ` + dataPageDateBadgeInnerHTML + `
 </div>`
 
 const dataPageOperationDividerHTML = `<div class="data-page-operation-divider"></div>`
 
-const dataPageOperationHTML = `<div style="align-self: stretch; padding-top: 11px; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 4px; display: flex">
+const dataPageOperationHTMLBase = `<div style="align-self: stretch; padding-top: 11px; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 4px; display: flex">
 <div style="align-self: stretch; justify-content: flex-start; align-items: flex-start; gap: 14px; display: inline-flex">
 <div style="height: 14px; justify-content: flex-start; align-items: center; gap: 10px; display: flex; flex-shrink: 0">
 <div style="color: black; font-size: 12.03px; font-family: Beeline Sans; font-weight: 400; word-wrap: break-word">%s</div>
@@ -121,7 +121,12 @@ const dataPageOperationHTML = `<div style="align-self: stretch; padding-top: 11p
 <div style="color: black; font-size: 13.22px; font-family: Beeline Sans; font-weight: 400; letter-spacing: 0.13px; word-wrap: break-word">%s</div>
 </div>
 </div>
-` + dataPageOperationDividerHTML + `
+`
+
+const dataPageOperationHTML = dataPageOperationHTMLBase + dataPageOperationDividerHTML + `
+</div>`
+
+const dataPageOperationHTMLBeforeBadge = dataPageOperationHTMLBase + `
 </div>`
 
 func renderDataPageHTML(templateBody []byte, params ReportParams, page TransactionPageParams) []byte {
@@ -188,8 +193,12 @@ func renderDataPageTransactions(data map[string]any, page TransactionPageParams)
 			))
 		case dataPageItemOperation:
 			tx := item.Tx
+			operationHTML := dataPageOperationHTML
+			if index+1 < len(items) && items[index+1].Kind == dataPageItemBadge {
+				operationHTML = dataPageOperationHTMLBeforeBadge
+			}
 			parts = append(parts, fmt.Sprintf(
-				dataPageOperationHTML,
+				operationHTML,
 				escapeOperationHTML(detaildomain.FormatReportTransactionDateTime(tx.DateTime)),
 				escapeOperationHTML(tx.Title),
 				escapeOperationHTML(tx.Description),

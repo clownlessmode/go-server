@@ -148,7 +148,15 @@ func TestRenderDataPageTransactions(t *testing.T) {
 	if strings.Contains(html, "padding-top: 15px") {
 		t.Fatalf("badge after operation should not use first-badge top padding")
 	}
-	if !strings.Contains(html, "padding-top: 11px") {
-		t.Fatalf("badge after operation should use padding-top: 11px")
+	if !strings.Contains(html, "padding-top: 13px") {
+		t.Fatalf("badge after operation should use padding-top: 13px")
+	}
+	if strings.Count(html, `<div class="data-page-operation-divider"></div>`) != 1 {
+		t.Fatalf("expected divider only after last operation, got %d", strings.Count(html, `<div class="data-page-operation-divider"></div>`))
+	}
+	badgeIndex := strings.Index(html, "19 марта 2026 г.")
+	dividerBeforeBadge := strings.LastIndex(html[:badgeIndex], `<div class="data-page-operation-divider"></div>`)
+	if dividerBeforeBadge != -1 {
+		t.Fatalf("operation divider should not appear before date badge")
 	}
 }
