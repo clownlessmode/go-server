@@ -23,11 +23,13 @@ func (s *Service) applyBeelineDetalizationChangeScript(req *http.Request, res *h
 
 	simNumber := s.beelineSimForProxy(req.Context())
 	if simNumber == "" {
+		proxyLog.Warnf("beeline detalization skipped: no sim resolved")
 		return
 	}
 
 	periodStart, periodEnd, ok := parseBeelineDetalizationPeriod(req.URL.Query())
 	if !ok {
+		proxyLog.Warnf("beeline detalization skipped: sim=%s invalid period query=%v", simNumber, req.URL.Query())
 		return
 	}
 
@@ -82,7 +84,15 @@ func (s *Service) applyBeelineDetalizationChangeScript(req *http.Request, res *h
 		time.Now().UTC(),
 	)
 	if err != nil {
-		proxyLog.Warnf("beeline detalization prepare failed: sim=%s err=%v", simNumber, err)
+		proxyLog.Warnf(
+			"beeline detalization prepare failed: sim=%s period=%s..%s err=%v active=%s products=%v",
+			simNumber,
+			periodStart.In(beelineDetalizationLocation).Format("2006-01-02"),
+			periodEnd.In(beelineDetalizationLocation).Format("2006-01-02"),
+			err,
+			s.activeBeelineSim(),
+			s.currentBeelineProductCTNs(),
+		)
 		res.Body = io.NopCloser(bytes.NewReader(originalBody))
 		return
 	}
