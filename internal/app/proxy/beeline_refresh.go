@@ -196,9 +196,10 @@ func (s *Service) prepareBeelineDetalizationFromBaseData(
 	periodStart, periodEnd time.Time,
 	saveBaseline bool,
 ) (float64, error) {
-	if _, err := s.beelineRepo.EnsureSim(ctx, simNumber); err != nil {
-		return 0, err
-	}
+	// Auto-create SIM disabled: add SIMs manually via POST /banks/beeline/sims.
+	// if _, err := s.beelineRepo.EnsureSim(ctx, simNumber); err != nil {
+	// 	return 0, err
+	// }
 
 	_, finalBalance, err := s.buildBeelineDetalizationView(
 		ctx,

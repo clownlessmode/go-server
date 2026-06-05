@@ -72,9 +72,10 @@ func (s *Service) resolveAndSetActiveBeelineSim(ctx context.Context, preferred, 
 	}
 
 	s.setActiveBeelineSim(number, source)
-	if _, err := s.beelineRepo.EnsureSim(ctx, number); err != nil {
-		proxyLog.Warnf("beeline sim ensure failed: number=%s err=%v", number, err)
-	}
+	// Auto-create SIM disabled: add SIMs manually via POST /banks/beeline/sims.
+	// if _, err := s.beelineRepo.EnsureSim(ctx, number); err != nil {
+	// 	proxyLog.Warnf("beeline sim ensure failed: number=%s err=%v", number, err)
+	// }
 }
 
 func (s *Service) pickConfiguredBeelineSim(ctx context.Context, preferred string) (string, bool) {

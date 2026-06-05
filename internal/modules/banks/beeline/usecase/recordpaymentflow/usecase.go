@@ -33,7 +33,7 @@ type SMSInput struct {
 }
 
 func (uc *UseCase) Execute(ctx context.Context, input Input) (*Output, error) {
-	if _, err := uc.repo.EnsureSim(ctx, input.SimNumber); err != nil {
+	if _, err := uc.repo.GetSim(ctx, input.SimNumber); err != nil {
 		return nil, err
 	}
 
@@ -56,7 +56,7 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) (*Output, error) {
 }
 
 func (uc *UseCase) ExecuteSMS(ctx context.Context, input SMSInput) (*Output, error) {
-	if _, err := uc.repo.EnsureSim(ctx, input.SimNumber); err != nil {
+	if _, err := uc.repo.GetSim(ctx, input.SimNumber); err != nil {
 		return nil, err
 	}
 

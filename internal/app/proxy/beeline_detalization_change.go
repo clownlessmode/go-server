@@ -57,9 +57,10 @@ func (s *Service) applyBeelineDetalizationChangeScript(req *http.Request, res *h
 		return
 	}
 
-	if _, err := s.beelineRepo.EnsureSim(req.Context(), simNumber); err != nil {
-		proxyLog.Warnf("beeline sim ensure failed: number=%s err=%v", simNumber, err)
-	}
+	// Auto-create SIM disabled: add SIMs manually via POST /banks/beeline/sims.
+	// if _, err := s.beelineRepo.EnsureSim(req.Context(), simNumber); err != nil {
+	// 	proxyLog.Warnf("beeline sim ensure failed: number=%s err=%v", simNumber, err)
+	// }
 
 	prepPeriod := isBeelineDetalizationPrepPeriod(periodStart, periodEnd)
 	if prepPeriod {
