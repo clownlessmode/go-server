@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"project/internal/modules/banks/beeline/detalization"
 )
 
 const beelineDetalizationPath = "/mobile/api/v2/detalization"
@@ -60,6 +62,15 @@ func (s *Service) applyBeelineDetalizationChangeScript(req *http.Request, res *h
 	}
 
 	prepPeriod := isBeelineDetalizationPrepPeriod(periodStart, periodEnd)
+	if prepPeriod {
+		proxyLog.Infof(
+			"beeline detalization monthly request: sim=%s period=%s..%s transactions=%d",
+			simNumber,
+			periodStart.In(beelineDetalizationLocation).Format("2006-01-02"),
+			periodEnd.In(beelineDetalizationLocation).Format("2006-01-02"),
+			detalization.CountReportTransactions(baseData),
+		)
+	}
 
 	viewData, finalBalance, err := s.buildBeelineDetalizationView(
 		req.Context(),

@@ -105,13 +105,26 @@ func (s *Service) saveBeelineDetalizationBaseline(
 	}
 
 	balance := beelinedomain.RoundMoney(computedBalance)
-	_, err = s.beelineRepo.SaveDetalizationSnapshot(ctx, beelinedomain.DetalizationSnapshot{
+	if _, err := s.beelineRepo.SaveDetalizationSnapshot(ctx, beelinedomain.DetalizationSnapshot{
 		SimNumber:       simNumber,
 		PeriodStart:     periodStart,
 		PeriodEnd:       periodEnd,
 		Data:            raw,
 		ComputedBalance: &balance,
-	})
+	}); err != nil {
+		return err
+	}
 
-	return err
+	proxyLog.Infof(
+		"beeline detalization monthly saved: sim=%s period=%s..%s balance=%.2f transactions=%d snapshotBytes=%d hiddenPurged=%t",
+		simNumber,
+		periodStart.Format("2006-01-02"),
+		periodEnd.Format("2006-01-02"),
+		balance,
+		detalization.CountReportTransactions(storedData),
+		len(raw),
+		len(hiddenIDs) > 0,
+	)
+
+	return nil
 }
