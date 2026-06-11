@@ -70,6 +70,8 @@ func TrimViewToPeriod(data map[string]any, periodStart, periodEnd time.Time) (ma
 		return nil, 0, fmt.Errorf("trim period: recalculate balances")
 	}
 
+	sortTransactionsDesc(working)
+
 	return working, finalBalance, nil
 }
 

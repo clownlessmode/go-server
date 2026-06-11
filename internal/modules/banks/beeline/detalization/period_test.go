@@ -143,3 +143,64 @@ func TestShortPeriodViewIncludesTodayPaymentFromSnapshot(t *testing.T) {
 		t.Fatalf("expected 1 payment transaction today in week view")
 	}
 }
+
+func TestTrimViewToPeriodSortsNewestFirst(t *testing.T) {
+	loc := time.FixedZone("MSK", 3*60*60)
+	data := map[string]any{
+		"balances": []any{
+			map[string]any{
+				"code":       "coreBalance",
+				"startValue": 0.0,
+				"endValue":   100.0,
+			},
+		},
+		"transactions": []any{
+			map[string]any{
+				"dateTime": "2026-06-10T10:00:00",
+				"balances": []any{
+					map[string]any{"code": "coreBalance", "changeValue": 10.0},
+				},
+			},
+			map[string]any{
+				"dateTime": "2026-06-11T19:23:00",
+				"balances": []any{
+					map[string]any{"code": "coreBalance", "changeValue": 20.0},
+				},
+			},
+			map[string]any{
+				"dateTime": "2026-06-11T19:36:00",
+				"balances": []any{
+					map[string]any{"code": "coreBalance", "changeValue": -5.0},
+				},
+			},
+			map[string]any{
+				"dateTime": "2026-06-11T19:37:00",
+				"balances": []any{
+					map[string]any{"code": "coreBalance", "changeValue": -3.0},
+				},
+			},
+		},
+	}
+
+	periodStart := time.Date(2026, 6, 5, 0, 0, 0, 0, loc).UTC()
+	periodEnd := time.Date(2026, 6, 11, 23, 59, 59, 0, loc).UTC()
+
+	view, _, err := detalization.TrimViewToPeriod(data, periodStart, periodEnd)
+	if err != nil {
+		t.Fatalf("TrimViewToPeriod: %v", err)
+	}
+
+	transactions, ok := view["transactions"].([]any)
+	if !ok || len(transactions) < 2 {
+		t.Fatalf("expected trimmed transactions, got %#v", view["transactions"])
+	}
+
+	first, _ := transactions[0].(map[string]any)["dateTime"].(string)
+	second, _ := transactions[1].(map[string]any)["dateTime"].(string)
+	if first <= second {
+		t.Fatalf("expected newest first, got %s then %s", first, second)
+	}
+	if first != "2026-06-11T19:37:00" {
+		t.Fatalf("first transaction = %s, want 2026-06-11T19:37:00", first)
+	}
+}
