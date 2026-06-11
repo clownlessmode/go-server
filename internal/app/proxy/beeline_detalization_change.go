@@ -75,10 +75,19 @@ func (s *Service) applyBeelineDetalizationChangeScript(req *http.Request, res *h
 		)
 	}
 
+	baseDataForView := baseData
+	usedSnapshot := false
+	if !prepPeriod {
+		if snapshotData, ok := s.beelineDetalizationSnapshotBaseData(req.Context(), simNumber); ok {
+			baseDataForView = snapshotData
+			usedSnapshot = true
+		}
+	}
+
 	viewData, finalBalance, err := s.buildBeelineDetalizationView(
 		req.Context(),
 		simNumber,
-		baseData,
+		baseDataForView,
 		periodStart,
 		periodEnd,
 		time.Now().UTC(),
@@ -95,6 +104,31 @@ func (s *Service) applyBeelineDetalizationChangeScript(req *http.Request, res *h
 		)
 		res.Body = io.NopCloser(bytes.NewReader(originalBody))
 		return
+	}
+
+	if !prepPeriod {
+		if trimmed, trimmedBalance, err := detalization.TrimViewToPeriod(viewData, periodStart, periodEnd); err == nil {
+			viewData = trimmed
+			finalBalance = trimmedBalance
+			detalization.SyncPeriodMetadata(viewData, periodStart, periodEnd)
+		} else {
+			proxyLog.Warnf(
+				"beeline detalization week trim skipped: sim=%s period=%s..%s err=%v",
+				simNumber,
+				periodStart.In(beelineDetalizationLocation).Format("2006-01-02"),
+				periodEnd.In(beelineDetalizationLocation).Format("2006-01-02"),
+				err,
+			)
+		}
+
+		proxyLog.Infof(
+			"beeline detalization week view: sim=%s period=%s..%s snapshot=%t payment_tx_today=%d",
+			simNumber,
+			periodStart.In(beelineDetalizationLocation).Format("2006-01-02"),
+			periodEnd.In(beelineDetalizationLocation).Format("2006-01-02"),
+			usedSnapshot,
+			detalization.CountPaymentTransactionsOnDay(viewData, time.Now().UTC()),
+		)
 	}
 
 	if prepPeriod {

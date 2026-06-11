@@ -154,3 +154,40 @@ func endOfReportDay(value time.Time) time.Time {
 		location,
 	)
 }
+
+func SyncPeriodMetadata(data map[string]any, periodStart, periodEnd time.Time) {
+	if data == nil {
+		return
+	}
+
+	location := reportLocation()
+	data["startDate"] = startOfReportDay(periodStart).In(location).Format("2006-01-02T15:04:05")
+	data["endDate"] = endOfReportDay(periodEnd).In(location).Format("2006-01-02T15:04:05")
+}
+
+func CountPaymentTransactionsOnDay(data map[string]any, day time.Time) int {
+	transactions, ok := data["transactions"].([]any)
+	if !ok {
+		return 0
+	}
+
+	dayStart := startOfReportDay(day)
+	dayEnd := endOfReportDay(day)
+
+	count := 0
+	for _, item := range transactions {
+		tx, ok := item.(map[string]any)
+		if !ok || jsonString(tx["source"]) != "payment" {
+			continue
+		}
+
+		dateTime, ok := parseReportTransactionDateTime(transactionDateTime(tx))
+		if !ok || dateTime.Before(dayStart) || dateTime.After(dayEnd) {
+			continue
+		}
+
+		count++
+	}
+
+	return count
+}

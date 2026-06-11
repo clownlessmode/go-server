@@ -132,3 +132,17 @@ func (s *Service) beelineHiddenTransactionIDs(ctx context.Context, simNumber str
 	}
 	return hiddenIDs, err
 }
+
+func (s *Service) beelineDetalizationSnapshotBaseData(ctx context.Context, simNumber string) (map[string]any, bool) {
+	snapshot, err := s.beelineRepo.GetDetalizationSnapshot(ctx, simNumber)
+	if errors.Is(err, beelinedomain.ErrDetalizationSnapshotNotFound) || err != nil {
+		return nil, false
+	}
+
+	baseData, err := decodeDetalizationSnapshotData(snapshot.Data)
+	if err != nil {
+		return nil, false
+	}
+
+	return baseData, true
+}
