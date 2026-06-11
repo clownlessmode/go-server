@@ -12,6 +12,7 @@ import (
 
 const paymentCardTransferName = "Перевод с баланса на карту"
 const paymentBalanceReturnName = "возврат на личный баланс"
+const paymentRefillCategoryName = "пополнение баланса"
 
 func CloneData(data map[string]any) (map[string]any, error) {
 	raw, err := json.Marshal(data)
@@ -111,7 +112,7 @@ func paymentTransaction(payment domain.Payment) map[string]any {
 				},
 			},
 			"category":        "refill",
-			"categoryName":    paymentBalanceReturnName,
+			"categoryName":    paymentRefillCategoryName,
 			"dateTime":        dateTime,
 			"formattedNumber": "",
 			"icon":            "download",
@@ -137,11 +138,11 @@ func paymentTransaction(payment domain.Payment) map[string]any {
 				},
 			},
 			"category":        "refill",
-			"categoryName":    "пополнение баланса",
+			"categoryName":    paymentRefillCategoryName,
 			"dateTime":        dateTime,
 			"formattedNumber": "",
 			"icon":            "download",
-			"name":            "пополнение баланса",
+			"name":            paymentRefillCategoryName,
 			"number":          "",
 			"roaming":         false,
 			"typeCall":        "recharge",

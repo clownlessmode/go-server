@@ -190,4 +190,7 @@ func TestApplyPaymentsBalanceReturnTransaction(t *testing.T) {
 	if tx["name"] != paymentBalanceReturnName {
 		t.Fatalf("name = %q, want %q", tx["name"], paymentBalanceReturnName)
 	}
+	if tx["categoryName"] != paymentRefillCategoryName {
+		t.Fatalf("categoryName = %q, want %q", tx["categoryName"], paymentRefillCategoryName)
+	}
 }
