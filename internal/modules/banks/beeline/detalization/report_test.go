@@ -54,7 +54,7 @@ func TestFormatReportOpeningBalanceLineV2(t *testing.T) {
 }
 
 func TestFormatReportTrafficUsageLineV2(t *testing.T) {
-	const pattern = `^1,[1-9] гб<span class="_ _2"> </span>1[0-5] мин<span class="_ _3"> </span>[0-9] смс$`
+	const pattern = `^0,0 кб<span class="_ _2"> </span>1[0-5] мин<span class="_ _3"> </span>[0-9] смс$`
 
 	first := detalization.FormatReportTrafficUsageLineV2("9063747835")
 	second := detalization.FormatReportTrafficUsageLineV2("9063747835")

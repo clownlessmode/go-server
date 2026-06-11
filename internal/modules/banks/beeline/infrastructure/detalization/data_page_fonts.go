@@ -24,7 +24,6 @@ func writeDataPageAssets(dir string) error {
 	for _, name := range []string{
 		"templates/" + beelineSansRegularWoff2,
 		"templates/" + beelineSansRegularTTF,
-		"templates/" + dataPageBannerFileName,
 	} {
 		body, err := dataPageAssetFS.ReadFile(name)
 		if err != nil {
@@ -35,6 +34,10 @@ func writeDataPageAssets(dir string) error {
 		if err := os.WriteFile(target, body, 0o644); err != nil {
 			return fmt.Errorf("write asset %s: %w", target, err)
 		}
+	}
+
+	if err := writeDataPageBannerJPEG(dir); err != nil {
+		return fmt.Errorf("write banner jpeg: %w", err)
 	}
 
 	return nil

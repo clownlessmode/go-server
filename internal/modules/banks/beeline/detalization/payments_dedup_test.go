@@ -142,7 +142,7 @@ func TestApplyPaymentsUserScenario(t *testing.T) {
 	}
 	data["transactions"] = append(data["transactions"].([]any), map[string]any{
 		"category": "SERVICES_PAYMENTS_AND_MOBILE_TRANSFERS",
-		"name":     "списание за мобильную коммерцию",
+		"name":     paymentCardTransferName,
 		"dateTime": "2026-06-01T16:00:15",
 		"balances": []any{
 			map[string]any{
@@ -152,8 +152,42 @@ func TestApplyPaymentsUserScenario(t *testing.T) {
 		},
 	})
 
-	balance, ok = ApplyPayments(data, []domain.Payment{incoming, outgoing}, nil)
-	if !ok || balance != 100 {
+	if balance, ok := ApplyPayments(data, []domain.Payment{incoming, outgoing}, nil); !ok || balance != 100 {
 		t.Fatalf("final balance = %.2f, want 100", balance)
+	}
+}
+
+func TestApplyPaymentsBalanceReturnTransaction(t *testing.T) {
+	payment := domain.Payment{
+		ID:        "pay-return",
+		Direction: domain.PaymentDirectionBalanceReturn,
+		Amount:    2500,
+		Total:     2500,
+		PaidAt:    time.Date(2026, 6, 2, 10, 30, 0, 0, domain.BeelineLocation()),
+	}
+
+	data := map[string]any{
+		"transactions": []any{},
+		"balances": []any{
+			map[string]any{
+				"startValue": 1000.0,
+				"endValue":   1000.0,
+			},
+		},
+	}
+
+	_, ok := ApplyPayments(data, []domain.Payment{payment}, nil)
+	if !ok {
+		t.Fatal("expected balance recalculation")
+	}
+
+	txs, _ := data["transactions"].([]any)
+	if len(txs) != 1 {
+		t.Fatalf("transactions len = %d, want 1", len(txs))
+	}
+
+	tx, _ := txs[0].(map[string]any)
+	if tx["name"] != paymentBalanceReturnName {
+		t.Fatalf("name = %q, want %q", tx["name"], paymentBalanceReturnName)
 	}
 }

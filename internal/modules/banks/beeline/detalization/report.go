@@ -13,6 +13,7 @@ import (
 )
 
 const paymentsTransfersCategoryID = "SERVICES_PAYMENTS_AND_MOBILE_TRANSFERS"
+const reportTrafficVolumeText = "0,0 кб"
 
 type ReportFinance struct {
 	Spent             float64
@@ -252,13 +253,12 @@ func FormatReportRefillLineV2(value float64) string {
 
 func FormatReportTrafficUsageLineV2(phoneNumber string) string {
 	rng := rand.New(rand.NewSource(trafficUsageSeed(phoneNumber)))
-	gbDecimal := rng.Intn(9) + 1
 	minutes := rng.Intn(6) + 10
 	sms := rng.Intn(10)
 
 	return fmt.Sprintf(
-		`1,%d гб<span class="_ _2"> </span>%d мин<span class="_ _3"> </span>%d смс`,
-		gbDecimal,
+		`%s<span class="_ _2"> </span>%d мин<span class="_ _3"> </span>%d смс`,
+		reportTrafficVolumeText,
 		minutes,
 		sms,
 	)

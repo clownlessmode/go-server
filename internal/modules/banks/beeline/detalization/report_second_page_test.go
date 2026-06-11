@@ -134,6 +134,11 @@ func TestFormatReportTransactionDescription(t *testing.T) {
 			want: "основной баланс",
 		},
 		{
+			name: "balance return",
+			tx:   map[string]any{"name": "возврат на личный баланс"},
+			want: "основной баланс",
+		},
+		{
 			name: "compensation",
 			tx:   map[string]any{"name": "компенсация затрат на пополнение баланса"},
 			want: "основной баланс",
@@ -166,12 +171,12 @@ func TestFormatReportTransactionDescription(t *testing.T) {
 		{
 			name: "traffic package",
 			tx:   map[string]any{"name": "начисление пакета трафика"},
-			want: "пакет интернета",
+			want: "0,0 кб (основной баланс)",
 		},
 		{
 			name: "unlimited internet",
 			tx:   map[string]any{"name": "безлимитный интернет"},
-			want: "",
+			want: "0,0 кб (основной баланс)",
 		},
 		{
 			name: "outgoing call",
@@ -193,13 +198,6 @@ func TestFormatReportTransactionDescription(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := detalization.FormatReportTransactionDescription(tt.tx)
-			if tt.name == "unlimited internet" {
-				pattern := regexp.MustCompile(`^\d{1,2},\d (мб|кб) \(основной баланс\)$`)
-				if !pattern.MatchString(got) {
-					t.Fatalf("description = %q, want format like 5,3 мб (основной баланс)", got)
-				}
-				return
-			}
 			if tt.name == "outgoing call" || tt.name == "incoming call" {
 				pattern := regexp.MustCompile(`^00:(0[1-9]|1[0-5]):[0-5]\d \(основной баланс\)$`)
 				if !pattern.MatchString(got) {

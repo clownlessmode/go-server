@@ -5,6 +5,8 @@
 
 ### Изменения для фронта
 
+**Новое:** `direction=balance_return` — возврат на личный баланс (пополнение без карты). В детализации и PDF отображается как «возврат на личный баланс», описание — «основной баланс». Учитывается в `incomingTotal` и балансе так же, как `incoming`.
+
 **Breaking:** из ответов `GET /sims`, `GET /sims/{number}` и `POST /sims` удалено поле `balance`.
 
 **Breaking:** удалён `PATCH /sims/{number}/config/balance` — баланс **нельзя** задавать вручную.
@@ -171,11 +173,11 @@ DELETE /banks/beeline/sims/{number}/detalization/transactions/{id}
 |------|-----|----------|
 | `id` | string | UUID-like hex (32 символа), генерируется сервером |
 | `simNumber` | string | Номер SIM |
-| `direction` | `"outgoing"` \| `"incoming"` | Тип операции |
+| `direction` | `"outgoing"` \| `"incoming"` \| `"balance_return"` | Тип операции |
 | `receiverCard` | string | Маска карты получателя. Только для `outgoing`. Формат: `220094**0028` |
 | `amount` | number | Сумма платежа (без комиссии для outgoing) |
-| `commission` | number | Комиссия 6.5% для outgoing, `0` для incoming |
-| `total` | number | `amount + commission` (outgoing) или `amount` (incoming) |
+| `commission` | number | Комиссия 6.5% для outgoing, `0` для incoming и balance_return |
+| `total` | number | `amount + commission` (outgoing) или `amount` (incoming, balance_return) |
 | `source` | `"manual"` \| `"payment_flow"` | `manual` — создан через API; `payment_flow` — перехвачен из реального платежа в приложении |
 | `paidAt` | string | Дата/время операции |
 | `createdAt` | string | |
@@ -188,6 +190,15 @@ DELETE /banks/beeline/sims/{number}/detalization/transactions/{id}
 - `receiverCard` не нужна (пустая)
 - `commission = 0`, `total = amount`
 - `amount > 0`
+
+**Balance return (возврат на личный баланс):**
+- `direction: "balance_return"`
+- `receiverCard` не нужна (пустая)
+- `commission = 0`, `total = amount`
+- `amount > 0`
+- В детализации/PDF: название «возврат на личный баланс», описание «основной баланс»
+- Учитывается в `incomingTotal` и увеличивает баланс так же, как `incoming`
+- Отличается от `incoming` только текстом в выписке (не «пополнение баланса»)
 
 ---
 
@@ -362,11 +373,21 @@ GET /banks/beeline/sims
 }
 ```
 
+**Body (balance_return — возврат на личный баланс):**
+
+```json
+{
+  "direction": "balance_return",
+  "amount": 2500,
+  "paidAt": "2026-05-23T12:07:47+03:00"
+}
+```
+
 | Поле | Обязательное | Описание |
 |------|--------------|----------|
-| `direction` | нет (default: `outgoing`) | `outgoing` или `incoming` |
+| `direction` | нет (default: `outgoing`) | `outgoing`, `incoming` или `balance_return` |
 | `receiverCard` | да для outgoing | `^\d{6}\*\*\d{4}$` |
-| `amount` | да | для outgoing ≥ 924 |
+| `amount` | да | для outgoing ≥ 924; для incoming/balance_return > 0 |
 | `paidAt` | да | RFC3339 |
 
 **Response `201`:** `Payment`
@@ -377,7 +398,7 @@ GET /banks/beeline/sims
 |------|-------|
 | 400 | `invalid request body` |
 | 400 | `invalid paidAt, expected RFC3339` |
-| 400 | `invalid direction, expected outgoing or incoming` |
+| 400 | `invalid direction, expected outgoing, incoming or balance_return` |
 | 400 | `receiverCard must match format 220094**0028` |
 | 400 | `amount must be at least 924` |
 | 400 | `invalid payment amount` |
@@ -413,7 +434,7 @@ GET /banks/beeline/sims
 ```
 
 При смене `amount` у outgoing комиссия пересчитывается автоматически.  
-При смене direction на `incoming` — `receiverCard` очищается, комиссия = 0.
+При смене direction на `incoming` или `balance_return` — `receiverCard` очищается, комиссия = 0.
 
 **Response `200`:** `Payment`
 
@@ -455,14 +476,14 @@ GET /banks/beeline/sims
 
 - `GET /banks/beeline/sims/{number}/payments`
 - Таблица/список: дата, direction, amount, commission, total, source, receiverCard
-- Фильтр/бейдж по `direction`: incoming / outgoing
+- Фильтр/бейдж по `direction`: incoming / outgoing / balance_return
 - Бейдж `source`: manual / auto (payment_flow)
 
 ### 4. Создание платежа
 
-- Переключатель direction: outgoing / incoming
+- Переключатель direction: outgoing / incoming / balance_return
 - Outgoing: поля amount, receiverCard (маска `XXXXXX**XXXX`), paidAt (datetime picker)
-- Incoming: amount, paidAt
+- Incoming / balance_return: amount, paidAt (без карты)
 - Live-preview: commission и total для outgoing
 - Submit → `POST .../payments` → обновить config и список
 
@@ -507,6 +528,15 @@ curl -s -X POST http://localhost:8080/banks/beeline/sims/9680659702/payments \
     "paidAt": "2026-05-23T12:07:47+03:00"
   }'
 
+# Создать balance_return (возврат на личный баланс)
+curl -s -X POST http://localhost:8080/banks/beeline/sims/9680659702/payments \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "direction": "balance_return",
+    "amount": 2500,
+    "paidAt": "2026-05-23T12:07:47+03:00"
+  }'
+
 # Список платежей
 curl -s http://localhost:8080/banks/beeline/sims/9680659702/payments
 
@@ -534,7 +564,7 @@ export interface Config {
   updatedAt: string;
 }
 
-export type PaymentDirection = 'outgoing' | 'incoming';
+export type PaymentDirection = 'outgoing' | 'incoming' | 'balance_return';
 export type PaymentSource = 'manual' | 'payment_flow';
 
 export interface Payment {
@@ -593,7 +623,7 @@ export interface UpdatePaymentRequest {
 - [ ] Номер SIM: ровно 10 цифр
 - [ ] `receiverCard`: regex `^\d{6}\*\*\d{4}$` для outgoing
 - [ ] `amount` ≥ 924 для outgoing
-- [ ] `amount` > 0 для incoming
+- [ ] `amount` > 0 для incoming и balance_return
 - [ ] `paidAt`: валидный ISO datetime (RFC3339)
 - [ ] Preview commission: `Math.round(amount * 0.065 * 100) / 100`
 - [ ] Preview total (outgoing): `amount + commission`

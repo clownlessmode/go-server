@@ -91,7 +91,7 @@ const (
 )
 
 const dataPageBannerHTML = `<div class="data-page-banner" style="align-self: stretch; margin-top: 27.2px; flex-shrink: 0;">
-<img src="last-banner-3x.png" alt="" style="width: 100%; height: auto; display: block; border-radius: 12px;">
+<img src="last-banner-3x.jpg" alt="" style="width: 100%; height: auto; display: block; border-radius: 12px;">
 </div>`
 
 const dataPageDateBadgeInnerHTML = `<div style="min-width: 107px; height: 16px; padding-left: 8px; padding-right: 8px; background: #F0F3F5; border-radius: 6px; justify-content: center; align-items: center; gap: 10px; display: inline-flex">

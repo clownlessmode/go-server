@@ -79,7 +79,7 @@ func TestRenderDataPagePreviewHTML(t *testing.T) {
 		"data-page-footer",
 		"data-page-banner",
 		"data-page-operation-divider",
-		"last-banner-3x.png",
+		"last-banner-3x.jpg",
 		`<svg width="40" height="40"`,
 		"data-page-transactions",
 	}

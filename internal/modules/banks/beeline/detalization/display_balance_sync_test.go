@@ -47,7 +47,7 @@ func TestSyncDisplayBalanceAlignsDetalizationEndValue(t *testing.T) {
 	}
 
 	api := 61.36
-	synced, ok := SyncDisplayBalance(data, &api, 0, 10000)
+	synced, ok := SyncDisplayBalance(data, &api, 0, 10000, 0)
 	if !ok {
 		t.Fatal("SyncDisplayBalance failed")
 	}

@@ -22,8 +22,8 @@ func ReconcileEndBalance(data map[string]any, targetEnd float64) (float64, bool)
 }
 
 // SyncDisplayBalance aligns detalization end balance with balance/main formula.
-func SyncDisplayBalance(data map[string]any, apiBalance *float64, outgoingTotal, incomingTotal float64) (float64, bool) {
-	display := domain.DisplayBalanceFromAPI(apiBalance, outgoingTotal, incomingTotal)
+func SyncDisplayBalance(data map[string]any, apiBalance *float64, outgoingTotal, incomingTotal, hiddenNetChange float64) (float64, bool) {
+	display := domain.DisplayBalanceFromAPI(apiBalance, outgoingTotal, incomingTotal, hiddenNetChange)
 	if display == nil {
 		return 0, false
 	}

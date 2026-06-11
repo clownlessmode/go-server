@@ -10,6 +10,9 @@ import (
 	"project/internal/modules/banks/beeline/domain"
 )
 
+const paymentCardTransferName = "Перевод с баланса на карту"
+const paymentBalanceReturnName = "возврат на личный баланс"
+
 func CloneData(data map[string]any) (map[string]any, error) {
 	raw, err := json.Marshal(data)
 	if err != nil {
@@ -35,8 +38,8 @@ func DecodeSnapshotData(raw []byte) (map[string]any, error) {
 
 func PaymentTotals(payments []domain.Payment) (outgoingTotal, incomingTotal float64) {
 	for _, payment := range payments {
-		switch payment.Direction {
-		case domain.PaymentDirectionIncoming:
+		switch {
+		case payment.Direction.IsCredit():
 			incomingTotal += payment.Amount
 		default:
 			outgoingTotal += payment.Total
@@ -63,8 +66,8 @@ func ApplyPayments(data map[string]any, payments []domain.Payment, configuredOpe
 		}
 		injected = append(injected, tx)
 
-		switch payment.Direction {
-		case domain.PaymentDirectionIncoming:
+		switch {
+		case payment.Direction.IsCredit():
 			incomingSum += payment.Amount
 		default:
 			outgoingSum += payment.Total
@@ -95,9 +98,36 @@ func paymentTransaction(payment domain.Payment) map[string]any {
 		return paymentFlowSMSTransaction(payment.ID, dateTime)
 	}
 
+	if payment.Direction == domain.PaymentDirectionBalanceReturn {
+		return map[string]any{
+			"id":     payment.ID,
+			"source": "payment",
+			"balances": []any{
+				map[string]any{
+					"changeValue": payment.Amount,
+					"code":        "coreBalance",
+					"name":        "личный баланс",
+					"unit":        "RUB",
+				},
+			},
+			"category":        "refill",
+			"categoryName":    paymentBalanceReturnName,
+			"dateTime":        dateTime,
+			"formattedNumber": "",
+			"icon":            "download",
+			"name":            paymentBalanceReturnName,
+			"number":          "",
+			"roaming":         false,
+			"typeCall":        "recharge",
+			"unit":            "",
+			"volume":          0,
+		}
+	}
+
 	if payment.Direction == domain.PaymentDirectionIncoming {
 		return map[string]any{
-			"id": payment.ID,
+			"id":     payment.ID,
+			"source": "payment",
 			"balances": []any{
 				map[string]any{
 					"changeValue": payment.Amount,
@@ -121,7 +151,8 @@ func paymentTransaction(payment domain.Payment) map[string]any {
 	}
 
 	return map[string]any{
-		"id": payment.ID,
+		"id":     payment.ID,
+		"source": "payment",
 		"balances": []any{
 			map[string]any{
 				"changeValue": -payment.Total,
@@ -134,7 +165,7 @@ func paymentTransaction(payment domain.Payment) map[string]any {
 		"categoryName":    "платежи и переводы",
 		"dateTime":        dateTime,
 		"formattedNumber": "",
-		"name":            "списание за мобильную коммерцию",
+		"name":            paymentCardTransferName,
 		"number":          "",
 		"roaming":         false,
 		"typeCall":        "incomingCall",
@@ -145,7 +176,8 @@ func paymentTransaction(payment domain.Payment) map[string]any {
 
 func paymentFlowSMSTransaction(id, dateTime string) map[string]any {
 	return map[string]any{
-		"id": id,
+		"id":     id,
+		"source": "payment",
 		"balances": []any{
 			map[string]any{
 				"changeValue": 0,
@@ -254,10 +286,16 @@ func sameTransactionMinute(left, right time.Time) bool {
 }
 
 func samePaymentKind(left, right map[string]any) bool {
+	if isBalanceReturnTransaction(left) && isBalanceReturnTransaction(right) {
+		return true
+	}
 	if isRefillLikeTransaction(left) && isRefillLikeTransaction(right) {
 		return true
 	}
 	if isMobileCommerceTransaction(left) && isMobileCommerceTransaction(right) {
+		return true
+	}
+	if isCardTransferTransaction(left) && isCardTransferTransaction(right) {
 		return true
 	}
 	if isPaymentFlowSMSTransaction(left) && isPaymentFlowSMSTransaction(right) {
@@ -265,6 +303,11 @@ func samePaymentKind(left, right map[string]any) bool {
 	}
 
 	return false
+}
+
+func isBalanceReturnTransaction(tx map[string]any) bool {
+	name := strings.ToLower(strings.TrimSpace(jsonString(tx["name"])))
+	return strings.Contains(name, paymentBalanceReturnName)
 }
 
 func isRefillLikeTransaction(tx map[string]any) bool {
@@ -285,6 +328,15 @@ func isMobileCommerceTransaction(tx map[string]any) bool {
 
 	name := strings.ToLower(strings.TrimSpace(jsonString(tx["name"])))
 	return strings.Contains(name, "мобильн") || strings.Contains(name, "коммерц")
+}
+
+func isCardTransferTransaction(tx map[string]any) bool {
+	if strings.ToUpper(jsonString(tx["category"])) != "SERVICES_PAYMENTS_AND_MOBILE_TRANSFERS" {
+		return false
+	}
+
+	name := strings.ToLower(strings.TrimSpace(jsonString(tx["name"])))
+	return strings.Contains(name, "перевод") && strings.Contains(name, "карт")
 }
 
 func isPaymentFlowSMSTransaction(tx map[string]any) bool {

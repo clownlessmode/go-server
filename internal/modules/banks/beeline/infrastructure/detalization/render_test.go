@@ -99,7 +99,7 @@ func runRenderFirstPageHTMLV2Test(t *testing.T, templateBody []byte) {
 	if strings.Contains(html, templateV2TrafficUsageLine) {
 		t.Fatal("v2 traffic usage placeholder was not replaced")
 	}
-	if !strings.Contains(html, `<div class="t m0 x2 h3 ye ff1 fs1 fc1 sc0 ls0 ws4">1,`) {
+	if !strings.Contains(html, `0,0 кб<span class="_ _2"> </span>`) {
 		t.Fatal("v2 traffic usage line was not rendered")
 	}
 }

@@ -18,13 +18,20 @@ const (
 	beelineProductsPath = "/mobile/api/v1/profile/products"
 )
 
+var beelineActiveSimCapturePaths = map[string]struct{}{
+	beelineUserInfoPath:       {},
+	beelineProductsPath:       {},
+	beelineProfileContextPath: {},
+	beelineSlaveAccountsPath:  {},
+}
+
 func (s *Service) captureBeelineActiveSim(req *http.Request, res *http.Response) {
 	if s.beelineRepo == nil || !isBeelineHost(req.Host) || res.StatusCode != http.StatusOK || req.Method != http.MethodGet {
 		return
 	}
 
 	path := pathForLog(req)
-	if path != beelineUserInfoPath && path != beelineProductsPath {
+	if _, ok := beelineActiveSimCapturePaths[path]; !ok {
 		return
 	}
 
@@ -44,42 +51,83 @@ func (s *Service) captureBeelineActiveSim(req *http.Request, res *http.Response)
 		return
 	}
 
-	switch path {
-	case beelineProductsPath:
-		productCTNs := extractBeelineMobileCTNs(body)
+	if requestCTN := beelineCTNFromRequest(req); requestCTN != "" {
+		capture := beelineSimCapture{Preferred: requestCTN, CTNs: []string{requestCTN}}
 		proxyLog.Infof(
-			"beeline sim capture: route=%s products=%v activeBefore=%s",
+			"beeline sim capture: route=%s source=request-header preferred=%s activeBefore=%s",
 			path,
-			productCTNs,
+			requestCTN,
 			s.activeBeelineSim(),
 		)
-		s.setBeelineProductCTNs(productCTNs)
-		s.resolveAndSetActiveBeelineSim(req.Context(), "", path)
-	case beelineUserInfoPath:
-		preferred, phoneRaw, ctnRaw, ok := extractBeelinePreferredSimFromUserInfo(body)
-		if !ok {
-			proxyLog.Warnf(
-				"beeline sim capture: route=%s preferred unavailable phone=%q ctn=%q activeBefore=%s",
-				path,
-				phoneRaw,
-				ctnRaw,
-				s.activeBeelineSim(),
-			)
-			res.Body = io.NopCloser(bytes.NewReader(rawBody))
-			return
-		}
-		proxyLog.Infof(
-			"beeline sim capture: route=%s preferred=%s phone=%q ctn=%q activeBefore=%s",
+		s.addBeelineSessionCTNs(capture.CTNs)
+		s.resolveAndSetActiveBeelineSim(req.Context(), capture.Preferred, path+"/request")
+		res.Body = io.NopCloser(bytes.NewReader(rawBody))
+		return
+	}
+
+	capture := extractBeelineSimCapture(path, body)
+	proxyLog.Infof(
+		"beeline sim capture: route=%s preferred=%q ctns=%v activeBefore=%s",
+		path,
+		capture.Preferred,
+		capture.CTNs,
+		s.activeBeelineSim(),
+	)
+	if len(capture.CTNs) == 0 && (path == beelineProfileContextPath || path == beelineSlaveAccountsPath) {
+		logBeelineSimCaptureDebug(path, body)
+	}
+
+	if len(capture.CTNs) > 0 {
+		s.addBeelineSessionCTNs(capture.CTNs)
+	}
+	if path == beelineProductsPath {
+		s.setBeelineProductCTNs(capture.CTNs)
+	}
+
+	preferred := capture.Preferred
+	if preferred == "" && path == beelineUserInfoPath {
+		phoneRaw, ctnRaw := extractBeelineUserInfoRaw(body)
+		proxyLog.Warnf(
+			"beeline sim capture: route=%s preferred unavailable phone=%q ctn=%q activeBefore=%s",
 			path,
-			preferred,
 			phoneRaw,
 			ctnRaw,
 			s.activeBeelineSim(),
 		)
+		res.Body = io.NopCloser(bytes.NewReader(rawBody))
+		return
+	}
+
+	if preferred != "" || len(capture.CTNs) > 0 {
 		s.resolveAndSetActiveBeelineSim(req.Context(), preferred, path)
 	}
 
 	res.Body = io.NopCloser(bytes.NewReader(rawBody))
+}
+
+func extractBeelineUserInfoRaw(body []byte) (phoneRaw, ctnRaw string) {
+	var payload struct {
+		Data struct {
+			Contract struct {
+				CTN   string `json:"ctn"`
+				Phone struct {
+					Number string `json:"number"`
+				} `json:"phone"`
+			} `json:"contract"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(body, &payload); err != nil {
+		return "", ""
+	}
+
+	return strings.TrimSpace(payload.Data.Contract.Phone.Number), strings.TrimSpace(payload.Data.Contract.CTN)
+}
+
+func (s *Service) addBeelineSessionCTNs(numbers []string) {
+	s.beelineSimMu.Lock()
+	defer s.beelineSimMu.Unlock()
+
+	s.beelineSessionCTNs = mergeBeelineCTNs(s.beelineSessionCTNs, numbers)
 }
 
 func (s *Service) setBeelineProductCTNs(numbers []string) {
@@ -93,10 +141,11 @@ func (s *Service) resolveAndSetActiveBeelineSim(ctx context.Context, preferred, 
 	number, reason, ok := s.pickConfiguredBeelineSim(ctx, preferred)
 	if !ok {
 		proxyLog.Warnf(
-			"beeline sim resolve skipped: source=%s preferred=%s active=%s products=%v",
+			"beeline sim resolve skipped: source=%s preferred=%s active=%s session=%v products=%v",
 			source,
 			preferred,
 			s.activeBeelineSim(),
+			s.currentBeelineSessionCTNs(),
 			s.currentBeelineProductCTNs(),
 		)
 		return
@@ -111,23 +160,21 @@ func (s *Service) resolveAndSetActiveBeelineSim(ctx context.Context, preferred, 
 		preferred,
 		s.activeBeelineSim(),
 	)
-	// Auto-create SIM disabled: add SIMs manually via POST /banks/beeline/sims.
-	// if _, err := s.beelineRepo.EnsureSim(ctx, number); err != nil {
-	// 	proxyLog.Warnf("beeline sim ensure failed: number=%s err=%v", number, err)
-	// }
 }
 
 func (s *Service) pickConfiguredBeelineSim(ctx context.Context, preferred string) (string, string, bool) {
 	candidates := s.beelineSimCandidates(preferred)
 	active := s.activeBeelineSim()
 	products := s.currentBeelineProductCTNs()
-	s.logBeelineSimCandidateConfig(ctx, "pick", preferred, active, products, candidates)
+	session := s.currentBeelineSessionCTNs()
+	s.logBeelineSimCandidateConfig(ctx, "pick", preferred, active, session, candidates)
 
 	if len(candidates) == 0 {
 		proxyLog.Warnf(
-			"beeline sim pick: no candidates preferred=%q active=%q products=%v",
+			"beeline sim pick: no candidates preferred=%q active=%q session=%v products=%v",
 			preferred,
 			active,
+			session,
 			products,
 		)
 		return "", "", false
@@ -138,21 +185,69 @@ func (s *Service) pickConfiguredBeelineSim(ctx context.Context, preferred string
 		return configured, "configured:" + reason, true
 	}
 
-	if preferred != "" {
-		if number, ok := normalizeBeelineSimNumber(preferred); ok {
-			inDB, _ := s.simExistsInDB(ctx, number)
-			return number, fmt.Sprintf("fallback-preferred inDb=%t", inDB), true
+	for _, candidate := range candidates {
+		inDB, err := s.simExistsInDB(ctx, candidate)
+		if err != nil {
+			proxyLog.Warnf("beeline sim pick: db lookup failed sim=%s err=%v", candidate, err)
+			continue
+		}
+		if !inDB {
+			continue
+		}
+
+		reason := "db-candidate"
+		if candidate == preferred {
+			reason = "db-preferred"
+		}
+		return candidate, reason, true
+	}
+
+	if len(session) > 0 {
+		if sim, ok := s.singleRegisteredBeelineSim(ctx); ok {
+			proxyLog.Warnf(
+				"beeline sim pick: using single registered sim=%s beeline session=%v candidates=%v",
+				sim,
+				session,
+				candidates,
+			)
+			return sim, "single-registered-override", true
 		}
 	}
 
-	inDB, _ := s.simExistsInDB(ctx, candidates[0])
-	return candidates[0], fmt.Sprintf("fallback-first-product inDb=%t", inDB), true
+	proxyLog.Warnf(
+		"beeline sim pick: no configured or registered candidates preferred=%q active=%q session=%v products=%v candidates=%v",
+		preferred,
+		active,
+		session,
+		products,
+		candidates,
+	)
+	return "", "", false
+}
+
+func (s *Service) singleRegisteredBeelineSim(ctx context.Context) (string, bool) {
+	if s.beelineRepo == nil {
+		return "", false
+	}
+
+	sims, err := s.beelineRepo.ListSims(ctx)
+	if err != nil || len(sims) != 1 {
+		return "", false
+	}
+
+	number := sims[0].Number
+	inDB, err := s.simExistsInDB(ctx, number)
+	if err != nil || !inDB {
+		return "", false
+	}
+
+	return number, true
 }
 
 func (s *Service) logBeelineSimCandidateConfig(
 	ctx context.Context,
 	stage, preferred, active string,
-	products, candidates []string,
+	session, candidates []string,
 ) {
 	if s.beelineRepo == nil {
 		return
@@ -164,11 +259,11 @@ func (s *Service) logBeelineSimCandidateConfig(
 	}
 
 	proxyLog.Infof(
-		"beeline sim candidates: stage=%s preferred=%q active=%q products=%v candidates=%v config=[%s]",
+		"beeline sim candidates: stage=%s preferred=%q active=%q session=%v candidates=%v config=[%s]",
 		stage,
 		preferred,
 		active,
-		products,
+		session,
 		candidates,
 		strings.Join(labels, ", "),
 	)
@@ -242,13 +337,20 @@ func (s *Service) currentBeelineProductCTNs() []string {
 	return append([]string(nil), s.beelineProductCTNs...)
 }
 
+func (s *Service) currentBeelineSessionCTNs() []string {
+	s.beelineSimMu.Lock()
+	defer s.beelineSimMu.Unlock()
+
+	return append([]string(nil), s.beelineSessionCTNs...)
+}
+
 func (s *Service) beelineSimCandidates(preferred string) []string {
 	s.beelineSimMu.Lock()
-	productCTNs := append([]string(nil), s.beelineProductCTNs...)
+	sessionCTNs := append([]string(nil), s.beelineSessionCTNs...)
 	s.beelineSimMu.Unlock()
 
-	seen := make(map[string]struct{}, len(productCTNs)+1)
-	candidates := make([]string, 0, len(productCTNs)+1)
+	seen := make(map[string]struct{}, len(sessionCTNs)+1)
+	candidates := make([]string, 0, len(sessionCTNs)+1)
 
 	if preferred != "" {
 		if number, ok := normalizeBeelineSimNumber(preferred); ok {
@@ -257,7 +359,7 @@ func (s *Service) beelineSimCandidates(preferred string) []string {
 		}
 	}
 
-	for _, number := range productCTNs {
+	for _, number := range sessionCTNs {
 		if _, exists := seen[number]; exists {
 			continue
 		}
@@ -273,7 +375,7 @@ func (s *Service) beelineSimForProxy(ctx context.Context) string {
 	number, reason, ok := s.pickConfiguredBeelineSim(ctx, activeBefore)
 	if !ok {
 		proxyLog.Warnf("beeline sim for proxy: unresolved active=%s", activeBefore)
-		return activeBefore
+		return ""
 	}
 
 	if number != activeBefore {

@@ -51,6 +51,7 @@ func shouldServeHTMLViaHTTP() bool {
 	case "0", "false", "no", "off":
 		return false
 	default:
-		return runtime.GOOS == "darwin"
+		// Local HTTP is more reliable than file:// for headless Chrome image loading.
+		return runtime.GOOS == "darwin" || runtime.GOOS == "linux"
 	}
 }

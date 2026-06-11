@@ -34,7 +34,7 @@ func (r *Repository) SumIncomingTotals(ctx context.Context, number string) (floa
 	err := r.db.QueryRowContext(ctx, `
 		SELECT COALESCE(SUM(amount), 0)
 		FROM beeline_payments
-		WHERE sim_number = $1 AND direction = 'incoming'
+		WHERE sim_number = $1 AND direction IN ('incoming', 'balance_return')
 	`, number).Scan(&total)
 	if err != nil {
 		return 0, fmt.Errorf("sum beeline incoming totals: %w", err)

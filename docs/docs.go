@@ -243,7 +243,7 @@ const docTemplate = `{
         },
         "/banks/beeline/sims/{number}/detalization": {
             "get": {
-                "description": "Returns full Beeline detalization for the snapshot period: real Beeline transactions minus hidden ones, plus configured payments. Each transaction includes id and source (beeline or payment).",
+                "description": "Returns full Beeline detalization for the snapshot period: real Beeline transactions minus hidden ones, plus configured payments. Each transaction includes id, source (beeline or payment), and hideable (true for real Beeline rows that can be hidden, including card transfers).",
                 "produces": [
                     "application/json"
                 ],
@@ -371,7 +371,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Creates a manual payment for the SIM. Use direction=outgoing for mobile commerce charge (requires receiverCard, min 924 RUB, 6.5%% commission). Use direction=incoming for balance refill (no card, no commission).",
+                "description": "Creates a manual payment for the SIM. Use direction=outgoing for mobile commerce charge (requires receiverCard, min 924 RUB, 6.5%% commission). Use direction=incoming for balance refill (no card, no commission). Use direction=balance_return for return to personal balance (no card, no commission; shown as «возврат на личный баланс» in detalization/PDF).",
                 "consumes": [
                     "application/json"
                 ],
@@ -1585,7 +1585,8 @@ const docTemplate = `{
                     "type": "string",
                     "enum": [
                         "outgoing",
-                        "incoming"
+                        "incoming",
+                        "balance_return"
                     ],
                     "example": "outgoing"
                 },
@@ -1701,7 +1702,8 @@ const docTemplate = `{
                     "type": "string",
                     "enum": [
                         "outgoing",
-                        "incoming"
+                        "incoming",
+                        "balance_return"
                     ],
                     "example": "outgoing"
                 },

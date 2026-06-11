@@ -65,6 +65,35 @@ func FindTransactionByID(data map[string]any, id string) (map[string]any, bool) 
 	return nil, false
 }
 
+func HiddenTransactionsNetChange(data map[string]any, hiddenIDs []string) float64 {
+	if len(hiddenIDs) == 0 {
+		return 0
+	}
+
+	transactions, ok := data["transactions"].([]any)
+	if !ok || len(transactions) == 0 {
+		return 0
+	}
+
+	seen := make(map[string]struct{})
+	var total float64
+	for _, item := range transactions {
+		tx, ok := item.(map[string]any)
+		if !ok || !IsTransactionHidden(tx, hiddenIDs) {
+			continue
+		}
+
+		id := TransactionID(tx)
+		if _, dup := seen[id]; dup {
+			continue
+		}
+		seen[id] = struct{}{}
+		total += transactionChangeValue(tx)
+	}
+
+	return domain.RoundMoney(total)
+}
+
 func PurgeHiddenFromData(data map[string]any, hiddenIDs []string) (map[string]any, *float64, error) {
 	working, err := CloneData(data)
 	if err != nil {
@@ -156,9 +185,11 @@ func FilterHiddenTransactions(data map[string]any, hiddenIDs []string) bool {
 }
 
 func AnnotateTransactionIDs(data map[string]any, payments []domain.Payment) {
-	paymentIDs := make(map[string]string, len(payments))
+	paymentByFingerprint := make(map[string]string, len(payments))
+	paymentIDSet := make(map[string]struct{}, len(payments))
 	for _, payment := range payments {
-		paymentIDs[paymentFingerprint(payment)] = payment.ID
+		paymentByFingerprint[paymentFingerprint(payment)] = payment.ID
+		paymentIDSet[payment.ID] = struct{}{}
 	}
 
 	transactions, ok := data["transactions"].([]any)
@@ -171,19 +202,38 @@ func AnnotateTransactionIDs(data map[string]any, payments []domain.Payment) {
 		if !ok {
 			continue
 		}
-		if id, ok := tx["id"].(string); ok && strings.TrimSpace(id) != "" {
-			if _, hasSource := tx["source"]; !hasSource && !isSyntheticPaddingSMS(tx) {
+
+		id := strings.TrimSpace(jsonString(tx["id"]))
+		if id != "" {
+			if _, isPayment := paymentIDSet[id]; isPayment {
+				tx["source"] = "payment"
+				tx["hideable"] = false
+				continue
+			}
+			if strings.EqualFold(jsonString(tx["source"]), "payment") {
+				tx["hideable"] = false
+				continue
+			}
+			if isSyntheticPaddingSMS(tx) {
+				continue
+			}
+			if _, hasSource := tx["source"]; !hasSource {
 				tx["source"] = "beeline"
 			}
+			tx["hideable"] = true
 			continue
 		}
-		if paymentID, ok := paymentIDs[transactionFingerprint(tx)]; ok {
+
+		if paymentID, ok := paymentByFingerprint[transactionFingerprint(tx)]; ok {
 			tx["id"] = paymentID
 			tx["source"] = "payment"
+			tx["hideable"] = false
 			continue
 		}
+
 		tx["id"] = TransactionID(tx)
 		tx["source"] = "beeline"
+		tx["hideable"] = true
 	}
 }
 

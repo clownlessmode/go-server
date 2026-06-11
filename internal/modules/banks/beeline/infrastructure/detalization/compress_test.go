@@ -25,4 +25,18 @@ func TestPDFCompressMode(t *testing.T) {
 	if got := currentPDFCompressMode(); got != pdfCompressOptimize {
 		t.Fatalf("mode = %q, want optimize", got)
 	}
+
+	t.Setenv("MITM_PDF_COMPRESS", "auto")
+	if ghostscriptBinary() != "" {
+		if got := currentPDFCompressMode(); got != pdfCompressAuto {
+			t.Fatalf("auto mode = %q, want auto", got)
+		}
+	} else if got := currentPDFCompressMode(); got != pdfCompressOptimize {
+		t.Fatalf("auto mode without gs = %q, want optimize", got)
+	}
+
+	t.Setenv("MITM_PDF_COMPRESS", "structured")
+	if got := currentPDFCompressMode(); got != pdfCompressStructured {
+		t.Fatalf("mode = %q, want structured", got)
+	}
 }

@@ -63,20 +63,21 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) (*Output, error) {
 		return nil, err
 	}
 
+	baseData, err := detalization.DecodeSnapshotData(snapshot.Data)
+	if err != nil {
+		return nil, err
+	}
+
+	hiddenIDs, err := uc.repo.ListHiddenTransactionIDs(ctx, input.Number)
+	if err != nil {
+		return nil, err
+	}
+
 	var balance *float64
-	if display := domain.DisplayBalanceFromAPI(snapshot.APIBalance, allOutgoing, allIncoming); display != nil {
+	hiddenNet := detalization.HiddenTransactionsNetChange(baseData, hiddenIDs)
+	if display := domain.DisplayBalanceFromAPI(snapshot.APIBalance, allOutgoing, allIncoming, hiddenNet); display != nil {
 		balance = display
 	} else {
-		baseData, err := detalization.DecodeSnapshotData(snapshot.Data)
-		if err != nil {
-			return nil, err
-		}
-
-		hiddenIDs, err := uc.repo.ListHiddenTransactionIDs(ctx, input.Number)
-		if err != nil {
-			return nil, err
-		}
-
 		if computedBalance, err := detalizationBuildBalance(baseData, payments, hiddenIDs, input.Number, time.Now().UTC()); err == nil {
 			value := domain.RoundMoney(computedBalance)
 			balance = &value

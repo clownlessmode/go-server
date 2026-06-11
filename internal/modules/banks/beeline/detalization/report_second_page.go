@@ -136,11 +136,13 @@ func FormatReportTransactionDescription(tx map[string]any) string {
 	case "начисление пакета минут":
 		return "пакет минут"
 	case "начисление пакета трафика":
-		return "пакет интернета"
+		return reportTrafficVolumeDescription()
 	case "пополнение баланса",
 		"компенсация затрат на пополнение баланса",
+		"возврат на личный баланс",
 		"плати с билайн: перевод на баланс билайн",
 		"списание за мобильную коммерцию",
+		"перевод с баланса на карту",
 		"плата за подключение",
 		"абонентская плата за тариф":
 		return "основной баланс"
@@ -230,15 +232,11 @@ func parseReportTransactionDateTime(raw string) (time.Time, bool) {
 }
 
 func formatUnlimitedInternetDescription() string {
-	integerPart := rand.Intn(99) + 1
-	decimalPart := rand.Intn(10)
+	return reportTrafficVolumeDescription()
+}
 
-	unit := "мб"
-	if rand.Intn(2) == 1 {
-		unit = "кб"
-	}
-
-	return fmt.Sprintf("%d,%d %s (основной баланс)", integerPart, decimalPart, unit)
+func reportTrafficVolumeDescription() string {
+	return reportTrafficVolumeText + " (основной баланс)"
 }
 
 func formatCallDurationDescription() string {

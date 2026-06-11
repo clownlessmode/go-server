@@ -29,8 +29,9 @@ const DefaultIncomingSMSNumber = "beeline"
 type PaymentDirection string
 
 const (
-	PaymentDirectionOutgoing PaymentDirection = "outgoing"
-	PaymentDirectionIncoming PaymentDirection = "incoming"
+	PaymentDirectionOutgoing      PaymentDirection = "outgoing"
+	PaymentDirectionIncoming      PaymentDirection = "incoming"
+	PaymentDirectionBalanceReturn PaymentDirection = "balance_return"
 )
 
 var receiverCardPattern = regexp.MustCompile(`^\d{6}\*\*\d{4}$`)
@@ -80,9 +81,15 @@ func ParsePaymentDirection(value string) (PaymentDirection, error) {
 		return PaymentDirectionOutgoing, nil
 	case PaymentDirectionIncoming:
 		return PaymentDirectionIncoming, nil
+	case PaymentDirectionBalanceReturn:
+		return PaymentDirectionBalanceReturn, nil
 	default:
 		return "", ErrInvalidPaymentDirection
 	}
+}
+
+func (d PaymentDirection) IsCredit() bool {
+	return d == PaymentDirectionIncoming || d == PaymentDirectionBalanceReturn
 }
 
 func EffectiveBalance(base *float64, outgoingTotal, incomingTotal float64) *float64 {
@@ -95,14 +102,17 @@ func EffectiveBalance(base *float64, outgoingTotal, incomingTotal float64) *floa
 }
 
 func NewManualPayment(direction PaymentDirection, receiverCard string, amount float64, paidAt time.Time) (Payment, error) {
-	if direction == PaymentDirectionIncoming {
+	switch direction {
+	case PaymentDirectionIncoming:
 		return newIncomingManualPayment(amount, paidAt)
+	case PaymentDirectionBalanceReturn:
+		return newBalanceReturnManualPayment(amount, paidAt)
+	default:
+		return newOutgoingManualPayment(receiverCard, amount, paidAt)
 	}
-
-	return newOutgoingManualPayment(receiverCard, amount, paidAt)
 }
 
-func newIncomingManualPayment(amount float64, paidAt time.Time) (Payment, error) {
+func newCreditManualPayment(direction PaymentDirection, amount float64, paidAt time.Time) (Payment, error) {
 	if amount <= 0 {
 		return Payment{}, ErrInvalidPayment
 	}
@@ -110,14 +120,22 @@ func newIncomingManualPayment(amount float64, paidAt time.Time) (Payment, error)
 	amount = RoundMoney(amount)
 
 	return Payment{
-		ID:        newPaymentID(),
-		Direction: PaymentDirectionIncoming,
-		Amount:    amount,
+		ID:         newPaymentID(),
+		Direction:  direction,
+		Amount:     amount,
 		Commission: 0,
-		Total:     amount,
-		Source:    PaymentSourceManual,
-		PaidAt:    paidAt.UTC(),
+		Total:      amount,
+		Source:     PaymentSourceManual,
+		PaidAt:     paidAt.UTC(),
 	}, nil
+}
+
+func newIncomingManualPayment(amount float64, paidAt time.Time) (Payment, error) {
+	return newCreditManualPayment(PaymentDirectionIncoming, amount, paidAt)
+}
+
+func newBalanceReturnManualPayment(amount float64, paidAt time.Time) (Payment, error) {
+	return newCreditManualPayment(PaymentDirectionBalanceReturn, amount, paidAt)
 }
 
 func newOutgoingManualPayment(receiverCard string, amount float64, paidAt time.Time) (Payment, error) {
@@ -185,10 +203,12 @@ func (p Payment) ApplyUpdate(direction *PaymentDirection, receiverCard *string, 
 	updated := p
 
 	if direction != nil {
-		if *direction != PaymentDirectionOutgoing && *direction != PaymentDirectionIncoming {
+		switch *direction {
+		case PaymentDirectionOutgoing, PaymentDirectionIncoming, PaymentDirectionBalanceReturn:
+			updated.Direction = *direction
+		default:
 			return Payment{}, ErrInvalidPaymentDirection
 		}
-		updated.Direction = *direction
 	}
 
 	if receiverCard != nil {
@@ -202,7 +222,7 @@ func (p Payment) ApplyUpdate(direction *PaymentDirection, receiverCard *string, 
 	}
 
 	switch updated.Direction {
-	case PaymentDirectionIncoming:
+	case PaymentDirectionIncoming, PaymentDirectionBalanceReturn:
 		if updated.Amount <= 0 {
 			return Payment{}, ErrInvalidPayment
 		}

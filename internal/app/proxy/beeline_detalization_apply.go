@@ -3,6 +3,7 @@ package proxy
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -39,24 +40,26 @@ func (s *Service) buildBeelineDetalizationView(
 		return nil, 0, err
 	}
 
-	hiddenIDs, err := s.beelineRepo.ListHiddenTransactionIDs(ctx, simNumber)
+	hiddenIDs, err := s.beelineHiddenTransactionIDs(ctx, simNumber)
 	if err != nil {
 		return nil, 0, err
 	}
+
+	hiddenNet := detalization.HiddenTransactionsNetChange(baseData, hiddenIDs)
 
 	view, balance, err := detalization.BuildView(baseData, payments, hiddenIDs, nil, simNumber, now)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	if synced, ok := s.syncBeelineDetalizationDisplayBalance(ctx, simNumber, view); ok {
+	if synced, ok := s.syncBeelineDetalizationDisplayBalance(ctx, simNumber, view, hiddenNet); ok {
 		balance = synced
 	}
 
 	return view, balance, nil
 }
 
-func (s *Service) syncBeelineDetalizationDisplayBalance(ctx context.Context, simNumber string, data map[string]any) (float64, bool) {
+func (s *Service) syncBeelineDetalizationDisplayBalance(ctx context.Context, simNumber string, data map[string]any, hiddenNetChange float64) (float64, bool) {
 	outgoing, err := s.beelineRepo.SumPaymentTotals(ctx, simNumber)
 	if err != nil {
 		return 0, false
@@ -73,7 +76,7 @@ func (s *Service) syncBeelineDetalizationDisplayBalance(ctx context.Context, sim
 		apiBalance = snapshot.APIBalance
 	}
 
-	return detalization.SyncDisplayBalance(data, apiBalance, outgoing, incoming)
+	return detalization.SyncDisplayBalance(data, apiBalance, outgoing, incoming, hiddenNetChange)
 }
 
 func (s *Service) saveBeelineDetalizationBaseline(
@@ -83,23 +86,12 @@ func (s *Service) saveBeelineDetalizationBaseline(
 	periodStart, periodEnd time.Time,
 	computedBalance float64,
 ) error {
-	storedData := baseData
-	hiddenIDs, err := s.beelineRepo.ListHiddenTransactionIDs(ctx, simNumber)
+	hiddenIDs, err := s.beelineHiddenTransactionIDs(ctx, simNumber)
 	if err != nil {
 		return err
 	}
-	if len(hiddenIDs) > 0 {
-		purgedData, balance, err := detalization.PurgeHiddenFromData(baseData, hiddenIDs)
-		if err != nil {
-			return err
-		}
-		storedData = purgedData
-		if balance != nil {
-			computedBalance = *balance
-		}
-	}
 
-	raw, err := encodeDetalizationSnapshotData(storedData)
+	raw, err := encodeDetalizationSnapshotData(baseData)
 	if err != nil {
 		return err
 	}
@@ -116,15 +108,23 @@ func (s *Service) saveBeelineDetalizationBaseline(
 	}
 
 	proxyLog.Infof(
-		"beeline detalization monthly saved: sim=%s period=%s..%s balance=%.2f transactions=%d snapshotBytes=%d hiddenPurged=%t",
+		"beeline detalization monthly saved: sim=%s period=%s..%s balance=%.2f transactions=%d snapshotBytes=%d hidden=%d",
 		simNumber,
 		periodStart.Format("2006-01-02"),
 		periodEnd.Format("2006-01-02"),
 		balance,
-		detalization.CountReportTransactions(storedData),
+		detalization.CountReportTransactions(baseData),
 		len(raw),
-		len(hiddenIDs) > 0,
+		len(hiddenIDs),
 	)
 
 	return nil
+}
+
+func (s *Service) beelineHiddenTransactionIDs(ctx context.Context, simNumber string) ([]string, error) {
+	hiddenIDs, err := s.beelineRepo.ListHiddenTransactionIDs(ctx, simNumber)
+	if errors.Is(err, beelinedomain.ErrSimNotFound) {
+		return []string{}, nil
+	}
+	return hiddenIDs, err
 }

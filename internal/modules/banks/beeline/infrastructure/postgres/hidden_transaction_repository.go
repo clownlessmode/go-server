@@ -80,50 +80,7 @@ func (r *Repository) HideTransaction(ctx context.Context, number, id string) err
 }
 
 func (r *Repository) CompactDetalizationSnapshot(ctx context.Context, number string) error {
-	number = domain.NormalizeSimNumber(number)
-
-	snapshot, err := r.GetDetalizationSnapshot(ctx, number)
-	if errors.Is(err, domain.ErrDetalizationSnapshotNotFound) {
-		return nil
-	}
-	if err != nil {
-		return err
-	}
-
-	hiddenIDs, err := r.ListHiddenTransactionIDs(ctx, number)
-	if err != nil {
-		return err
-	}
-	if len(hiddenIDs) == 0 {
-		return nil
-	}
-
-	baseData, err := detalization.DecodeSnapshotData(snapshot.Data)
-	if err != nil {
-		return err
-	}
-
-	purgedData, balance, err := detalization.PurgeHiddenFromData(baseData, hiddenIDs)
-	if err != nil {
-		return fmt.Errorf("compact beeline detalization snapshot: %w", err)
-	}
-
-	raw, err := json.Marshal(purgedData)
-	if err != nil {
-		return fmt.Errorf("marshal compact beeline detalization snapshot: %w", err)
-	}
-
-	_, err = r.SaveDetalizationSnapshot(ctx, domain.DetalizationSnapshot{
-		SimNumber:       number,
-		PeriodStart:     snapshot.PeriodStart,
-		PeriodEnd:       snapshot.PeriodEnd,
-		Data:            raw,
-		ComputedBalance: balance,
-	})
-	if err != nil {
-		return fmt.Errorf("save compact beeline detalization snapshot: %w", err)
-	}
-
+	// Hidden transactions stay in the snapshot so their amounts can adjust display balance.
 	return nil
 }
 

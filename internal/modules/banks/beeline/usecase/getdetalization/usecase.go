@@ -60,6 +60,8 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) (*Output, error) {
 		return nil, err
 	}
 
+	hiddenNet := detalization.HiddenTransactionsNetChange(baseData, hiddenIDs)
+
 	viewData, balanceValue, err := detalization.BuildView(baseData, payments, hiddenIDs, nil, input.Number, time.Now().UTC())
 	if err != nil {
 		return nil, err
@@ -74,9 +76,9 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) (*Output, error) {
 	if err != nil {
 		return nil, err
 	}
-	if synced, ok := detalization.SyncDisplayBalance(viewData, snapshot.APIBalance, allOutgoing, allIncoming); ok {
+	if synced, ok := detalization.SyncDisplayBalance(viewData, snapshot.APIBalance, allOutgoing, allIncoming, hiddenNet); ok {
 		balance = synced
-	} else if display := domain.DisplayBalanceFromAPI(snapshot.APIBalance, allOutgoing, allIncoming); display != nil {
+	} else if display := domain.DisplayBalanceFromAPI(snapshot.APIBalance, allOutgoing, allIncoming, hiddenNet); display != nil {
 		balance = *display
 	}
 

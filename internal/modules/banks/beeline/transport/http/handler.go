@@ -75,14 +75,14 @@ type CreateSimRequest struct {
 }
 
 type CreatePaymentRequest struct {
-	Direction    string  `json:"direction" example:"outgoing" enums:"outgoing,incoming"`
+	Direction    string  `json:"direction" example:"outgoing" enums:"outgoing,incoming,balance_return"`
 	ReceiverCard string  `json:"receiverCard,omitempty" example:"220094**0028"`
 	Amount       float64 `json:"amount" binding:"required" example:"13000"`
 	PaidAt       string  `json:"paidAt" binding:"required" example:"2026-05-23T12:07:47+03:00"`
 }
 
 type UpdatePaymentRequest struct {
-	Direction    *string  `json:"direction,omitempty" example:"outgoing" enums:"outgoing,incoming"`
+	Direction    *string  `json:"direction,omitempty" example:"outgoing" enums:"outgoing,incoming,balance_return"`
 	ReceiverCard *string  `json:"receiverCard,omitempty" example:"220094**0028"`
 	Amount       *float64 `json:"amount,omitempty" example:"13000"`
 	PaidAt       *string  `json:"paidAt,omitempty" example:"2026-05-23T12:07:47+03:00"`
@@ -225,7 +225,7 @@ func (h *Handler) GetConfig(c *gin.Context) {
 
 // GetDetalization godoc
 // @Summary Get Beeline SIM detalization
-// @Description Returns full Beeline detalization for the snapshot period: real Beeline transactions minus hidden ones, plus configured payments. Each transaction includes id and source (beeline or payment).
+// @Description Returns full Beeline detalization for the snapshot period: real Beeline transactions minus hidden ones, plus configured payments. Each transaction includes id, source (beeline or payment), and hideable (true for real Beeline rows that can be hidden, including card transfers).
 // @Tags beeline detalization
 // @Produce json
 // @Param number path string true "10-digit phone number"
@@ -343,7 +343,7 @@ func (h *Handler) GetPayment(c *gin.Context) {
 
 // CreatePayment godoc
 // @Summary Create Beeline SIM payment
-// @Description Creates a manual payment for the SIM. Use direction=outgoing for mobile commerce charge (requires receiverCard, min 924 RUB, 6.5%% commission). Use direction=incoming for balance refill (no card, no commission).
+// @Description Creates a manual payment for the SIM. Use direction=outgoing for mobile commerce charge (requires receiverCard, min 924 RUB, 6.5%% commission). Use direction=incoming for balance refill (no card, no commission). Use direction=balance_return for return to personal balance (no card, no commission; shown as «возврат на личный баланс» in detalization/PDF).
 // @Tags beeline payments
 // @Accept json
 // @Produce json
@@ -369,7 +369,7 @@ func (h *Handler) CreatePayment(c *gin.Context) {
 
 	direction, err := domain.ParsePaymentDirection(req.Direction)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid direction, expected outgoing or incoming"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid direction, expected outgoing, incoming or balance_return"})
 		return
 	}
 
@@ -431,7 +431,7 @@ func (h *Handler) UpdatePayment(c *gin.Context) {
 	if req.Direction != nil {
 		parsed, err := domain.ParsePaymentDirection(*req.Direction)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid direction, expected outgoing or incoming"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid direction, expected outgoing, incoming or balance_return"})
 			return
 		}
 		direction = &parsed
@@ -511,7 +511,7 @@ func paymentValidationError(c *gin.Context, err error) bool {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid paidAt, expected RFC3339"})
 		return true
 	case errors.Is(err, domain.ErrInvalidPaymentDirection):
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid direction, expected outgoing or incoming"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid direction, expected outgoing, incoming or balance_return"})
 		return true
 	case errors.Is(err, domain.ErrInvalidPayment):
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid payment amount"})

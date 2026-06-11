@@ -46,6 +46,7 @@ type Service struct {
 	beelineSimMu                sync.Mutex
 	activeBeelineSimNumber      string
 	beelineProductCTNs          []string
+	beelineSessionCTNs          []string
 	beelineSessionMu            sync.Mutex
 	beelineSessionHeaderMap     map[string]string
 	beelineRefreshHTTPClient    *http.Client

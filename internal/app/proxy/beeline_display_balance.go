@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"project/internal/modules/banks/beeline/detalization"
 	beelinedomain "project/internal/modules/banks/beeline/domain"
 )
 
@@ -25,18 +26,26 @@ func (s *Service) beelineDisplayBalance(
 	}
 
 	apiBalance := liveAPIBalance
-	if apiBalance == nil {
-		snapshot, err := s.beelineRepo.GetDetalizationSnapshot(ctx, simNumber)
-		if err == nil && snapshot.APIBalance != nil {
-			apiBalance = snapshot.APIBalance
+	snapshot, err := s.beelineRepo.GetDetalizationSnapshot(ctx, simNumber)
+	if err == nil && apiBalance == nil {
+		apiBalance = snapshot.APIBalance
+	}
+
+	if apiBalance != nil {
+		hiddenNet := 0.0
+		if err == nil {
+			if baseData, decodeErr := decodeDetalizationSnapshotData(snapshot.Data); decodeErr == nil {
+				hiddenIDs, listErr := s.beelineHiddenTransactionIDs(ctx, simNumber)
+				if listErr == nil {
+					hiddenNet = detalization.HiddenTransactionsNetChange(baseData, hiddenIDs)
+				}
+			}
+		}
+		if display := beelinedomain.DisplayBalanceFromAPI(apiBalance, outgoing, incoming, hiddenNet); display != nil {
+			return *display, true
 		}
 	}
 
-	if display := beelinedomain.DisplayBalanceFromAPI(apiBalance, outgoing, incoming); display != nil {
-		return *display, true
-	}
-
-	snapshot, err := s.beelineRepo.GetDetalizationSnapshot(ctx, simNumber)
 	if err != nil {
 		return 0, false
 	}

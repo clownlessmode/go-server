@@ -13,7 +13,7 @@ func TestWriteDataPageFontAssets(t *testing.T) {
 		t.Fatalf("write fonts: %v", err)
 	}
 
-	for _, name := range []string{beelineSansRegularWoff2, beelineSansRegularTTF, dataPageBannerFileName} {
+	for _, name := range []string{beelineSansRegularWoff2, beelineSansRegularTTF, dataPageBannerJPEGName} {
 		path := filepath.Join(dir, name)
 		info, err := os.Stat(path)
 		if err != nil {
