@@ -335,6 +335,42 @@ func formatReportInteger(value int64) string {
 	return strings.Join(parts, " ")
 }
 
+// FormatBeelineReportPDFFilename matches the Beeline app download name:
+// detail-13.05-11.064676570188348189925.pdf
+//   - 13.05 — period start (DD.MM, MSK)
+//   - 11 — report creation day of month (MSK)
+//   - 064676570188348189925 — requestId from POST /detalization/task
+func FormatBeelineReportPDFFilename(periodStart, createdAt time.Time, requestID string) string {
+	loc := reportLocation()
+	start := periodStart.In(loc)
+	created := createdAt.In(loc)
+
+	requestID = strings.TrimSpace(requestID)
+	if requestID == "" {
+		requestID = syntheticBeelineReportRequestID(periodStart, createdAt)
+	}
+
+	return fmt.Sprintf(
+		"detail-%s-%d.%s.pdf",
+		start.Format("02.01"),
+		created.Day(),
+		requestID,
+	)
+}
+
+func syntheticBeelineReportRequestID(periodStart, createdAt time.Time) string {
+	startHash := fnv.New64a()
+	_, _ = fmt.Fprintf(startHash, "start:%d", periodStart.Unix())
+	createdHash := fnv.New64a()
+	_, _ = fmt.Fprintf(createdHash, "created:%d", createdAt.Unix())
+
+	return fmt.Sprintf(
+		"%010d%011d",
+		startHash.Sum64()%10_000_000_000,
+		createdHash.Sum64()%100_000_000_000,
+	)
+}
+
 func reportLocation() *time.Location {
 	return domain.BeelineLocation()
 }

@@ -53,6 +53,33 @@ func TestFormatReportOpeningBalanceLineV2(t *testing.T) {
 	}
 }
 
+func TestFormatBeelineReportPDFFilename(t *testing.T) {
+	loc := time.FixedZone("MSK", 3*60*60)
+	periodStart := time.Date(2026, 5, 13, 0, 0, 0, 0, loc)
+	createdAt := time.Date(2026, 6, 11, 12, 29, 0, 0, loc)
+
+	got := detalization.FormatBeelineReportPDFFilename(
+		periodStart,
+		createdAt,
+		"064676570188348189925",
+	)
+	want := "detail-13.05-11.064676570188348189925.pdf"
+	if got != want {
+		t.Fatalf("filename = %q, want %q", got, want)
+	}
+}
+
+func TestFormatBeelineReportPDFFilenameSyntheticRequestID(t *testing.T) {
+	loc := time.FixedZone("MSK", 3*60*60)
+	periodStart := time.Date(2026, 5, 13, 0, 0, 0, 0, loc)
+	createdAt := time.Date(2026, 6, 11, 12, 29, 0, 0, loc)
+
+	got := detalization.FormatBeelineReportPDFFilename(periodStart, createdAt, "")
+	if !regexp.MustCompile(`^detail-13\.05-11\.\d{21}\.pdf$`).MatchString(got) {
+		t.Fatalf("filename = %q, want detail-13.05-11.<21 digits>.pdf", got)
+	}
+}
+
 func TestFormatReportTrafficUsageLineV2(t *testing.T) {
 	const pattern = `^0,0 кб<span class="_ _2"> </span>1[0-5] мин<span class="_ _3"> </span>[0-9] смс$`
 

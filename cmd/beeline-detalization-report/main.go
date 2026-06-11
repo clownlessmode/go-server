@@ -119,7 +119,7 @@ func main() {
 		reportLog.Fatalf("generate pdf: %v", err)
 	}
 
-	pdfPath := filepath.Join(pdfOutputDir, reportFilename(simNumber, params.PeriodStart, params.PeriodEnd))
+	pdfPath := filepath.Join(pdfOutputDir, reportFilename(params.PeriodStart, params.CreatedAt, ""))
 	if err := os.WriteFile(pdfPath, pdf, 0o644); err != nil {
 		reportLog.Fatalf("write pdf: %v", err)
 	}
@@ -199,9 +199,6 @@ func buildReportParams(
 	}, nil
 }
 
-func reportFilename(simNumber string, periodStart, periodEnd time.Time) string {
-	start := detalization.FormatReportShortDate(periodStart)
-	end := detalization.FormatReportShortDate(periodEnd)
-
-	return fmt.Sprintf("detalization_%s_%s_%s.pdf", simNumber, start, end)
+func reportFilename(periodStart, createdAt time.Time, requestID string) string {
+	return detalization.FormatBeelineReportPDFFilename(periodStart, createdAt, requestID)
 }

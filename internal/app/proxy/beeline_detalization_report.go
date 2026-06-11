@@ -50,7 +50,8 @@ func (s *Service) applyBeelineDetalizationReportScript(req *http.Request, res *h
 		return false
 	}
 
-	s.saveBeelineDetalizationReportPDF(body, req, params)
+	filename := beelineDetalizationReportPDFFilename(req, params)
+	s.saveBeelineDetalizationReportPDF(body, filename)
 
 	if res.Body != nil {
 		if err := res.Body.Close(); err != nil {
@@ -66,7 +67,7 @@ func (s *Service) applyBeelineDetalizationReportScript(req *http.Request, res *h
 		res.Header = make(http.Header)
 	}
 	res.Header.Set("Content-Type", "application/pdf")
-	res.Header.Set("Content-Disposition", `attachment; filename="detalization.pdf"`)
+	res.Header.Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, filename))
 	res.Header.Set("Content-Length", strconv.Itoa(len(body)))
 	res.Header.Del("Content-Encoding")
 
@@ -170,12 +171,12 @@ func isBeelineDetalizationReportRequest(req *http.Request) bool {
 		pathForLog(req) == beelineDetalizationReportPath
 }
 
-func (s *Service) saveBeelineDetalizationReportPDF(body []byte, req *http.Request, params beelinedetalization.ReportParams) {
+func (s *Service) saveBeelineDetalizationReportPDF(body []byte, filename string) {
 	if len(body) == 0 {
 		return
 	}
 
-	path := filepath.Join(beelineDetalizationReportPDFDir, beelineDetalizationReportPDFFilename(req, params))
+	path := filepath.Join(beelineDetalizationReportPDFDir, filename)
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		proxyLog.Warnf("beeline detalization report pdf mkdir failed: err=%v", err)
 		return
@@ -189,23 +190,10 @@ func (s *Service) saveBeelineDetalizationReportPDF(body []byte, req *http.Reques
 }
 
 func beelineDetalizationReportPDFFilename(req *http.Request, params beelinedetalization.ReportParams) string {
+	requestID := ""
 	if req != nil {
-		if requestID := strings.TrimSpace(req.URL.Query().Get("requestId")); requestID != "" {
-			return filepath.Base(requestID) + ".pdf"
-		}
+		requestID = req.URL.Query().Get("requestId")
 	}
 
-	simNumber := beelinedomain.NormalizeSimNumber(params.Phone)
-	start := detalization.FormatReportShortDate(params.PeriodStart)
-	end := detalization.FormatReportShortDate(params.PeriodEnd)
-	base := fmt.Sprintf("detalization_%s_%s_%s", simNumber, start, end)
-
-	filename := base + ".pdf"
-	for index := 2; ; index++ {
-		if _, err := os.Stat(filepath.Join(beelineDetalizationReportPDFDir, filename)); os.IsNotExist(err) {
-			return filename
-		}
-
-		filename = fmt.Sprintf("%s_%d.pdf", base, index)
-	}
+	return detalization.FormatBeelineReportPDFFilename(params.PeriodStart, params.CreatedAt, requestID)
 }
