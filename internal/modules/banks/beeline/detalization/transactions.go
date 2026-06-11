@@ -286,3 +286,29 @@ func syncBalanceReturnPaymentLabels(data map[string]any, payments []domain.Payme
 func transactionFingerprint(tx map[string]any) string {
 	return TransactionFingerprint(tx)
 }
+
+func BalanceReturnTransactionSummaries(data map[string]any) []string {
+	transactions, ok := data["transactions"].([]any)
+	if !ok {
+		return nil
+	}
+
+	out := make([]string, 0)
+	for _, item := range transactions {
+		tx, ok := item.(map[string]any)
+		if !ok || !isBalanceReturnTransaction(tx) {
+			continue
+		}
+
+		out = append(out, fmt.Sprintf(
+			"id=%s name=%q categoryName=%q formattedNumber=%q source=%s",
+			jsonString(tx["id"]),
+			jsonString(tx["name"]),
+			jsonString(tx["categoryName"]),
+			jsonString(tx["formattedNumber"]),
+			jsonString(tx["source"]),
+		))
+	}
+
+	return out
+}

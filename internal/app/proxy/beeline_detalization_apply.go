@@ -56,6 +56,10 @@ func (s *Service) buildBeelineDetalizationView(
 		balance = synced
 	}
 
+	for _, summary := range detalization.BalanceReturnTransactionSummaries(view) {
+		proxyLog.Infof("beeline detalization balance_return tx: sim=%s %s", simNumber, summary)
+	}
+
 	return view, balance, nil
 }
 
