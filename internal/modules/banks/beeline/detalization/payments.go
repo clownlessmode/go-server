@@ -11,7 +11,7 @@ import (
 )
 
 const paymentCardTransferName = "Перевод с баланса на карту"
-const paymentBalanceReturnName = "возврат на личный баланс"
+const paymentBalanceReturnName = "Возврат на личный баланс"
 const paymentRefillCategoryName = "пополнение баланса"
 
 func CloneData(data map[string]any) (map[string]any, error) {
@@ -119,7 +119,6 @@ func paymentTransaction(payment domain.Payment) map[string]any {
 			"name":            paymentBalanceReturnName,
 			"number":          "",
 			"roaming":         false,
-			"typeCall":        "recharge",
 			"unit":            "",
 			"volume":          0,
 		}
@@ -145,7 +144,6 @@ func paymentTransaction(payment domain.Payment) map[string]any {
 			"name":            paymentRefillCategoryName,
 			"number":          "",
 			"roaming":         false,
-			"typeCall":        "recharge",
 			"unit":            "",
 			"volume":          0,
 		}
@@ -308,10 +306,14 @@ func samePaymentKind(left, right map[string]any) bool {
 
 func isBalanceReturnTransaction(tx map[string]any) bool {
 	name := strings.ToLower(strings.TrimSpace(jsonString(tx["name"])))
-	return strings.Contains(name, paymentBalanceReturnName)
+	return strings.Contains(name, strings.ToLower(paymentBalanceReturnName))
 }
 
 func isRefillLikeTransaction(tx map[string]any) bool {
+	if isBalanceReturnTransaction(tx) {
+		return false
+	}
+
 	category := strings.ToUpper(jsonString(tx["category"]))
 	if category == "REFILL" {
 		return true

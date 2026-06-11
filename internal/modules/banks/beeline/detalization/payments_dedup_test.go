@@ -193,4 +193,7 @@ func TestApplyPaymentsBalanceReturnTransaction(t *testing.T) {
 	if tx["categoryName"] != paymentRefillCategoryName {
 		t.Fatalf("categoryName = %q, want %q", tx["categoryName"], paymentRefillCategoryName)
 	}
+	if _, hasTypeCall := tx["typeCall"]; hasTypeCall {
+		t.Fatalf("balance_return transaction must not include typeCall, got %v", tx["typeCall"])
+	}
 }

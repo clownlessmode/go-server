@@ -135,7 +135,7 @@ func TestFormatReportTransactionDescription(t *testing.T) {
 		},
 		{
 			name: "balance return",
-			tx:   map[string]any{"name": "возврат на личный баланс"},
+			tx:   map[string]any{"name": "Возврат на личный баланс"},
 			want: "основной баланс",
 		},
 		{
