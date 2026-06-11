@@ -193,7 +193,69 @@ func TestApplyPaymentsBalanceReturnTransaction(t *testing.T) {
 	if tx["categoryName"] != paymentRefillCategoryName {
 		t.Fatalf("categoryName = %q, want %q", tx["categoryName"], paymentRefillCategoryName)
 	}
+	if tx["formattedNumber"] != paymentRefillCategoryName {
+		t.Fatalf("formattedNumber = %q, want %q", tx["formattedNumber"], paymentRefillCategoryName)
+	}
 	if _, hasTypeCall := tx["typeCall"]; hasTypeCall {
 		t.Fatalf("balance_return transaction must not include typeCall, got %v", tx["typeCall"])
+	}
+}
+
+func TestApplyPaymentsPatchesDuplicateBalanceReturn(t *testing.T) {
+	data := map[string]any{
+		"transactions": []any{
+			map[string]any{
+				"id":           "beeline-return",
+				"source":       "beeline",
+				"category":     "refill",
+				"categoryName": paymentBalanceReturnName,
+				"dateTime":     "2026-06-11T12:00:00",
+				"name":         paymentBalanceReturnName,
+				"balances": []any{
+					map[string]any{
+						"changeValue": 2500.0,
+						"code":        "coreBalance",
+					},
+				},
+			},
+		},
+		"balances": []any{
+			map[string]any{
+				"startValue": 0.0,
+				"endValue":   0.0,
+			},
+		},
+	}
+
+	payment := domain.Payment{
+		ID:        "pay-return",
+		Direction: domain.PaymentDirectionBalanceReturn,
+		Amount:    2500,
+		Total:     2500,
+		PaidAt:    time.Date(2026, 6, 11, 12, 0, 0, 0, domain.BeelineLocation()),
+	}
+
+	_, ok := ApplyPayments(data, []domain.Payment{payment}, nil)
+	if !ok {
+		t.Fatal("expected balance recalculation")
+	}
+
+	txs, _ := data["transactions"].([]any)
+	if len(txs) != 1 {
+		t.Fatalf("transactions len = %d, want patched single row", len(txs))
+	}
+
+	tx, _ := txs[0].(map[string]any)
+	if tx["name"] != paymentBalanceReturnName {
+		t.Fatalf("name = %q", tx["name"])
+	}
+	if tx["categoryName"] != paymentRefillCategoryName {
+		t.Fatalf("categoryName = %q, want %q", tx["categoryName"], paymentRefillCategoryName)
+	}
+	if tx["formattedNumber"] != paymentRefillCategoryName {
+		t.Fatalf("formattedNumber = %q, want %q", tx["formattedNumber"], paymentRefillCategoryName)
+	}
+	if tx["id"] != payment.ID {
+		t.Fatalf("id = %q, want payment id", tx["id"])
 	}
 }

@@ -196,7 +196,7 @@ DELETE /banks/beeline/sims/{number}/detalization/transactions/{id}
 - `receiverCard` не нужна (пустая)
 - `commission = 0`, `total = amount`
 - `amount > 0`
-- В **детализации** (приложение): `name` = «Возврат на личный баланс», `categoryName` = «пополнение баланса»
+- В **детализации** (приложение): `name` = «Возврат на личный баланс», `categoryName` и `formattedNumber` = «пополнение баланса»
 - В **PDF-выписке**: название «Возврат на личный баланс», описание «основной баланс»
 - Учитывается в `incomingTotal` и увеличивает баланс так же, как `incoming`
 - Отличается от `incoming` только текстом в выписке (не «пополнение баланса»)

@@ -258,12 +258,29 @@ func BuildView(baseData map[string]any, payments []domain.Payment, hiddenIDs []s
 	}
 
 	AnnotateTransactionIDs(working, payments)
+	syncBalanceReturnPaymentLabels(working, payments)
 
 	return working, balance, nil
 }
 
 func paymentFingerprint(payment domain.Payment) string {
 	return TransactionFingerprint(paymentTransaction(payment))
+}
+
+func syncBalanceReturnPaymentLabels(data map[string]any, payments []domain.Payment) {
+	for _, payment := range payments {
+		if payment.Direction != domain.PaymentDirectionBalanceReturn {
+			continue
+		}
+
+		tx, ok := FindTransactionByID(data, payment.ID)
+		if !ok {
+			continue
+		}
+
+		applyPaymentTransactionLabels(tx, paymentTransaction(payment))
+		tx["source"] = "payment"
+	}
 }
 
 func transactionFingerprint(tx map[string]any) string {

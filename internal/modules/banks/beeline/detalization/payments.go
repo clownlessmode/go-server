@@ -62,7 +62,13 @@ func ApplyPayments(data map[string]any, payments []domain.Payment, configuredOpe
 			continue
 		}
 		tx := paymentTransaction(payment)
-		if transactionExists(existing, tx) {
+		if matched, ok := findMatchingTransaction(existing, tx); ok {
+			if payment.Direction == domain.PaymentDirectionBalanceReturn {
+				applyPaymentTransactionLabels(matched, tx)
+				matched["id"] = payment.ID
+				matched["source"] = "payment"
+				incomingSum += payment.Amount
+			}
 			continue
 		}
 		injected = append(injected, tx)
@@ -114,7 +120,7 @@ func paymentTransaction(payment domain.Payment) map[string]any {
 			"category":        "refill",
 			"categoryName":    paymentRefillCategoryName,
 			"dateTime":        dateTime,
-			"formattedNumber": "",
+			"formattedNumber": paymentRefillCategoryName,
 			"icon":            "download",
 			"name":            paymentBalanceReturnName,
 			"number":          "",
@@ -204,6 +210,11 @@ func paymentDateTime(paidAt time.Time) string {
 }
 
 func transactionExists(existing []any, candidate map[string]any) bool {
+	_, ok := findMatchingTransaction(existing, candidate)
+	return ok
+}
+
+func findMatchingTransaction(existing []any, candidate map[string]any) (map[string]any, bool) {
 	candidateFP := TransactionFingerprint(candidate)
 	candidateChange := domain.RoundMoney(transactionChangeValue(candidate))
 	candidateDate, candidateDateOK := parseReportTransactionDateTime(transactionDateTime(candidate))
@@ -215,12 +226,14 @@ func transactionExists(existing []any, candidate map[string]any) bool {
 		}
 
 		if TransactionFingerprint(tx) == candidateFP {
-			return true
+			return tx, true
 		}
 
 		existingChange := domain.RoundMoney(transactionChangeValue(tx))
-		if transactionDateTime(tx) == transactionDateTime(candidate) && existingChange == candidateChange {
-			return true
+		if transactionDateTime(tx) == transactionDateTime(candidate) &&
+			existingChange == candidateChange &&
+			samePaymentKind(tx, candidate) {
+			return tx, true
 		}
 
 		if !candidateDateOK || candidateChange == 0 {
@@ -229,26 +242,37 @@ func transactionExists(existing []any, candidate map[string]any) bool {
 		if existingChange != candidateChange {
 			continue
 		}
+		if !samePaymentKind(tx, candidate) {
+			continue
+		}
 
 		existingDate, ok := parseReportTransactionDateTime(transactionDateTime(tx))
 		if !ok {
 			continue
 		}
-		if !samePaymentKind(tx, candidate) {
-			continue
-		}
 
 		if sameTransactionMinute(existingDate, candidateDate) {
-			return true
+			return tx, true
 		}
 
 		// Fallback for timezone/format skew between injected payments and Beeline snapshot rows.
 		if paymentTimeSkew(existingDate, candidateDate) <= 3*time.Hour {
-			return true
+			return tx, true
 		}
 	}
 
-	return false
+	return nil, false
+}
+
+func applyPaymentTransactionLabels(target, desired map[string]any) {
+	target["name"] = desired["name"]
+	target["category"] = desired["category"]
+	target["categoryName"] = desired["categoryName"]
+	target["formattedNumber"] = desired["formattedNumber"]
+	target["icon"] = desired["icon"]
+	target["unit"] = desired["unit"]
+	target["volume"] = desired["volume"]
+	delete(target, "typeCall")
 }
 
 func sameCalendarDay(left, right time.Time) bool {
