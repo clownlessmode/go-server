@@ -47,32 +47,86 @@ func TrimViewToPeriod(data map[string]any, periodStart, periodEnd time.Time) (ma
 	start := startOfReportDay(periodStart)
 	end := endOfReportDay(periodEnd)
 
-	openingBalance := balanceBeforePeriod(transactions, start)
+	openingBalance := openingBalanceFromTransactionChain(transactions, start)
 	filtered := filterTransactionsInPeriod(transactions, start, end)
 	if len(filtered) == 0 {
 		return working, openingBalance, fmt.Errorf("trim period: no transactions in range")
 	}
 
+	finalBalance := closingBalanceFromTransactionChain(filtered, openingBalance)
+
 	if summary, ok := coreBalanceSummary(working); ok {
 		summary["startValue"] = openingBalance
-	}
-
-	if first, ok := filtered[0].(map[string]any); ok {
-		if balance, ok := coreBalanceEntry(first); ok {
-			balance["startValue"] = openingBalance
-		}
+		summary["endValue"] = finalBalance
+		summary["changeValue"] = domain.RoundMoney(finalBalance - openingBalance)
 	}
 
 	working["transactions"] = filtered
-
-	finalBalance, ok := recalculateBalances(working, &openingBalance)
-	if !ok {
-		return nil, 0, fmt.Errorf("trim period: recalculate balances")
-	}
-
 	sortTransactionsDesc(working)
 
 	return working, finalBalance, nil
+}
+
+func openingBalanceFromTransactionChain(transactions []any, periodStart time.Time) float64 {
+	sorted := append([]any(nil), transactions...)
+	sort.SliceStable(sorted, func(i, j int) bool {
+		return transactionDateTime(sorted[i]) < transactionDateTime(sorted[j])
+	})
+
+	var opening float64
+	var found bool
+	for _, item := range sorted {
+		dateTime, ok := parseReportTransactionDateTime(transactionDateTime(item))
+		if !ok || !dateTime.Before(periodStart) {
+			break
+		}
+
+		balance, ok := coreBalanceEntry(item)
+		if !ok {
+			continue
+		}
+
+		opening = domain.RoundMoney(jsonNumber(balance["endValue"]))
+		found = true
+	}
+
+	if found {
+		return opening
+	}
+
+	for _, item := range sorted {
+		dateTime, ok := parseReportTransactionDateTime(transactionDateTime(item))
+		if !ok || dateTime.Before(periodStart) {
+			continue
+		}
+
+		balance, ok := coreBalanceEntry(item)
+		if !ok {
+			continue
+		}
+
+		return domain.RoundMoney(jsonNumber(balance["startValue"]))
+	}
+
+	return balanceBeforePeriod(transactions, periodStart)
+}
+
+func closingBalanceFromTransactionChain(transactions []any, fallback float64) float64 {
+	sorted := append([]any(nil), transactions...)
+	sort.SliceStable(sorted, func(i, j int) bool {
+		return transactionDateTime(sorted[i]) < transactionDateTime(sorted[j])
+	})
+
+	for index := len(sorted) - 1; index >= 0; index-- {
+		balance, ok := coreBalanceEntry(sorted[index])
+		if !ok {
+			continue
+		}
+
+		return domain.RoundMoney(jsonNumber(balance["endValue"]))
+	}
+
+	return fallback
 }
 
 func balanceBeforePeriod(transactions []any, periodStart time.Time) float64 {

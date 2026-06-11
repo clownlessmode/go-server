@@ -57,14 +57,14 @@ func TestTrimViewToPeriodKeepsOpeningBalance(t *testing.T) {
 				"dateTime": "2026-05-15T10:00:00",
 				"category": "INTERNET",
 				"balances": []any{
-					map[string]any{"code": "coreBalance", "changeValue": -5.0},
+					map[string]any{"code": "coreBalance", "changeValue": -5.0, "startValue": 10.0, "endValue": 5.0},
 				},
 			},
 			map[string]any{
 				"dateTime": "2026-05-20T10:00:00",
 				"category": "refill",
 				"balances": []any{
-					map[string]any{"code": "coreBalance", "changeValue": 95.0},
+					map[string]any{"code": "coreBalance", "changeValue": 95.0, "startValue": 5.0, "endValue": 100.0},
 				},
 			},
 		},
@@ -203,4 +203,66 @@ func TestTrimViewToPeriodSortsNewestFirst(t *testing.T) {
 	if first != "2026-06-11T19:37:00" {
 		t.Fatalf("first transaction = %s, want 2026-06-11T19:37:00", first)
 	}
+}
+
+func TestTrimViewToPeriodPreservesReconciledEndValues(t *testing.T) {
+	loc := time.FixedZone("MSK", 3*60*60)
+	data := map[string]any{
+		"balances": []any{
+			map[string]any{
+				"code":       "coreBalance",
+				"startValue": 1025.80,
+				"endValue":   11025.80,
+			},
+		},
+		"transactions": []any{
+			map[string]any{
+				"dateTime": "2026-06-10T18:00:00",
+				"balances": []any{
+					map[string]any{"code": "coreBalance", "changeValue": -100.0, "startValue": 1125.80, "endValue": 1025.80},
+				},
+			},
+			map[string]any{
+				"dateTime": "2026-06-11T19:23:00",
+				"category": "refill",
+				"name":     "пополнение баланса",
+				"source":   "payment",
+				"balances": []any{
+					map[string]any{"code": "coreBalance", "changeValue": 10000.0, "startValue": 1025.80, "endValue": 11025.80},
+				},
+			},
+			map[string]any{
+				"dateTime": "2026-06-11T19:36:00",
+				"balances": []any{
+					map[string]any{"code": "coreBalance", "changeValue": -1500.0, "startValue": 11025.80, "endValue": 9525.80},
+				},
+			},
+		},
+	}
+
+	dayStart := time.Date(2026, 6, 11, 0, 0, 0, 0, loc).UTC()
+	dayEnd := time.Date(2026, 6, 11, 23, 59, 59, 0, loc).UTC()
+
+	view, finalBalance, err := detalization.TrimViewToPeriod(data, dayStart, dayEnd)
+	if err != nil {
+		t.Fatalf("TrimViewToPeriod: %v", err)
+	}
+	if finalBalance != 9525.80 {
+		t.Fatalf("final balance = %.2f, want 9525.80", finalBalance)
+	}
+
+	for _, item := range view["transactions"].([]any) {
+		tx := item.(map[string]any)
+		if tx["dateTime"] != "2026-06-11T19:23:00" {
+			continue
+		}
+
+		endValue := tx["balances"].([]any)[0].(map[string]any)["endValue"].(float64)
+		if endValue != 11025.80 {
+			t.Fatalf("refill endValue = %.2f, want 11025.80", endValue)
+		}
+		return
+	}
+
+	t.Fatal("refill transaction not found in trimmed view")
 }
