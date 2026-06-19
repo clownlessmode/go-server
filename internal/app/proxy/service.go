@@ -188,6 +188,7 @@ func (s *Service) handleResponse(session *gomitmproxy.Session) *http.Response {
 	s.applyRocketbankClientInfoChangeScript(req, res)
 	s.applyRocketbankHistoryChangeScript(req, res)
 	s.applyRocketbankHistoryTransactionChangeScript(req, res)
+	s.logRocketbankChequePDFRequest(req, res)
 	rocketbankChequeSaved := s.saveRocketbankChequePDF(req, res)
 	rocketbankChequeHandled := rocketbankChequeSaved || s.applyRocketbankChequePDFFallback(req, res)
 	if s.cfg.RocketbankLogs && isRocketbankHost(req.Host) && !rocketbankChequeHandled {

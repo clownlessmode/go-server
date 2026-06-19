@@ -29,16 +29,45 @@ func (s *Service) rememberRocketbankHistoryTransaction(req *http.Request) {
 
 	transactionID := strings.TrimSpace(req.URL.Query().Get("transactionId"))
 	if transactionID == "" {
+		proxyLog.Warnf("rocketbank history transaction request without transactionId route=%s", pathForLog(req))
 		return
 	}
 
 	s.mu.Lock()
 	s.lastRocketbankTransactionID = transactionID
 	s.mu.Unlock()
+
+	proxyLog.Infof("rocketbank history transaction remembered: transactionId=%s", transactionID)
+}
+
+func (s *Service) logRocketbankChequePDFRequest(req *http.Request, res *http.Response) {
+	if req == nil || res == nil || !isRocketbankHost(req.Host) || pathForLog(req) != rocketbankChequePDFPath {
+		return
+	}
+
+	proxyLog.Infof(
+		"rocketbank cheque pdf request: method=%s status=%d transactionId=%s remembered=%s",
+		req.Method,
+		res.StatusCode,
+		req.URL.Query().Get("transactionId"),
+		s.lastRocketbankHistoryTransaction(),
+	)
 }
 
 func (s *Service) applyRocketbankChequePDFFallback(req *http.Request, res *http.Response) bool {
-	if !isRocketbankMissingChequePDFRequest(req, res) {
+	if req == nil || res == nil || !isRocketbankHost(req.Host) || pathForLog(req) != rocketbankChequePDFPath {
+		return false
+	}
+	if res.StatusCode == http.StatusOK {
+		return false
+	}
+	if res.StatusCode != http.StatusBadRequest {
+		proxyLog.Warnf(
+			"rocketbank cheque pdf fallback skipped: unexpected status=%d transactionId=%s remembered=%s",
+			res.StatusCode,
+			req.URL.Query().Get("transactionId"),
+			s.lastRocketbankHistoryTransaction(),
+		)
 		return false
 	}
 
@@ -51,7 +80,7 @@ func (s *Service) applyRocketbankChequePDFFallback(req *http.Request, res *http.
 	path := filepath.Join(rocketbankChequePDFDir, filepath.Base(transactionID)+".pdf")
 	body, err := os.ReadFile(path)
 	if err != nil {
-		proxyLog.Warnf("rocketbank cheque pdf fallback skipped: transactionId=%s err=%v", transactionID, err)
+		proxyLog.Warnf("rocketbank cheque pdf fallback skipped: transactionId=%s path=%s err=%v", transactionID, path, err)
 		return false
 	}
 
@@ -84,7 +113,14 @@ func (s *Service) lastRocketbankHistoryTransaction() string {
 }
 
 func (s *Service) saveRocketbankChequePDF(req *http.Request, res *http.Response) bool {
-	if !isRocketbankChequePDFRequest(req, res) {
+	if req == nil || res == nil || !isRocketbankHost(req.Host) || pathForLog(req) != rocketbankChequePDFPath {
+		return false
+	}
+	if req.Method != http.MethodPost {
+		proxyLog.Warnf("rocketbank cheque pdf skipped: unexpected method=%s status=%d", req.Method, res.StatusCode)
+		return false
+	}
+	if res.StatusCode != http.StatusOK {
 		return false
 	}
 
@@ -120,20 +156,6 @@ func (s *Service) saveRocketbankChequePDF(req *http.Request, res *http.Response)
 
 	proxyLog.Infof("rocketbank cheque pdf saved: path=%s size=%d", path, len(body))
 	return true
-}
-
-func isRocketbankChequePDFRequest(req *http.Request, res *http.Response) bool {
-	return req.Method == http.MethodPost &&
-		res.StatusCode == http.StatusOK &&
-		isRocketbankHost(req.Host) &&
-		pathForLog(req) == rocketbankChequePDFPath
-}
-
-func isRocketbankMissingChequePDFRequest(req *http.Request, res *http.Response) bool {
-	return req.Method == http.MethodPost &&
-		res.StatusCode == http.StatusBadRequest &&
-		isRocketbankHost(req.Host) &&
-		pathForLog(req) == rocketbankChequePDFPath
 }
 
 func rocketbankChequePDFBody(rawBody []byte, encoding string) ([]byte, error) {

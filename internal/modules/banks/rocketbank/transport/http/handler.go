@@ -612,7 +612,12 @@ func clientInfoResponse(clientInfo domain.ClientInfo) ClientInfoResponse {
 }
 
 func (h *Handler) generateSBPTransferCheque(c *gin.Context, item domain.HistoryItem) {
-	if h.chequeGenerator == nil || item.Type != domain.HistoryTypeSBPTransfer {
+	if h.chequeGenerator == nil {
+		handlerLog.Warnf("generate sbp cheque skipped: generator is nil transactionId=%s", domain.HistoryItemID(item))
+		return
+	}
+	if item.Type != domain.HistoryTypeSBPTransfer {
+		handlerLog.Infof("generate sbp cheque skipped: unsupported type=%s transactionId=%s", item.Type, domain.HistoryItemID(item))
 		return
 	}
 
@@ -624,11 +629,19 @@ func (h *Handler) generateSBPTransferCheque(c *gin.Context, item domain.HistoryI
 
 	if err := h.chequeGenerator.GenerateSBPTransferCheque(item, config.ClientInfo); err != nil {
 		handlerLog.Warnf("generate sbp cheque failed: transactionId=%s err=%v", domain.HistoryItemID(item), err)
+		return
 	}
+
+	handlerLog.Infof("generate sbp cheque succeeded: transactionId=%s direction=%s", domain.HistoryItemID(item), item.Direction)
 }
 
 func (h *Handler) generateCardTransferCheque(c *gin.Context, item domain.HistoryItem) {
-	if h.chequeGenerator == nil || item.Type != domain.HistoryTypeCardTransfer {
+	if h.chequeGenerator == nil {
+		handlerLog.Warnf("generate card cheque skipped: generator is nil transactionId=%s", domain.HistoryItemID(item))
+		return
+	}
+	if item.Type != domain.HistoryTypeCardTransfer {
+		handlerLog.Infof("generate card cheque skipped: unsupported type=%s transactionId=%s", item.Type, domain.HistoryItemID(item))
 		return
 	}
 
@@ -640,7 +653,10 @@ func (h *Handler) generateCardTransferCheque(c *gin.Context, item domain.History
 
 	if err := h.chequeGenerator.GenerateCardTransferCheque(item, config.ClientInfo); err != nil {
 		handlerLog.Warnf("generate card cheque failed: transactionId=%s err=%v", domain.HistoryItemID(item), err)
+		return
 	}
+
+	handlerLog.Infof("generate card cheque succeeded: transactionId=%s direction=%s", domain.HistoryItemID(item), item.Direction)
 }
 
 func historyResponse(history []domain.HistoryItem) []HistoryResponse {
