@@ -21,7 +21,7 @@ DEPLOY_PORT: "22"
 ```bash
 # зависимости
 apt update
-apt install -y git postgresql
+apt install -y git postgresql librsvg2-bin
 
 # клон (подставь URL своего private repo)
 git clone git@github.com:YOUR_ORG/go-server.git /opt/mitm-go-server

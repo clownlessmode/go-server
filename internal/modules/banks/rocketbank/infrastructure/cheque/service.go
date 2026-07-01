@@ -24,10 +24,9 @@ import (
 )
 
 const (
-	outputDir         = "data/reports/rocketbank/cheques"
-	regularFontPath   = "internal/shared/fonts/MONO.ttf"
-	wideFontPath      = "internal/shared/fonts/WIDE.ttf"
-	svgPDFRasterScale = 4
+	outputDir       = "data/reports/rocketbank/cheques"
+	regularFontPath = "internal/shared/fonts/MONO.ttf"
+	wideFontPath    = "internal/shared/fonts/WIDE.ttf"
 )
 
 //go:embed templates/*.svg
@@ -220,7 +219,7 @@ func renderSVGTemplatePDF(templateBody []byte, replacements map[string]string) (
 	}
 	svg = normalizeSVGChequeHeadingColor(svg)
 	svg = addSVGWhiteBackground(svg)
-	svg = scaleSVGCanvas(svg, svgPDFRasterScale)
+	svg = normalizeSVGCanvasToPDFPoints(svg)
 
 	tempDir, err := os.MkdirTemp("", "rocketbank-cheque-*")
 	if err != nil {
@@ -424,29 +423,42 @@ func addSVGWhiteBackground(svg string) string {
 	return strings.Replace(svg, "><defs", ">"+background+"<defs", 1)
 }
 
-func scaleSVGCanvas(svg string, scale int) string {
-	if scale <= 1 {
+func normalizeSVGCanvasToPDFPoints(svg string) string {
+	viewBoxPattern := regexp.MustCompile(`viewBox="0 0 ([0-9]+(?:\.[0-9]+)?) ([0-9]+(?:\.[0-9]+)?)"`)
+	parts := viewBoxPattern.FindStringSubmatch(svg)
+	if len(parts) != 3 {
 		return svg
 	}
 
-	svg = scaleSVGDimension(svg, "width", scale)
-	svg = scaleSVGDimension(svg, "height", scale)
+	width, err := strconv.ParseFloat(parts[1], 64)
+	if err != nil {
+		return svg
+	}
+	height, err := strconv.ParseFloat(parts[2], 64)
+	if err != nil {
+		return svg
+	}
+
+	svg = replaceFirstSVGDimension(svg, "width", formatPDFPointDimension(width*0.75))
+	svg = replaceFirstSVGDimension(svg, "height", formatPDFPointDimension(height*0.75))
 	return svg
 }
 
-func scaleSVGDimension(svg string, attribute string, scale int) string {
-	pattern := regexp.MustCompile(attribute + `="([0-9]+)"`)
-	return pattern.ReplaceAllStringFunc(svg, func(match string) string {
-		parts := pattern.FindStringSubmatch(match)
-		if len(parts) != 2 {
-			return match
-		}
-		value, err := strconv.Atoi(parts[1])
-		if err != nil {
-			return match
-		}
-		return fmt.Sprintf(`%s="%d"`, attribute, value*scale)
-	})
+func replaceFirstSVGDimension(svg string, attribute string, value string) string {
+	pattern := regexp.MustCompile(attribute + `="[^"]+"`)
+	loc := pattern.FindStringIndex(svg)
+	if loc == nil {
+		return svg
+	}
+
+	return svg[:loc[0]] + attribute + `="` + value + `"` + svg[loc[1]:]
+}
+
+func formatPDFPointDimension(value float64) string {
+	if math.Abs(value-math.Round(value)) < 0.001 {
+		return strconv.FormatInt(int64(math.Round(value)), 10) + "pt"
+	}
+	return strconv.FormatFloat(value, 'f', 2, 64) + "pt"
 }
 
 func escapeSVGText(value string) string {
@@ -454,6 +466,7 @@ func escapeSVGText(value string) string {
 		"&", "&amp;",
 		"<", "&lt;",
 		">", "&gt;",
+		`"`, "&quot;",
 	)
 	return replacer.Replace(value)
 }
@@ -838,7 +851,7 @@ func outgoingTemplate() chequeTemplate {
 		Operation: "АЗАТ АЛИКОВИЧ Г",
 		Amount:    "50 ₽",
 		Phone:     "+7 909 933-40-05",
-		Bank:      `АО "ТБАНК"`,
+		Bank:      `АО &quot;ТБАНК&quot;`,
 		Client:    "МАКСИМ АЛЕКСАНДРОВИЧ Н.",
 		ClientTel: "+7 983 543-99-99",
 		Card:      "40817 81035 02245 32469",
@@ -854,7 +867,7 @@ func incomingTemplate() chequeTemplate {
 		Operation: "АЗАТ АЛИКОВИЧ Г",
 		Amount:    "50 ₽",
 		Phone:     "+7 909 933-40-05",
-		Bank:      `АО "ТБАНК"`,
+		Bank:      `АО &quot;ТБАНК&quot;`,
 		Client:    "МАКСИМ АЛЕКСАНДРОВИЧ Н.",
 		ClientTel: "+7 983 543-99-99",
 		Card:      "40817 81035 02245 32469",
